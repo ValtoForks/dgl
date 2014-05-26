@@ -87,26 +87,26 @@ class FreeviewLayer: Layer
     int currentWindowWidth = 0;
     int currentWindowHeight = 0;
 
-    TrackballCamera tbcamera;
+    TrackballCamera camera;
     int tempMouseX = 0;
     int tempMouseY = 0;
 
     bool drawAxes = true;
 
-    this(uint w, uint h)
+    this(uint w, uint h, int depth)
     {
-        super(0, 0, w, h, LayerType.Layer3D);
+        super(0, 0, w, h, LayerType.Layer3D, depth);
 
         alignToWindow = true;
 
         currentWindowWidth = w;
         currentWindowHeight = h;
 
-        tbcamera = new TrackballCamera();
-        tbcamera.pitch(45.0f);
-        tbcamera.turn(45.0f);
-        tbcamera.setZoom(20.0f);
-        addModifier(tbcamera);
+        camera = new TrackballCamera();
+        camera.pitch(45.0f);
+        camera.turn(45.0f);
+        camera.setZoom(20.0f);
+        addModifier(camera);
 
         auto axes = new Axes();
         addDrawable(axes);
@@ -130,11 +130,11 @@ class FreeviewLayer: Layer
         }
         else if (manager.event_button == SDL_BUTTON_WHEELUP) 
         {
-            tbcamera.zoomSmooth(-2.0f, 16.0f);
+            camera.zoomSmooth(-2.0f, 16.0f);
         }
         else if (manager.event_button == SDL_BUTTON_WHEELDOWN) 
         {
-            tbcamera.zoomSmooth(2.0f, 16.0f);
+            camera.zoomSmooth(2.0f, 16.0f);
         }
     }
 
@@ -144,8 +144,8 @@ class FreeviewLayer: Layer
         {
             float turn_m = (cast(float)(manager.window_width/2 - manager.mouse_x))/8.0f;
             float pitch_m = -(cast(float)(manager.window_height/2 - manager.mouse_y))/8.0f;
-            tbcamera.pitchSmooth(pitch_m, 16.0f);
-            tbcamera.turnSmooth(turn_m, 16.0f);
+            camera.pitchSmooth(pitch_m, 16.0f);
+            camera.turnSmooth(turn_m, 16.0f);
             SDL_WarpMouse(cast(ushort)manager.window_width/2, 
                           cast(ushort)manager.window_height/2);
             SDL_ShowCursor(0);
@@ -154,8 +154,8 @@ class FreeviewLayer: Layer
         {
             float shift_x = (cast(float)(manager.window_width/2 - manager.mouse_x))/16.0f;
             float shift_y = (cast(float)(manager.window_height/2 - manager.mouse_y))/16.0f;
-            tbcamera.moveSmooth(shift_y, 16.0f);
-            tbcamera.strafeSmooth(-shift_x, 16.0f);
+            camera.moveSmooth(shift_y, 16.0f);
+            camera.strafeSmooth(-shift_x, 16.0f);
             SDL_WarpMouse(cast(ushort)manager.window_width/2, 
                           cast(ushort)manager.window_height/2);
             SDL_ShowCursor(0);

@@ -34,6 +34,7 @@ private
     import std.conv;
     import std.string;
     import std.process;
+    import std.algorithm;
 
     import derelict.util.compat;
     import derelict.sdl.sdl;
@@ -128,26 +129,34 @@ class Application
     Layer addLayer(Layer layer)
     {
         layers ~= layer;
+        sortLayersByDepth();
         return layer;
     }
 
-    Layer addLayer3D()
+    Layer addLayer3D(int depth)
     {
-        Layer layer = new Layer(0, 0, videoWidth, videoHeight, LayerType.Layer3D);
+        Layer layer = new Layer(0, 0, videoWidth, videoHeight, LayerType.Layer3D, depth);
         layer.alignToWindow = true;
         layers ~= layer;
+        sortLayersByDepth();
         return layer;
     }
 
-    Layer addLayer2D()
+    Layer addLayer2D(int depth)
     {
-        Layer layer = new Layer(0, 0, videoWidth, videoHeight, LayerType.Layer2D);
+        Layer layer = new Layer(0, 0, videoWidth, videoHeight, LayerType.Layer2D, depth);
         layer.alignToWindow = true;
         layers ~= layer;
+        sortLayersByDepth();
         return layer;
     }
 
     protected:
+
+    void sortLayersByDepth()
+    {
+        sort!("a.depth > b.depth")(layers);
+    }
 
     void onQuit()
     {

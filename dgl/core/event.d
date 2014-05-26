@@ -119,6 +119,8 @@ final class EventManager
     
     Joystick[int] joysticks;
 
+    Object[string] globalObject;
+
     public:
 
     bool running = true;
@@ -582,6 +584,41 @@ final class EventManager
                 mouse_y >= (y) && 
                 mouse_x < x + w && 
 		mouse_y < (y + h));
+    }
+
+    void setGlobal(string name, Object obj)
+    {
+        globalObject[name] = obj;
+    }
+
+    Object getGlobalObject(string name)
+    {
+        if (name in globalObject)
+            return globalObject[name];
+        else
+            return null;
+    }
+
+    T getGlobal(T)(string name)
+    {
+        if (name in globalObject)
+            return cast(T)globalObject[name];
+        else
+            return null;
+    }
+
+    bool haveGlobal(string name)
+    {
+        if (name in globalObject)
+            return true;
+        else
+            return false;
+    }
+
+    void removeGlobal(string name)
+    {
+        if (name in globalObject)
+            globalObject.remove(name);
     }
 }
 

@@ -48,6 +48,7 @@ class Layer: Drawable
     float aspectRatio;
     LayerType type;
     bool alignToWindow = false;
+    int depth = 0;
 
     Texture renderTarget;
     bool renderToTarget = false;
@@ -55,7 +56,7 @@ class Layer: Drawable
     Drawable[] drawables;
     Modifier[] modifiers;
 
-    this(uint x, uint y, uint w, uint h, LayerType type)
+    this(uint x, uint y, uint w, uint h, LayerType type, int depth)
     {
         this.x = x;
         this.y = y;
@@ -63,6 +64,7 @@ class Layer: Drawable
         this.height = h;
         this.aspectRatio = cast(float)w / cast(float)h;
         this.type = type;
+        this.depth = depth;
     }
 
     void resize(uint x, uint y, uint w, uint h)
@@ -86,7 +88,7 @@ class Layer: Drawable
 
     override void draw(double dt)
     {
-        glViewport(x, y, width, height);
+        //glViewport(x, y, width, height);
 
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
@@ -96,6 +98,8 @@ class Layer: Drawable
         else
             gluPerspective(60, aspectRatio, 0.1, 400.0);
         glMatrixMode(GL_MODELVIEW);
+
+        glLoadIdentity();
 
         foreach(i, m; modifiers)
             m.bind(dt);
