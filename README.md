@@ -18,8 +18,12 @@ Features
 
 Dependencies
 ------------
+* OpenGL / Mesa 1.2
+* SDL and FreeType (binaries for Windows and Linux are provided)
 * Derelict2 (bundled)
-* dlib (http://github.com/gecko0307/dlib)
+* [dlib](http://github.com/gecko0307/dlib)
+
+Also check out [dmech](http://github.com/gecko0307/dmech) - the only native 3D physics engine written in D, which nicely complements DGL applications.
 
 License
 -------
