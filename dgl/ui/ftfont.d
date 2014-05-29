@@ -33,6 +33,7 @@ private
     import std.string;
     import std.ascii;
     import std.range;
+    import std.file;
 
     import derelict.opengl.gl;
     import derelict.freetype.ft;
@@ -70,6 +71,9 @@ final class FreeTypeFont: Font
 
         if (FT_Init_FreeType(&ftLibrary)) 
             throw new Exception("FT_Init_FreeType failed");
+
+        if (!exists(filename))
+            throw new Exception("Cannot find font file " ~ filename);
 
         if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace)) 
             throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
@@ -119,10 +123,10 @@ final class FreeTypeFont: Font
         }
 
         glBindTexture(GL_TEXTURE_2D, texId);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

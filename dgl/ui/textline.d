@@ -52,6 +52,7 @@ class TextLine: Drawable
 {
     Font font;
     Vector2f position;
+    float scaling;
     Alignment alignment;
     Color4f color;
     string text;
@@ -62,6 +63,7 @@ class TextLine: Drawable
         this.font = font;
         this.text = text;
         this.position = position;
+        this.scaling = 1.0f;
         this.textWidth = font.textWidth(text);
         this.alignment = Alignment.Left;
         this.color = Color4f(0, 0, 0);
@@ -85,12 +87,19 @@ class TextLine: Drawable
             glTranslatef(-textWidth * 0.5f, 0, 0);
         if (alignment == Alignment.Right)
             glTranslatef(-textWidth, 0, 0);
+        glScalef(scaling, scaling, scaling);
         font.draw(text);
         glPopMatrix();
         glPopAttrib();
     }
 
     override void free() { }
+
+    void setFont(Font font)
+    {
+        this.font = font;
+        this.textWidth = font.textWidth(text);
+    }
 
     void setText(string text)
     {

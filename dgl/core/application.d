@@ -66,8 +66,8 @@ class Application
     }
     version(linux)
     {
-        enum sharedLibSDL = "./libsdl.so";
-        enum sharedLibFT = "./libfreetype.so";
+        enum sharedLibSDL = "libsdl.so";
+        enum sharedLibFT = "libfreetype.so";
     }
 
     public:
