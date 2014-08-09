@@ -37,50 +37,7 @@ import dgl.core.drawable;
 import dgl.core.application;
 import dgl.core.layer;
 import dgl.scene.tbcamera;
-
-class Axes: Drawable
-{
-    override void draw(double dt)
-    {
-        glDisable(GL_LIGHTING);
-        glPointSize(5.0f);
-        glPushMatrix();
-        glScalef(10.0f, 10.0f, 10.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glEnd();
-        glPopMatrix();
-        glPointSize(1.0f);
-        glEnable(GL_LIGHTING);
-    }
-
-    override void free() { }
-}
+import dgl.graphics.axes;
 
 class FreeviewLayer: Layer
 {
@@ -108,8 +65,8 @@ class FreeviewLayer: Layer
         camera.setZoom(20.0f);
         addModifier(camera);
 
-        auto axes = new Axes();
-        addDrawable(axes);
+        //auto axes = new Axes();
+        //addDrawable(axes);
     }
 
     override void onMouseButtonDown(EventManager manager)

@@ -59,27 +59,11 @@ class Application
     Layer[] layers;
     Color4f clearColor;
 
-    version(Windows)
-    {
-        enum sharedLibSDL = "SDL.dll";
-        enum sharedLibFT = "freetype.dll";
-    }
-    version(linux)
-    {
-        enum sharedLibSDL = "libsdl.so";
-        enum sharedLibFT = "libfreetype.so";
-    }
-
     public:
     this(uint w, uint h, string caption, GLVersion glver = GLVersion.GL12)
     {
         videoWidth = w;
         videoHeight = h;
-
-        DerelictGL.load();
-        DerelictGLU.load();
-        DerelictSDL.load(sharedLibSDL);
-        DerelictFT.load(sharedLibFT);
 
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
             throw new Exception("Failed to init SDL: " ~ to!string(SDL_GetError()));
@@ -198,7 +182,7 @@ class Application
         }
 
         SDL_GL_SwapBuffers();
-        SDL_Delay(1);
+        //SDL_Delay(1);
     }
 
     void onKeyDown()
@@ -245,7 +229,8 @@ class Application
         while(eventManager.running)
         {
             eventManager.update();
-            onRedraw();
+            if (eventManager.windowFocused)
+                onRedraw();
         }
     
         eventManager.free();

@@ -84,7 +84,7 @@ class Material: Modifier
         if (shadeless)
         {
             glDisable(GL_LIGHTING);
-            glColor4fv(diffuseColor.arrayof.ptr);
+            //glColor4fv(diffuseColor.arrayof.ptr);
         }
 
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);

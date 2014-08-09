@@ -166,6 +166,8 @@ final class EventManager
 
     string fps_string = "0";
 
+    bool windowFocused = true;
+
     private:
 
     void onMouseMotionPersonal()
@@ -555,12 +557,20 @@ final class EventManager
                     break;
 
                 case SDL_ACTIVEEVENT:
-                    //If the window was iconified or restored
                     if (event.active.state & SDL_APPACTIVE)
                     {
                         //If the application is no longer active
                         //if (event.active.gain == 0)
-                        //    GC.collect();
+                        //    writeln("Deactivated");
+                        //else
+                        //    writeln("Activated");
+                    }
+                    else if (event.active.state & SDL_APPINPUTFOCUS)
+                    {
+                        if (event.active.gain == 0)
+                            windowFocused = false;
+                        else
+                            windowFocused = true;
                     }
                     break;
 

@@ -88,7 +88,7 @@ class Layer: Drawable
 
     override void draw(double dt)
     {
-        //glViewport(x, y, width, height);
+        glViewport(x, y, width, height);
 
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
