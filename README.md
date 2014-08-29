@@ -28,6 +28,17 @@ Dependencies
 
 Also check out [dmech](http://github.com/gecko0307/dmech) - the only native 3D physics engine written in D, which nicely complements DGL applications.
 
+What is missing yet
+-------------------
+* Character animation
+* Terrain rendering
+* Shader-based lighting and material system
+* Screen-space shaders and effects (via FBO)
+* Built-in CD/physics support (deeper dmech integration or, better, some form of generic physics interface)
+* Frustum culling, BSP, BVH or some other method of drawing optimization
+* Configuration system
+* Probably some kind of game UI
+
 License
 -------
 Copyright (c) 2013-2014 Timur Gafarov. Distributed under the Boost Software License, Version 1.0. (See accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt)
