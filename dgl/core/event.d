@@ -559,18 +559,29 @@ final class EventManager
                 case SDL_ACTIVEEVENT:
                     if (event.active.state & SDL_APPACTIVE)
                     {
-                        //If the application is no longer active
-                        //if (event.active.gain == 0)
-                        //    writeln("Deactivated");
-                        //else
-                        //    writeln("Activated");
+                        if (event.active.gain == 0)
+                        {
+                            writeln("Deactivated");
+                            windowFocused = false;
+                        }
+                        else
+                        {
+                            writeln("Activated");
+                            windowFocused = true;
+                        }
                     }
                     else if (event.active.state & SDL_APPINPUTFOCUS)
                     {
                         if (event.active.gain == 0)
+                        {
+                            writeln("Lost focus");
                             windowFocused = false;
+                        }
                         else
+                        {
+                            writeln("Gained focus");
                             windowFocused = true;
+                        }
                     }
                     break;
 

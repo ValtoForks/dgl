@@ -11,10 +11,10 @@ import dlib.image.color;
 
 import dgl.core.application;
 import dgl.core.layer;
-import dgl.ui.freeview;
 import dgl.ui.ftfont;
 import dgl.ui.textline;
 import dgl.ui.i18n;
+import dgl.templates.freeview;
 
 class TestApp: Application
 {

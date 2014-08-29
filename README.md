@@ -13,12 +13,15 @@ Features
 * Built-in geometric shapes (sphere, box, cylinder, cone, ellipsoid)
 * Materials and textures
 * GLSL and ARB shaders
+* Multitexturing
 * Text rendering with TrueType fonts and full Unicode support (UTF-8)
+* Full-featured virtual filesystem with ZIP archive support
+* Own scene file format
 * Internationalization functionality
 
 Dependencies
 ------------
-* OpenGL / Mesa 1.2
+* OpenGL / Mesa 1.2 or higher (2.0 recommended)
 * SDL and FreeType (binaries for Windows and Linux are provided)
 * Derelict2 (bundled)
 * [dlib](http://github.com/gecko0307/dlib)

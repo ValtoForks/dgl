@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.ui.freeview;
+module dgl.templates.freeview;
 
 import derelict.sdl.sdl;
 import derelict.opengl.gl;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Timur Gafarov 
+Copyright (c) 2013-2014 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -52,6 +52,9 @@ enum TextureCombinerMode: ushort
 
 class Material: Modifier
 {
+    int id;
+    string name;
+
     Color4f ambientColor;
     Color4f diffuseColor;
     Color4f specularColor;
@@ -59,7 +62,7 @@ class Material: Modifier
     float shininess;
     Shader shader;
     Texture[8] textures;
-    ushort[8] texBlendMode = 0;
+    ushort[8] texBlendMode;
     bool shadeless = false;
 
     this()
@@ -69,6 +72,14 @@ class Material: Modifier
         specularColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         emissionColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
         shininess = 64.0f;
+    }
+
+    @property uint numTextures()
+    {
+        uint res = 0;
+        foreach(t; textures)
+            if (t !is null) res++;
+        return res;
     }
 
     void bind(double delta)
@@ -82,43 +93,13 @@ class Material: Modifier
 
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadeless)
-        {
             glDisable(GL_LIGHTING);
-            //glColor4fv(diffuseColor.arrayof.ptr);
-        }
-
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-
-        // TODO:
-        // Select BlendMode
-        //    Case T_Normal
-        //        glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB,GL_REPLACE)
-        //    Case T_Blend
-        //        glTexEnvf(GL_TEXTURE_ENV,GL_COMBINE_RGB,GL_BLEND)
-        //    Case T_modulated
-        //        glTexEnvf(GL_TEXTURE_ENV,GL_COMBINE_RGB,GL_MODULATE)
-        //    Case T_Add
-        //        glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB,GL_ADD) 
-        //    Case T_Dot3
-        //        glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB,GL_DOT3_RGB)
-        //    Case T_Dot3Alpha
-        //        glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB,GL_DOT3_RGBA)
-        //    Case T_Subtract
-        //        glTexEnvf(GL_TEXTURE_ENV,GL_COMBINE_RGB,GL_SUBTRACT)
 
         foreach(i, tex; textures)
         {
             if (tex !is null)
             {
                 glActiveTextureARB(GL_TEXTURE0_ARB + i);
-                if (texBlendMode[i] == TextureCombinerMode.Modulate)
-                {
-                    glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-                }
-                else
-                {
-                    glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_BLEND);
-                }
                 tex.bind(delta);
             }
         }
@@ -141,15 +122,11 @@ class Material: Modifier
             }
         }
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
         glActiveTextureARB(GL_TEXTURE0_ARB);
 		
         if (shadeless)
             glEnable(GL_LIGHTING);
     }
 
-    void free()
-    {
-    }
+    void free() { }
 }
