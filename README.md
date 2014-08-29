@@ -16,7 +16,7 @@ Features
 * Multitexturing
 * Text rendering with TrueType fonts and full Unicode support (UTF-8)
 * Full-featured virtual filesystem with ZIP archive support
-* Own scene file format
+* Own scene file format (Blender exporter supplied)
 * Internationalization functionality
 
 Dependencies
