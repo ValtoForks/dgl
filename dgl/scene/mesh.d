@@ -44,11 +44,13 @@ class Mesh
 {
     int id;
     string name;
-
+    Triangle[] tris;
     FaceGroup[int] fgroups;
 
     this(Triangle[] tris)
     {
+        this.tris = tris;
+
         foreach(tri; tris)
         {
             int m = tri.materialIndex;
