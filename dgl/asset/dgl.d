@@ -56,7 +56,7 @@ import dgl.vfs.file;
  * TODO: lamps, cameras
  */
 
-version = Debug;
+//version = Debug;
 
 enum ChunkType
 {
