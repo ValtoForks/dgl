@@ -103,12 +103,12 @@ class Scene: Drawable
             {
                 if (e.meshId in meshes)
                     drawMesh(meshes[e.meshId], dt);
-                else
-                    drawPoint();
+                //else
+                //    drawPoint();
             }
-            else
+            //else
                 // TODO: other entity types
-                drawPoint();
+                //drawPoint();
 
             glPopMatrix(); 
         }
