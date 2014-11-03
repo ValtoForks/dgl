@@ -34,6 +34,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glu;
     
 import dlib.image.image;
+import dlib.math.vector;
   
 import dgl.core.modifier;
 
@@ -44,6 +45,7 @@ class Texture: Modifier
     GLenum type;
     int width;
     int height;
+    Vector2f scroll = Vector2f(0, 0);
 
     this(uint w, uint h)
     {
@@ -143,10 +145,20 @@ class Texture: Modifier
         if (glIsTexture(tex)) 
             glBindTexture(GL_TEXTURE_2D, tex);
         else throw new Exception("Texture error");
+
+        glMatrixMode(GL_TEXTURE);
+        glPushMatrix();
+        glLoadIdentity();
+        glTranslatef(scroll.x, scroll.y, 0);
+        glMatrixMode(GL_MODELVIEW);
     }	
 
     void unbind()
     {
+        glMatrixMode(GL_TEXTURE);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
     }
