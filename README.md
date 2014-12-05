@@ -11,6 +11,7 @@ Features
 * Layer-based rendering system. You can break up scenes to any number of 2D and 3D layers, each with it's own logics and drawable objects
 * Built-in 3D layer with trackball-style camera
 * Built-in geometric shapes (sphere, box, cylinder, cone, ellipsoid)
+* Skeletal animation (IQM model format support)
 * Materials and textures
 * GLSL and ARB shaders
 * Multitexturing
@@ -30,7 +31,6 @@ Also check out [dmech](http://github.com/gecko0307/dmech) - the only native 3D p
 
 What is missing yet
 -------------------
-* Character animation
 * Terrain rendering
 * Shader-based lighting and material system
 * Screen-space shaders and effects (via FBO)
