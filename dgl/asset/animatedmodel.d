@@ -47,6 +47,7 @@ struct Animation
     float framerate;
 }
 
+// TODO: tangents (should be switchable)
 struct ActorData
 {
     Vector3f[] vertices;
@@ -61,14 +62,18 @@ struct ActorState
     uint frame1 = 0;
     uint frame2 = 1;
     float t = 0.0f;
+    float smooth = 1.0f;
     Animation* anim;
+    Animation* nextAnim;
 }
 
 interface AnimatedModel
 {
     ActorData genActorData();
     void setAnimation(string name, ActorState* state);
+    void switchAnimation(string name, ActorState* state, float smooth = 1.0f);
     void updateAnimation(double dt, ActorData* data, ActorState* state);
     AnimMesh[] meshes();
     Material[uint] materials();
 }
+

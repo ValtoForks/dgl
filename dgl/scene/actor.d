@@ -50,6 +50,13 @@ class Actor: Drawable
     {
         model.setAnimation(name, &state);
     }
+
+    void switchAnimation(string name, float smooth = 1.0f)
+    {
+        model.switchAnimation(name, &state, smooth);
+    }
+
+    // TODO: get joint matrix
     
     private bool buffersReady = false;
     private void generateBuffers()
@@ -61,6 +68,7 @@ class Actor: Drawable
     }
     
     // TODO: add possibility to render in bindpose
+    // TODO: add VBO support
     override void draw(double dt)
     {
         if (!buffersReady)

@@ -61,20 +61,6 @@ import dgl.asset.animatedmodel;
  * Also it has better exporter support in Blender.
  * IQM is supported by a number of notable Open Source engines and games:
  * namely, DarkPlaces, Alien Arena, Xonotic, Warsow and others.
- *
- * Current status and limitations
- * ------------------------------
- * Fully working mesh and animation loading/rendering with normals and texcoords.
- * Lacks several standard features, needs some API improvements.
- * TODO: 
- *  - load tangents and animate them (should be switchable)
- *  - smooth animation switching
- *  - get joint matrix (by name or index) to align weapons/items
- *  - animation blending (?)
- *  - ragdoll support (?)
- *  - facial animation (with voice sync) using morph-target method, 
- *    probably via separate file format (?)
- *  - IK (?)
  */
 
 enum IQM_VERSION = 2;
@@ -162,6 +148,8 @@ final class IQMModel: AnimatedModel
     Vector3f[] vertices;
     Vector3f[] normals;
     Vector2f[] texcoords;
+    // TODO: tangents
+
     IQMBlendIndex[] blendIndices;
     IQMBlendWeight[] blendWeights;
 
@@ -179,7 +167,6 @@ final class IQMModel: AnimatedModel
     uint numFrames;
 
     Material[uint] material;
-    
     Animation[string] animations;
     
     this(InputStream istrm, ReadOnlyFileSystem rofs)
@@ -534,7 +521,7 @@ final class IQMModel: AnimatedModel
                 data.frame[i] = mat;
         }
         
-        // Update VBO
+        // Update vertex data
         foreach(i, v; vertices)
         {
             auto bi = blendIndices[i];
@@ -568,7 +555,19 @@ final class IQMModel: AnimatedModel
         state.frame2 = state.frame1 + 1;
         if (state.frame2 == numFrames)
             state.frame2 = 0;
-        state.t = 0.0f; // TODO: smooth animation switch
+        state.t = 0.0f;
+    }
+
+    override void switchAnimation(string name, ActorState* state, float smooth = 1.0f)
+    {
+        if (!(name in animations))
+            return;
+        state.nextAnim = &animations[name];
+        state.frame2 = state.nextAnim.firstFrame;
+        if (state.frame2 == numFrames)
+            state.frame2 = 0;
+        state.t = 0.0f;
+        state.smooth = smooth;
     }
     
     override void updateAnimation(double dt, ActorData* data, ActorState* state)
@@ -577,25 +576,46 @@ final class IQMModel: AnimatedModel
         float frameRate = 24.0f;
         if (state.anim !is null)
             frameRate = state.anim.framerate;
-        float tdiff = dt * frameRate;
+        float tdiff = dt * frameRate * state.smooth;
         state.t += tdiff;
         if (state.t >= 1.0f)
         {
             state.t = 0.0f;
             state.frame1++;
             state.frame2++;
-            
-            if (state.anim !is null)
-            if (state.frame1 == state.anim.firstFrame + state.anim.numFrames)
+
+            if (state.nextAnim !is null)
             {
+                state.anim = state.nextAnim;
+                state.nextAnim = null;
+                state.smooth = 1.0f;
                 state.frame1 = state.anim.firstFrame;
                 state.frame2 = state.frame1 + 1;
+                if (state.frame2 == numFrames)
+                    state.frame2 = 0;
             }
-            
-            if (state.frame2 == numFrames)
-                state.frame2 = 0;
-            if (state.frame1 == numFrames)
-                state.frame1 = 0;
+            else if (state.anim !is null)
+            {
+                if (state.frame1 == state.anim.firstFrame + state.anim.numFrames - 1)
+                {
+                    state.frame2 = state.anim.firstFrame;
+                }
+                else if (state.frame1 == state.anim.firstFrame + state.anim.numFrames)
+                {
+                    state.frame1 = state.anim.firstFrame;
+                    state.frame2 = state.frame1 + 1;
+                }
+            }
+            else
+            {
+                if (state.frame1 == numFrames - 1)
+                    state.frame2 = 0;
+                else if (state.frame1 == numFrames)
+                {
+                    state.frame1 = 0;
+                    state.frame2 = 1;
+                }
+            }
         }
     }
 }
