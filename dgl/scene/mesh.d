@@ -76,19 +76,19 @@ class Mesh
 
                 // TODO: add possibility to select between 
                 // per face normals and per vertex normals
-                glNormal3fv(tri.normal.arrayof.ptr);
+                //glNormal3fv(tri.normal.arrayof.ptr);
 
-                //glNormal3fv(tri.n[0].arrayof.ptr);
+                glNormal3fv(tri.n[0].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[0].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[0].arrayof.ptr);
                 glVertex3fv(tri.v[0].arrayof.ptr);
             
-                //glNormal3fv(tri.n[1].arrayof.ptr);
+                glNormal3fv(tri.n[1].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[1].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[1].arrayof.ptr);
                 glVertex3fv(tri.v[1].arrayof.ptr);
             
-                //glNormal3fv(tri.n[2].arrayof.ptr);
+                glNormal3fv(tri.n[2].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[2].arrayof.ptr);
                 glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[2].arrayof.ptr);
                 glVertex3fv(tri.v[2].arrayof.ptr);
