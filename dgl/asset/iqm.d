@@ -31,6 +31,8 @@ module dgl.asset.iqm;
 import std.stdio;
 import std.conv;
 import std.math;
+import std.path;
+import std.string;
 
 import dlib.core.stream;
 import dlib.filesystem.filesystem;
@@ -39,7 +41,11 @@ import dlib.math.matrix;
 import dlib.math.quaternion;
 import dlib.math.affine;
 import dlib.image.color;
+import dlib.image.image;
+import dlib.image.io.png;
 import dlib.image.io.tga;
+import dlib.image.io.jpeg;
+import dlib.image.io.bmp;
 
 import dgl.asset.serialization;
 import dgl.graphics.material;
@@ -142,6 +148,8 @@ struct IQMAnim
     float framerate;
     uint flags;
 }
+
+version = IQMDebug;
 
 final class IQMModel: AnimatedModel
 {
@@ -351,6 +359,35 @@ final class IQMModel: AnimatedModel
             version(IQMDebug)
                 writefln("material: %s", texFilename);
             auto mat = new Material();
+            
+            // TODO: move to separate function
+            if (rofs.fileExists(texFilename))
+            {
+                auto ext = texFilename.extension;
+            
+                if (ext == "" || ext == ".mat")
+                {
+                    // TODO: load material from file
+                }
+                else
+                {
+                    SuperImage img;
+                    auto texStrm = rofs.openForInput(texFilename);
+                    if (ext == ".png")
+                        img = loadPNG(texStrm);
+                    else if (ext == ".tga")
+                        img = loadTGA(texStrm);
+                    else if (ext == ".jpg" || ext == ".jpeg")
+                        img = loadJPEG(texStrm);
+                    else if (ext == ".bmp")
+                        img = loadBMP(texStrm);
+                    
+                    auto tex = new Texture(img);
+                    mat.textures[0] = tex;
+                }
+            }
+            
+            /*
             if (rofs.fileExists(texFilename))
             {
                 // TODO: Load by extension
@@ -364,6 +401,7 @@ final class IQMModel: AnimatedModel
                 auto tex = new Texture(img);
                 mat.textures[0] = tex;
             }
+            */
 
             //mat.textures[0] = tex;
             mat.ambientColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -444,6 +482,12 @@ final class IQMModel: AnimatedModel
             );
         
             this.animations[name] = a;
+            
+            version(IQMDebug)
+            {
+                writefln("anim.firstFrame: %s", a.firstFrame);
+                writefln("anim.numFrames: %s", a.numFrames);
+            }
         }
     }
 
