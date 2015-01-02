@@ -93,7 +93,10 @@ class Material: Modifier
 
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadeless)
+        {
             glDisable(GL_LIGHTING);
+            glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+        }
 
         foreach(i, tex; textures)
         {
