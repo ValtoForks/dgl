@@ -1,5 +1,5 @@
-/*
-Copyright (c) 2014 Timur Gafarov 
+﻿/*
+Copyright (c) 2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,34 +26,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.scene.entity;
+module dgl.scene.obj3d;
 
 import dlib.math.vector;
-import dlib.math.quaternion;
+import dgl.core.drawable;
 
-// TODO: add physical model
-class Entity: Object3D
+interface Object3D: Drawable
 {
-    int id;
-    string name;
-
-    uint type;
-    int materialId;
-    int meshId;
-
-    Vector3f position;
-    Quaternionf rotation;
-    Vector3f scaling;
-    
-    override Vector3f getPosition()
-    {
-        return position;
-    }
-    
-    override void draw(double dt)
-    {
-        // Entity is drawn by Scene
-    }
-    
-    override void free() {}
+    Vector3f getPosition();
 }

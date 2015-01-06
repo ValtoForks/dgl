@@ -1,5 +1,5 @@
-/*
-Copyright (c) 2014 Timur Gafarov 
+﻿/*
+Copyright (c) 2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,34 +26,49 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.scene.entity;
+module dgl.graphics.light;
 
 import dlib.math.vector;
-import dlib.math.quaternion;
+import dlib.image.color;
 
-// TODO: add physical model
-class Entity: Object3D
+class Light
 {
-    int id;
-    string name;
-
-    uint type;
-    int materialId;
-    int meshId;
-
-    Vector3f position;
-    Quaternionf rotation;
-    Vector3f scaling;
+    Vector4f position;
+    Color4f diffuseColor;
+    Color4f ambientColor;
+    float constantAttenuation;
+    float linearAttenuation;
+    float quadraticAttenuation;
+    float brightness;
     
-    override Vector3f getPosition()
+    this(
+        Vector4f position,
+        Color4f diffuseColor,
+        Color4f ambientColor,
+        float constantAttenuation,
+        float linearAttenuation,
+        float quadraticAttenuation)
     {
-        return position;
+        this.position = position;
+        this.diffuseColor = diffuseColor;
+        this.ambientColor = ambientColor;
+        this.constantAttenuation = constantAttenuation;
+        this.linearAttenuation = linearAttenuation;
+        this.quadraticAttenuation = quadraticAttenuation;
     }
-    
-    override void draw(double dt)
-    {
-        // Entity is drawn by Scene
-    }
-    
-    override void free() {}
+}
+
+Light pointLight(
+    Vector3f pos, 
+    Color4f diffuseColor, 
+    Color4f ambientColor = Color4f(0, 0, 0, 1),
+    float constantAttenuation = 1.0f,
+    float linearAttenuation = 0.0f,
+    float quadraticAttenuation = 0.0f)
+{
+    return new Light(
+        Vector4f(pos.x, pos.y, pos.z, 1.0f),
+        diffuseColor, ambientColor,
+        constantAttenuation, linearAttenuation,
+        quadraticAttenuation);
 }

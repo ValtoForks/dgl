@@ -13,6 +13,7 @@ Features
 * Built-in geometric shapes (sphere, box, cylinder, cone, ellipsoid)
 * Skeletal animation (IQM model format support)
 * Materials and textures
+* Virtual light system with any number of dynamic light sources
 * GLSL and ARB shaders
 * Multitexturing
 * Text rendering with TrueType fonts and full Unicode support (UTF-8)
@@ -32,7 +33,7 @@ Also check out [dmech](http://github.com/gecko0307/dmech) - the only native 3D p
 What is missing yet
 -------------------
 * Terrain rendering
-* Shader-based lighting and material system
+* Shader-based material system
 * Screen-space shaders and effects (via FBO)
 * Built-in CD/physics support (deeper dmech integration or, better, some form of generic physics interface)
 * Frustum culling, BSP, BVH or some other method of drawing optimization
