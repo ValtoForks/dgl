@@ -30,6 +30,7 @@ module dgl.scene.entity;
 
 import dlib.math.vector;
 import dlib.math.quaternion;
+import dgl.scene.obj3d;
 
 // TODO: add physical model
 class Entity: Object3D
