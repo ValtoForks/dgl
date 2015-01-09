@@ -128,12 +128,12 @@ def writeMesh(f, obj, meshId, materials, maxMaterialId):
 
     f.write(packChunk(ChunkType.TRIMESH, meshId, obj.data.name, triBuffer))
 
-    bpy.context.scene.objects.active = obj
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.tris_convert_to_quads()
-    bpy.context.scene.update()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    #bpy.context.scene.objects.active = obj
+    #bpy.ops.object.mode_set(mode='EDIT')
+    #bpy.ops.mesh.select_all(action='SELECT')
+    #bpy.ops.mesh.tris_convert_to_quads()
+    #bpy.context.scene.update()
+    #bpy.ops.object.mode_set(mode='OBJECT')
 
     return maxMaterialId
 
@@ -144,6 +144,7 @@ def writeEntity(f, obj, entityId, meshes, materials):
     mat = rotX * obj_matrix
 
     entityType = 0
+    
     # TODO: material id
     materialId = -1
 
@@ -156,8 +157,20 @@ def writeEntity(f, obj, entityId, meshes, materials):
     rot = mat.to_quaternion()
     rotation = (rot.x, rot.y, rot.z, rot.w)
     scaling = obj.scale #TODO: fix axes
-    json = ""
-    jsonASCII = json.encode('ascii')
+    
+    # JSON properties
+    json = {}
+    
+    if obj.type == 'LAMP':
+        col = obj.data.color
+        entityType = 1
+        json = {
+            "color": [col.r, col.g, col.b, 1.0]
+        }
+        
+    jsonStr = JSONEncoder().encode(json)
+    print(jsonStr)
+    jsonASCII = jsonStr.encode('ascii')
     jsonSize = len(jsonASCII)
 
     data = bytearray()
@@ -294,7 +307,8 @@ class ExportDGLFile(bpy.types.Operator, ExportHelper):
 
     def invoke(self, context, event):
         wm = context.window_manager
-        if True:
+        if True:
+
             wm.fileselect_add(self)
             return {'RUNNING_MODAL'}
         elif True:
