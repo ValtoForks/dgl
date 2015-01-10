@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -96,14 +96,14 @@ final class GLSLShader: Shader
         if (_supported)
         {
             glUseProgramObjectARB(shaderProg);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture0")), 0);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture1")), 1);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture2")), 2);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture3")), 3);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture4")), 4);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture5")), 5);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture6")), 6);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("gl_Texture7")), 7);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture0")), 0);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture1")), 1);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture2")), 2);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture3")), 3);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture4")), 4);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture5")), 5);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture6")), 6);
+            glUniform1iARB(glGetUniformLocationARB(shaderProg, toStringz("dgl_Texture7")), 7);
         }
     }
 
