@@ -28,6 +28,8 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.scene.entity;
 
+import std.json;
+
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dgl.scene.obj3d;
@@ -45,6 +47,8 @@ class Entity: Object3D
     Vector3f position;
     Quaternionf rotation;
     Vector3f scaling;
+    
+    JSONValue[string] props;
     
     override Vector3f getPosition()
     {

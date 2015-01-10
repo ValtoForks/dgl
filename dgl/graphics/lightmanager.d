@@ -63,6 +63,7 @@ class LightManager: Drawable
         Light tmp;
 
         foreach(i, v; lights)
+        if (v.enabled)
         {
             j = i;
             size_t k = i;
@@ -93,7 +94,8 @@ class LightManager: Drawable
         if (i < lights.length)
         {
             auto light = lights[i];
-
+            if (light.enabled)
+            {
             glEnable(GL_LIGHT0 + i);
             glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
             glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.diffuseColor.arrayof.ptr);
@@ -101,6 +103,7 @@ class LightManager: Drawable
             glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
             glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
             glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
+            }
         }      
     }
 

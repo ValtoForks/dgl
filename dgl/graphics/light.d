@@ -40,6 +40,7 @@ class Light
     float linearAttenuation;
     float quadraticAttenuation;
     float brightness;
+    bool enabled = true;
     
     this(
         Vector4f position,

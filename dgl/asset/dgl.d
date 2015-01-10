@@ -194,7 +194,7 @@ void decodeEntity(Entity e, InputStream istrm)
         istrm.fillArray(jsonBytes);
         string json = cast(string)jsonBytes;
         if (jsonSize > 0)
-            props = parseJSON(json).object;
+            e.props = parseJSON(json).object;
     }
 }
 
