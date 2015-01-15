@@ -62,7 +62,7 @@ class Light
 Light pointLight(
     Vector3f pos, 
     Color4f diffuseColor, 
-    Color4f ambientColor = Color4f(0, 0, 0, 1),
+    Color4f ambientColor,
     float constantAttenuation = 1.0f,
     float linearAttenuation = 0.0f,
     float quadraticAttenuation = 0.0f)
