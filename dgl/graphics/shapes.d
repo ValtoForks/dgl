@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -30,23 +30,88 @@ module dgl.graphics.shapes;
 
 import derelict.opengl.gl;
 import derelict.opengl.glu;
+import dlib.core.memory;
 import dlib.math.vector;
-import dgl.core.drawable;
+import dgl.core.interfaces;
 
 class ShapeSphere: Drawable
 {
-    GLUquadricObj* quadric;
     uint displayList;
 
     this(float r)
     {
-        quadric = gluNewQuadric();
+        GLUquadricObj* quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
 
         displayList = glGenLists(1);
         glNewList(displayList, GL_COMPILE);
         gluSphere(quadric, r, 24, 16);
+        glEndList();
+        
+        gluDeleteQuadric(quadric);
+    }
+
+    override void draw(double dt)
+    {
+        glCallList(displayList);
+    }
+
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+    
+    mixin ManualModeImpl;
+}
+
+class ShapeBox: Drawable
+{
+    uint displayList;
+
+    this(Vector3f hsize)
+    {
+        displayList = glGenLists(1);
+        glNewList(displayList, GL_COMPILE);
+
+        Vector3f pmax = +hsize;
+        Vector3f pmin = -hsize;
+
+        glBegin(GL_QUADS);
+    
+            glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
+            glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
+            glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
+            glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
+
+            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+
+            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+
+            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
+            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
+            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
+            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
+
+            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+
+            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+        
+        glEnd();
+
         glEndList();
     }
 
@@ -55,9 +120,18 @@ class ShapeSphere: Drawable
         glCallList(displayList);
     }
 
-    override void free() { }
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+    
+    mixin ManualModeImpl;
 }
 
+// TODO: other shapes
+
+/*
 class ShapeBox: Drawable
 {
     uint displayList;
@@ -243,3 +317,4 @@ class ShapeTriangle: Drawable
 
     override void free() { }
 }
+*/

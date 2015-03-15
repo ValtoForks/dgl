@@ -26,54 +26,14 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.graphics.light;
+module dgl.graphics.object3d;
 
-import dlib.core.memory;
 import dlib.math.vector;
-import dlib.image.color;
+import dlib.geometry.aabb;
+import dgl.core.interfaces;
 
-class Light: ManuallyAllocatable
+interface Object3D: Drawable
 {
-    Vector4f position;
-    Color4f diffuseColor;
-    Color4f ambientColor;
-    float constantAttenuation;
-    float linearAttenuation;
-    float quadraticAttenuation;
-    float brightness;
-    bool enabled = true;
-    
-    this(
-        Vector4f position,
-        Color4f diffuseColor,
-        Color4f ambientColor,
-        float constantAttenuation,
-        float linearAttenuation,
-        float quadraticAttenuation)
-    {
-        this.position = position;
-        this.diffuseColor = diffuseColor;
-        this.ambientColor = ambientColor;
-        this.constantAttenuation = constantAttenuation;
-        this.linearAttenuation = linearAttenuation;
-        this.quadraticAttenuation = quadraticAttenuation;
-    }
-    
-    mixin FreeImpl;
-    mixin ManualModeImpl;
-}
-
-Light pointLight(
-    Vector3f pos, 
-    Color4f diffuseColor, 
-    Color4f ambientColor,
-    float constantAttenuation = 1.0f,
-    float linearAttenuation = 0.0f,
-    float quadraticAttenuation = 0.0f)
-{
-    return New!Light(
-        Vector4f(pos.x, pos.y, pos.z, 1.0f),
-        diffuseColor, ambientColor,
-        constantAttenuation, linearAttenuation,
-        quadraticAttenuation);
+    Vector3f getPosition();
+    AABB getAABB();
 }

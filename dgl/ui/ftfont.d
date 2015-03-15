@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -28,18 +28,20 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.ui.ftfont;
 
-private
-{
-    import std.string;
-    import std.ascii;
-    import std.range;
-    import std.file;
+import std.stdio;
 
-    import derelict.opengl.gl;
-    import derelict.freetype.ft;
+import std.string;
+import std.ascii;
+import std.range;
+import std.file;
 
-    import dgl.ui.font;
-}
+import dlib.core.memory;
+import dlib.container.bst;
+
+import derelict.opengl.gl;
+import derelict.freetype.ft;
+
+import dgl.ui.font;
 
 struct Glyph
 {
@@ -58,11 +60,51 @@ int nextPowerOfTwo(int a)
     return rval;
 }
 
+class CharStorage(T): BST!(T)
+{
+    this()
+    {
+        super();
+    }
+    
+    void opIndexAssign(T v, dchar k)
+    {
+        insert(k, v);
+    }
+    
+    T opIndex(dchar k)
+    {
+        auto node = find(k);
+        if (node is null)
+            return value.init;
+        else
+            return node.value;
+    }
+    
+    T* opIn_r(dchar k)
+    {
+        auto node = find(k);
+        if (node !is null)
+            return &node.value;
+        else
+            return null;
+    }
+    
+    size_t length()
+    {
+        uint len = 1;
+        foreach(i, glyph; this)
+            len++;
+        return len;
+    }
+}
+
 final class FreeTypeFont: Font
 {
     FT_Face ftFace;
     FT_Library ftLibrary;
-    Glyph[dchar] glyphs;
+    
+    CharStorage!Glyph glyphs;
 
     this(string filename, uint height)
     {
@@ -79,12 +121,24 @@ final class FreeTypeFont: Font
             throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
         
         FT_Set_Char_Size(ftFace, height << 6, height << 6, 96, 96);
-    
-        GLuint[] textures = new GLuint[ASCII_CHARS];
-        glGenTextures(ASCII_CHARS, textures.ptr);
+        
+        glyphs = New!(CharStorage!Glyph)();
 
         foreach(i; 0..ASCII_CHARS)
-            loadGlyph(i, textures[i]);
+        {
+            GLuint tex;
+            glGenTextures(1, &tex);
+            loadGlyph(i, tex);
+        }
+    }
+    
+    override void free()
+    {
+        writefln("Deleting %s glyph(s) in FTFont...", glyphs.length);
+        foreach(i, glyph; glyphs)
+            glDeleteTextures(1, &glyph.textureId);
+        Delete(glyphs);
+        Delete(this);
     }
 
     uint loadGlyph(dchar code, GLuint texId)
@@ -93,7 +147,7 @@ final class FreeTypeFont: Font
 
         if (charIndex == 0)
         {
-            //character wasn't found in font file
+            //TODO: if character wasn't found in font file
         }
 
         if (FT_Load_Glyph(ftFace, charIndex, FT_LOAD_DEFAULT))
@@ -111,7 +165,7 @@ final class FreeTypeFont: Font
         int width = nextPowerOfTwo(bitmap.width);
         int height = nextPowerOfTwo(bitmap.rows);
 
-        GLubyte[] img = new GLubyte[2 * width * height];
+        GLubyte[] img = New!(GLubyte[])(2 * width * height);
 
         foreach(j; 0..height)
         foreach(i; 0..width)
@@ -125,8 +179,6 @@ final class FreeTypeFont: Font
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -134,7 +186,7 @@ final class FreeTypeFont: Font
             0, GL_RGBA, width, height,
             0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, img.ptr);
 
-        delete img;
+        Delete(img);
 
         Glyph g = Glyph(texId, glyph, width, height, ftFace.glyph.advance.x);
         glyphs[code] = g;

@@ -30,24 +30,44 @@ module dgl.graphics.lightmanager;
 
 import derelict.opengl.gl;
 
+import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
+import dlib.container.array;
 
-import dgl.core.drawable;
-import dgl.graphics.light;
-import dgl.scene.obj3d;
+import dgl.core.interfaces;
+import dgl.graphics.object3d;
+
+public import dgl.graphics.light;
 
 class LightManager: Drawable
 {
-    Light[] lights;
+    DynamicArray!Light lights;
     uint maxLightsPerObject = 4;
     
-    Object3D[] objects;
+    DynamicArray!Object3D objects;
     bool lightsVisible = false;
 
-    void addLight(Light light)
+    Light addLight(Light light)
     {
-        lights ~= light;
+        lights.append(light);
+        return light;
+    }
+    
+    Light addPointLight(Vector3f position)
+    {
+        Light light = pointLight(
+            position, 
+            Color4f(1.0f, 1.0f, 1.0f, 1.0f), 
+            Color4f(0.1f, 0.1f, 0.1f, 1.0f));
+        lights.append(light);
+        return light;
+    }
+    
+    Object3D addObject(Object3D obj)
+    {
+        objects.append(obj);
+        return obj;
     }
 
     void calcBrightness(Light light, Vector3f objPos)
@@ -61,48 +81,50 @@ class LightManager: Drawable
     {
         size_t j = 0;
         Light tmp;
+        
+        auto ldata = lights.data;
 
-        foreach(i, v; lights)
+        foreach(i, v; ldata)
         if (v.enabled)
         {
             j = i;
             size_t k = i;
 
-            while (k < lights.length)
+            while (k < ldata.length)
             {
-                if (lights[j].brightness < lights[k].brightness)
+                if (ldata[j].brightness < ldata[k].brightness)
                     j = k;
                 k += 1;
             }
 
-            tmp = lights[i];
-            lights[i] = lights[j];
-            lights[j] = tmp;
+            tmp = ldata[i];
+            ldata[i] = ldata[j];
+            ldata[j] = tmp;
         }
     }
 
     void apply(Vector3f objPos)
     {
-        foreach(light; lights)
+        auto ldata = lights.data;
+    
+        foreach(light; ldata)
             calcBrightness(light, objPos);
 
         sortLights();
 
-        glEnable(GL_LIGHTING);
-
         foreach(i; 0..maxLightsPerObject)
         if (i < lights.length)
         {
-            auto light = lights[i];
+            auto light = ldata[i];
             if (light.enabled)
             {
-            glEnable(GL_LIGHT0 + i);
-            glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
-            glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.diffuseColor.arrayof.ptr);
-            glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.ambientColor.arrayof.ptr);
-            glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
-            glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
-            glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
+                glEnable(GL_LIGHT0 + i);
+                glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
+                glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.diffuseColor.arrayof.ptr);
+                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.ambientColor.arrayof.ptr);
+                glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
+                glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
+                glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
             }
         }      
     }
@@ -111,25 +133,27 @@ class LightManager: Drawable
     {
         foreach(i; 0..maxLightsPerObject)
             glDisable(GL_LIGHT0 + i); 
-
-        glDisable(GL_LIGHTING);
     }
     
     void draw(double dt)
     {
+        glEnable(GL_LIGHTING);
+        
         // Draw lit objects
-        foreach(obj; objects)
+        foreach(obj; objects.data)
         {
             apply(obj.getPosition);
             obj.draw(dt);
             unapply();
         }
+        
+        glDisable(GL_LIGHTING);
 
         // Draw lights
         if (lightsVisible)
         {
             glPointSize(5.0f);
-            foreach(light; lights)
+            foreach(light; lights.data)
             {
                 glColor4fv(light.diffuseColor.arrayof.ptr);
                 glBegin(GL_POINTS);
@@ -140,5 +164,18 @@ class LightManager: Drawable
         }
     }
 
-    void free() {}
+    void free()
+    {
+        foreach(light; lights.data)
+            light.free();
+        lights.free();
+        
+        foreach(obj; objects.data)
+            obj.free();
+        objects.free();
+        
+        Delete(this);
+    }
+    
+    mixin ManualModeImpl;
 }

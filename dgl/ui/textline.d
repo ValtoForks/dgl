@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -28,18 +28,18 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.ui.textline;
 
-private
-{
-    import derelict.opengl.gl;
-    import derelict.opengl.glu;
-    import derelict.freetype.ft;
+import std.stdio;
 
-    import dlib.math.vector;
-    import dlib.image.color;
+import derelict.opengl.gl;
+import derelict.opengl.glu;
+import derelict.freetype.ft;
 
-    import dgl.core.drawable;
-    import dgl.ui.font;
-}
+import dlib.core.memory;
+import dlib.math.vector;
+import dlib.image.color;
+
+import dgl.core.interfaces;
+import dgl.ui.font;
 
 enum Alignment
 {
@@ -93,7 +93,8 @@ class TextLine: Drawable
         glPopAttrib();
     }
 
-    override void free() { }
+    mixin FreeImpl;
+    mixin ManualModeImpl;
 
     void setFont(Font font)
     {

@@ -26,17 +26,68 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.ui.font;
+module dgl.asset.entity;
 
+import std.json;
+
+import derelict.opengl.gl;
 import dlib.core.memory;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.affine;
+import dlib.geometry.aabb;
+import dgl.core.interfaces;
+import dgl.graphics.object3d;
 
-abstract class Font: ManuallyAllocatable
+class Entity: Object3D
 {
-    float height;
-    void draw(string str);
-    float textWidth(string str);
+    Drawable drawable;
+    Modifier modifier;
+    Matrix4x4f transformation;
     
-    mixin FreeImpl;
+    this(Drawable drw, Vector3f position)
+    {
+        transformation = translationMatrix(position);
+        drawable = drw;
+    }
+    
+    this(Vector3f position)
+    {
+        transformation = translationMatrix(position);
+        drawable = null;
+    }
+    
+    override Vector3f getPosition()
+    {
+        return transformation.translation;
+    }
+    
+    override AABB getAABB()
+    {
+        return AABB(transformation.translation, Vector3f(1, 1, 1));
+    }
+    
+    override void draw(double dt)
+    {
+        if (modifier !is null)
+            modifier.bind(dt);
+            
+        if (drawable !is null)
+        {
+            glPushMatrix();
+            glMultMatrixf(transformation.arrayof.ptr);
+            drawable.draw(dt);
+            glPopMatrix();
+        }
+        
+        if (modifier !is null)
+            modifier.unbind();
+    }
+    
+    override void free()
+    {
+        Delete(this);
+    }
+    
     mixin ManualModeImpl;
 }
-

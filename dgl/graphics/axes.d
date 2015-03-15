@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -27,7 +27,10 @@ DEALINGS IN THE SOFTWARE.
 */
 
 import derelict.opengl.gl;
-import dgl.core.drawable;
+
+import dlib.core.memory;
+
+import dgl.core.interfaces;
 
 class Axes: Drawable
 {
@@ -70,6 +73,7 @@ class Axes: Drawable
         glEnable(GL_LIGHTING);
     }
 
-    override void free() { }
+    mixin FreeImpl;
+    mixin ManualModeImpl;
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2014 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -32,11 +32,12 @@ import std.conv;
 
 import derelict.opengl.gl;
 import derelict.opengl.glu;
-    
+
+import dlib.core.memory;
 import dlib.image.image;
 import dlib.math.vector;
   
-import dgl.core.modifier;
+import dgl.core.interfaces;
 
 class Texture: Modifier
 {
@@ -47,6 +48,7 @@ class Texture: Modifier
     int height;
     Vector2f scroll = Vector2f(0, 0);
 
+/*
     this(uint w, uint h)
     {
         free();
@@ -60,6 +62,7 @@ class Texture: Modifier
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
+*/
 
     this(SuperImage img, bool genMipmaps = true)
     {        
@@ -68,7 +71,8 @@ class Texture: Modifier
     
     void createFromImage(SuperImage img, bool genMipmaps = true)
     {
-        free();
+        if (glIsTexture(tex)) 
+            glDeleteTextures(1, &tex);
 
         width = img.width;
         height = img.height;
@@ -97,46 +101,21 @@ class Texture: Modifier
 
         switch (img.pixelFormat)
         {
-            case PixelFormat.L8:
-                format = GL_LUMINANCE;
-                break;
-            case PixelFormat.LA8:
-                format = GL_LUMINANCE_ALPHA;
-                break;
-            case PixelFormat.RGB8:
-                format = GL_RGB;
-                break;
-            case PixelFormat.RGBA8:
-                format = GL_RGBA;
-                break;
-            case PixelFormat.L16:
-                format = GL_LUMINANCE;
-                type = GL_UNSIGNED_SHORT;
-                break;
-            case PixelFormat.LA16:
-                format = GL_LUMINANCE_ALPHA;
-                type = GL_UNSIGNED_SHORT;
-                break;
-            case PixelFormat.RGB16:
-                format = GL_RGB;
-                type = GL_UNSIGNED_SHORT;
-                break;
-            case PixelFormat.RGBA16:
-                format = GL_RGBA;
-                type = GL_UNSIGNED_SHORT;
-                break;
+            case PixelFormat.L8:     format = GL_LUMINANCE; break;
+            case PixelFormat.LA8:    format = GL_LUMINANCE_ALPHA; break;
+            case PixelFormat.RGB8:   format = GL_RGB; break;
+            case PixelFormat.RGBA8:  format = GL_RGBA; break;
+            case PixelFormat.L16:    format = GL_LUMINANCE;       type = GL_UNSIGNED_SHORT; break;
+            case PixelFormat.LA16:   format = GL_LUMINANCE_ALPHA; type = GL_UNSIGNED_SHORT; break;
+            case PixelFormat.RGB16:  format = GL_RGB;             type = GL_UNSIGNED_SHORT; break;
+            case PixelFormat.RGBA16: format = GL_RGBA;            type = GL_UNSIGNED_SHORT; break;
             default:
-                assert (0, "Texture.createFromImage is not implemented for PixelFormat." 
-                    ~ to!string(img.pixelFormat));
+                assert(0, "Texture.createFromImage is not implemented for PixelFormat " ~ img.pixelFormat.to!string);
         }
 
         gluBuild2DMipmaps(GL_TEXTURE_2D, 
-                          format, 
-                          img.width, 
-                          img.height, 
-                          format, 
-                          type, 
-                          cast(void*)img.data.ptr);
+            format, width, height, format, 
+            type, cast(void*)img.data.ptr);
     }
 
     void bind(double dt)
@@ -144,7 +123,7 @@ class Texture: Modifier
         glEnable(GL_TEXTURE_2D);
         if (glIsTexture(tex)) 
             glBindTexture(GL_TEXTURE_2D, tex);
-        else throw new Exception("Texture error");
+        //else throw new Exception("Texture error");
 
         glMatrixMode(GL_TEXTURE);
         glPushMatrix();
@@ -167,7 +146,11 @@ class Texture: Modifier
     {
         if (glIsTexture(tex)) 
             glDeleteTextures(1, &tex);
+            
+        Delete(this);
     }
+    
+    mixin ManualModeImpl;
 
     void copyRendered()
     {

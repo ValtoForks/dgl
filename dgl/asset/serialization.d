@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -31,6 +31,7 @@ module dgl.asset.serialization;
 import std.traits;
 import std.bitmanip;
 
+import dlib.core.memory;
 import dlib.core.stream;
 
 // Stream-based serialization and deserialization
@@ -200,4 +201,5 @@ size_t write(T, bool fixedSize = false)(InputStream istrm, T val)
     auto s = Series!(T, fixedSize)(val);
     return s.writeTo(istrm);
 }
+
 

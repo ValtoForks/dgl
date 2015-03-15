@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -44,10 +44,10 @@ import dlib.core.stream;
 import dlib.filesystem.filesystem;
 
 import dgl.asset.serialization;
-import dgl.graphics.material;
+//import dgl.graphics.material;
 import dgl.graphics.texture;
+import dgl.asset.entity;
 import dgl.scene.mesh;
-import dgl.scene.entity;
 import dgl.scene.scene;
 import dgl.vfs.file;
 
@@ -290,9 +290,10 @@ Scene loadScene(InputStream istrm, ReadOnlyFileSystem rofs)
             mat.id = chunk.id;
             mat.name = chunk.name;
             auto strm = new ArrayStream(chunk.data, chunk.data.length);
-            decodeMaterial(scene, mat, strm, rofs);
-            scene.materials[mat.id] = mat;
-            scene.matIdByName[mat.name] = mat.id;
+            // TODO:
+            //decodeMaterial(scene, mat, strm, rofs);
+            //scene.materials[mat.id] = mat;
+            //scene.matIdByName[mat.name] = mat.id;
             version(Debug) writefln("----\nMaterial:\n%s", mat);
         }
         else if (chunk.type == ChunkType.TRIMESH)
@@ -324,4 +325,5 @@ Scene loadScene(InputStream istrm, ReadOnlyFileSystem rofs)
     
     return scene;
 }
+
 
