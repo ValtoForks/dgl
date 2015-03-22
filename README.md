@@ -2,6 +2,10 @@ DGL
 ===
 DGL is a minimalistic 3D and 2D real-time graphics engine written in D language. It is a (very) thin wrapper on top of OpenGL and SDL.
 
+News
+----
+[DGL/GC-Free](https://github.com/gecko0307/dgl/tree/gc-free) is a new branch of the project which brings fully manual memory management, improved event system, Unicode keyboard input, user-defined events, resource manager and much more. Not all functionality from master is ported yet, I'm working hard on this - stay tuned!
+
 Features
 --------
 * Very modest system requirements - requires OpenGL 1.2 of higher. Should work on virtually any PC
