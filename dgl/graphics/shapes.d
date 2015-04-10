@@ -129,72 +129,12 @@ class ShapeBox: Drawable
     mixin ManualModeImpl;
 }
 
-// TODO: other shapes
-
-/*
-class ShapeBox: Drawable
-{
-    uint displayList;
-
-    this(Vector3f hsize)
-    {
-        displayList = glGenLists(1);
-        glNewList(displayList, GL_COMPILE);
-
-        Vector3f pmax = +hsize;
-        Vector3f pmin = -hsize;
-
-        glBegin(GL_QUADS);
-    
-            glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
-
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
-
-            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
-            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
-
-            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
-
-            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
-
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
-        
-        glEnd();
-
-        glEndList();
-    }
-
-    override void draw(double dt)
-    {
-        glCallList(displayList);
-    }
-
-    override void free() { }
-}
-
 class ShapeCylinder: Drawable
 {
     GLUquadricObj* quadric;
     // TODO: slices, stacks
     uint displayList;
-    
+
     this(float h, float r)
     {
         quadric = gluNewQuadric();
@@ -212,14 +152,22 @@ class ShapeCylinder: Drawable
         glTranslatef(0.0f, 0.0f, h);
         gluDisk(quadric, 0, r, 16, 1); 
         glEndList();
+
+        // TODO: delete quadric
     }
-    
+
     override void draw(double dt)
     {
         glCallList(displayList);
     }
 
-    override void free() { }
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+
+    mixin ManualModeImpl;
 }
 
 class ShapeCone: Drawable
@@ -241,6 +189,8 @@ class ShapeCone: Drawable
         gluQuadricOrientation(quadric, GLU_INSIDE);
         gluDisk(quadric, 0, r, 16, 1);
         glEndList();
+
+        // TODO: delete quadric
     }
     
     override void draw(double dt)
@@ -248,7 +198,13 @@ class ShapeCone: Drawable
         glCallList(displayList);
     }
 
-    override void free() { }
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+
+    mixin ManualModeImpl;
 }
 
 class ShapeEllipsoid: Drawable
@@ -270,6 +226,8 @@ class ShapeEllipsoid: Drawable
         glNewList(displayList, GL_COMPILE);
         gluSphere(quadric, 1.0f, 24, 16);
         glEndList();
+
+        // TODO: delete quadric
     }
     
     override void draw(double dt)
@@ -280,7 +238,13 @@ class ShapeEllipsoid: Drawable
         glPopMatrix();
     }
 
-    override void free() { }
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+
+    mixin ManualModeImpl;
 }
 
 class ShapeTriangle: Drawable
@@ -315,6 +279,12 @@ class ShapeTriangle: Drawable
         glPopMatrix();
     }
 
-    override void free() { }
+    void free()
+    {
+        glDeleteLists(displayList, 1);
+        Delete(this);
+    }
+
+    mixin ManualModeImpl;
 }
-*/
+

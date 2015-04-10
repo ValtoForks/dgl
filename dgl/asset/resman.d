@@ -103,6 +103,15 @@ class ResourceManager: ManuallyAllocatable
         FileStat stat;
         return fs.stat(filename, stat);
     }
+
+    // Don't forget to delete the string!
+    string readText(string filename)
+    {
+        auto fstrm = fs.openForInput(filename);
+        string text = .readText(fstrm);
+        fstrm.free();
+        return text;
+    }
     
     mixin ManualModeImpl;
 }

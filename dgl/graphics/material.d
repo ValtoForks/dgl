@@ -38,7 +38,7 @@ import dlib.image.color;
 	
 import dgl.core.interfaces;
 import dgl.graphics.texture;
-//import dgl.graphics.shader;
+import dgl.graphics.shader;
 
 enum TextureCombinerMode: ushort
 {
@@ -61,7 +61,7 @@ class Material: Modifier
     Color4f specularColor;
     Color4f emissionColor;
     float shininess;
-    //Shader shader;
+    Shader shader;
     Texture[8] textures;
     ushort[8] texBlendMode;
     bool shadeless = false;
@@ -83,7 +83,7 @@ class Material: Modifier
         return res;
     }
 
-    void bind(double delta)
+    void bind(double dt)
     {
         glEnable(GL_LIGHTING);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientColor.arrayof.ptr);
@@ -104,18 +104,18 @@ class Material: Modifier
             if (tex !is null)
             {
                 glActiveTextureARB(GL_TEXTURE0_ARB + i);
-                tex.bind(delta);
+                tex.bind(dt);
             }
         }
 
-        //if (shader)
-        //    shader.bind(delta);
+        if (shader)
+            shader.bind(dt);
     }
 
     void unbind()
     {
-        //if (shader)
-        //    shader.unbind();
+        if (shader)
+            shader.unbind();
 
         foreach(i, tex; textures)
         {

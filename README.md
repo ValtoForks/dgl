@@ -15,13 +15,13 @@ What already done:
 * Core functionality and interfaces (event system, application, layers, rooms)
 * Light manager
 * Trackball camera
-* Materials and textures
+* Materials, textures, GLSL shaders
 * Some geometric shapes
 * Font/Text rendering
 * VFS (without ZIP archives support for now)
 
 TODO:
-* Shaders
+* ARB shaders
 * Actors, IQM format loading
 * I8n
 * CD/physics support
