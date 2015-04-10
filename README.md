@@ -9,19 +9,19 @@ Main changes:
 * User-defined events
 * Room system
 * Resource manager
+* DGL2 scene file format without JSON dependency
 
 What already done:
 * Core functionality and interfaces (event system, application, layers, rooms)
 * Light manager
 * Trackball camera
-* Textures
+* Materials and textures
 * Some geometric shapes
 * Font/Text rendering
+* VFS (without ZIP archives support for now)
 
 TODO:
-* Materials, shaders, 
-* DGL scene format loading
+* Shaders
 * Actors, IQM format loading
 * I8n
-* VFS
 * CD/physics support
