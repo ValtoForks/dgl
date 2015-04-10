@@ -46,7 +46,7 @@ class Texture: Modifier
     GLenum type;
     int width;
     int height;
-    Vector2f scroll = Vector2f(0, 0);
+    Vector2f scroll;
 
 /*
     this(uint w, uint h)
@@ -65,7 +65,8 @@ class Texture: Modifier
 */
 
     this(SuperImage img, bool genMipmaps = true)
-    {        
+    {
+        scroll = Vector2f(0, 0);   
         createFromImage(img, genMipmaps);
     }
     

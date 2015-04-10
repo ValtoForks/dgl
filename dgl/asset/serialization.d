@@ -35,6 +35,7 @@ import dlib.core.memory;
 import dlib.core.stream;
 
 // Stream-based serialization and deserialization
+// TODO: make it GC-free
 
 struct Series(T, bool fixedSize = false)
 {

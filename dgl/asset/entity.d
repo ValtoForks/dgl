@@ -28,38 +28,93 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.asset.entity;
 
-import std.json;
+import std.string;
+//import std.json;
 
 import derelict.opengl.gl;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.affine;
+import dlib.math.quaternion;
 import dlib.geometry.aabb;
 import dgl.core.interfaces;
 import dgl.graphics.object3d;
+import dgl.asset.mesh;
 
 class Entity: Object3D
 {
+    int id;
+    string name;
+    uint type = 0;
+    int materialId = -1;
+    int meshId = -1;
+    bool debugDraw = true;
+
     Drawable drawable;
     Modifier modifier;
+
+    Vector3f position;
+    Quaternionf rotation;
+    Vector3f scaling;
+
     Matrix4x4f transformation;
     
-    this(Drawable drw, Vector3f position)
+    this(Drawable drw, Vector3f pos)
     {
+        position = pos;
+        rotation = Quaternionf.identity;
+        scaling = Vector3f(1, 1, 1);
         transformation = translationMatrix(position);
         drawable = drw;
     }
     
-    this(Vector3f position)
+    this(Vector3f pos)
     {
+        position = pos;
+        rotation = Quaternionf.identity;
+        scaling = Vector3f(1, 1, 1);
         transformation = translationMatrix(position);
         drawable = null;
+    }
+
+    this()
+    {
+        position = Vector3f(0, 0, 0);
+        rotation = Quaternionf.identity;
+        scaling = Vector3f(1, 1, 1);
+        transformation = translationMatrix(position);
+        drawable = null;
+    }
+
+    void setTransformation(Vector3f pos, Quaternionf rot, Vector3f scal)
+    {
+        position = pos;
+        rotation = rot;
+        scaling = scal;
+        transformation = 
+            translationMatrix(pos) *
+            rot.toMatrix4x4 *
+            scaleMatrix(scaling);
     }
     
     override Vector3f getPosition()
     {
-        return transformation.translation;
+        return position; //transformation.translation;
+    }
+
+    Quaternionf getRotation()
+    {
+        //Quaternionf rot;
+        //rot.fromMatrix(transformation);
+        //return rot;
+        return rotation;
+    }
+
+    Vector3f getScaling()
+    {
+        //return transformation.scaling;
+        return scaling;
     }
     
     override AABB getAABB()
@@ -79,13 +134,52 @@ class Entity: Object3D
             drawable.draw(dt);
             glPopMatrix();
         }
+        else if (debugDraw)
+            drawPoint();
         
         if (modifier !is null)
             modifier.unbind();
     }
+
+    void drawPoint()
+    {
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_LIGHTING);
+        glColor4f(1,1,1,1);
+        glPointSize(5.0f);
+        glBegin(GL_POINTS);
+        glVertex3f(0, 0, 0);
+        glEnd();
+        glPointSize(1.0f);
+        glEnable(GL_LIGHTING);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    override string toString()
+    {
+        return format(
+            //"type = %s\n"
+            //"id = %s\n"
+            //"name = %s\n",
+            "type = %s\n"
+            "materialId = %s\n"
+            "meshId = %s\n"
+            "position = %s\n"
+            "rotation = %s\n"
+            "scaling = %s",
+            type,
+            materialId,
+            meshId,
+            getPosition(),
+            getRotation(),
+            getScaling()
+        );
+    }
     
     override void free()
     {
+        if (name.length)
+            Delete(name);
         Delete(this);
     }
     

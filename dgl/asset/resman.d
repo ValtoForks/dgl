@@ -29,53 +29,51 @@ DEALINGS IN THE SOFTWARE.
 module dgl.asset.resman;
 
 import std.stdio;
+import std.file;
 import dlib.core.memory;
 import dlib.image.io.png;
-import dlib.container.aarray;
+import dlib.filesystem.filesystem;
 import vegan.stdfs;
 import vegan.image;
-import dgl.core.interfaces;
+import dgl.vfs.vfs;
 import dgl.graphics.texture;
-import dgl.ui.font;
+import dgl.asset.scene;
+import dgl.asset.dgl2;
 
 class ResourceManager: ManuallyAllocatable
 {
-    StdFileSystem stdfs;
+    //StdFileSystem stdfs;
+    VirtualFileSystem fs;
     VeganImageFactory imgFac;
-    AArray!Drawable drawables;
-    AArray!Texture textures;
-    AArray!Font fonts;
+    Scene scene;
     
-    this()
+    this(Scene scene)
     {
-        stdfs = New!StdFileSystem();
+        fs = New!VirtualFileSystem();
         imgFac = New!VeganImageFactory();
-        drawables = New!(AArray!Drawable)();
-        textures = New!(AArray!Texture)();
-        fonts = New!(AArray!Font)();
+        //scene = New!Scene();
+        this.scene = scene;        
     }
-    
-    Drawable addDrawable(string name, Drawable d)
+
+    void loadScene(string filename)
     {
-        drawables[name] = d;
-        return d;
-    }
-    
-    Drawable getDrawable(string name)
-    {
-        return drawables[name];
+        auto fstrm = fs.openForInput(filename);
+        loadDGL2(fstrm, this);
+        //Delete(fstrm);
+        fstrm.free();
+        scene.resolveLinks();
     }
     
     Texture getTexture(string filename)
     {
-        if (filename in textures)
-            return textures[filename];
+        if (filename in scene.textures)
+            return scene.textures[filename];
             
         writefln("Loading texture %s...", filename);
         
-        StdInFileStream fstrm = stdfs.openForInput(filename);
+        auto fstrm = fs.openForInput(filename);
         auto res = loadPNG(fstrm, imgFac);
-        Delete(fstrm);
+        fstrm.free();
         
         if (res[0] is null)
         {
@@ -86,58 +84,26 @@ class ResourceManager: ManuallyAllocatable
         {
             auto tex = New!Texture(res[0]);
             res[0].free();
-            textures[filename] = tex;
-            return tex;
+            return scene.addTexture(filename, tex);
         }
-    }
-    
-    Font addFont(string name, Font f)
-    {
-        fonts[name] = f;
-        return f;
-    }
-    
-    Font getFont(string name)
-    {
-        return fonts[name];
-    }
-    
-    void freeDrawables()
-    {
-        foreach(i, d; drawables)
-            d.free();
-        drawables.free();
-    }
-    
-    void freeTextures()
-    {
-        foreach(i, t; textures)
-            t.free();
-        textures.free();
-    }
-    
-    void freeFonts()
-    {
-        foreach(i, f; fonts)
-            f.free();
-        fonts.free();
-    }
-    
-    void freeContent()
-    {
-        freeDrawables();
-        freeTextures();
-        freeFonts();
     }
     
     void free()
     {
-        freeContent();
-    
         Delete(imgFac);
-        Delete(stdfs);
+        fs.free();
+        //scene.free();
         Delete(this);
+    }
+
+    bool fileExists(string filename)
+    {
+        // TODO: use stdfs
+        //return exists(filename);
+        FileStat stat;
+        return fs.stat(filename, stat);
     }
     
     mixin ManualModeImpl;
 }
+
