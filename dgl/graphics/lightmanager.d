@@ -40,12 +40,10 @@ import dgl.graphics.object3d;
 
 public import dgl.graphics.light;
 
-class LightManager: Drawable
+class LightManager: Modifier3D, Drawable
 {
     DynamicArray!Light lights;
     uint maxLightsPerObject = 4;
-    
-    DynamicArray!Object3D objects;
     bool lightsVisible = false;
 
     Light addLight(Light light)
@@ -63,11 +61,18 @@ class LightManager: Drawable
         lights.append(light);
         return light;
     }
-    
-    Object3D addObject(Object3D obj)
+
+    void bind(Object3D obj, double dt)
     {
-        objects.append(obj);
-        return obj;
+        glEnable(GL_LIGHTING);
+        apply(obj.getPosition);
+    }
+
+    void unbind(Object3D obj)
+    {
+        foreach(i; 0..maxLightsPerObject)
+            glDisable(GL_LIGHT0 + i); 
+        glDisable(GL_LIGHTING);
     }
 
     void calcBrightness(Light light, Vector3f objPos)
@@ -137,18 +142,6 @@ class LightManager: Drawable
     
     void draw(double dt)
     {
-        glEnable(GL_LIGHTING);
-        
-        // Draw lit objects
-        foreach(obj; objects.data)
-        {
-            apply(obj.getPosition);
-            obj.draw(dt);
-            unapply();
-        }
-        
-        glDisable(GL_LIGHTING);
-
         // Draw lights
         if (lightsVisible)
         {
@@ -169,10 +162,6 @@ class LightManager: Drawable
         foreach(light; lights.data)
             light.free();
         lights.free();
-        
-        foreach(obj; objects.data)
-            obj.free();
-        objects.free();
         
         Delete(this);
     }

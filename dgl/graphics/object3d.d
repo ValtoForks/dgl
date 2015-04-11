@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.graphics.object3d;
 
+import dlib.core.memory;
 import dlib.math.vector;
 import dlib.geometry.aabb;
 import dgl.core.interfaces;
@@ -37,3 +38,10 @@ interface Object3D: Drawable
     Vector3f getPosition();
     AABB getAABB();
 }
+
+interface Modifier3D: ManuallyAllocatable
+{
+    void bind(Object3D obj, double dt);
+    void unbind(Object3D obj);
+}
+

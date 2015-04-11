@@ -30,6 +30,7 @@ class Scene: Drawable
     AArray!Entity entities;
     AArray!Mesh meshes;
     AArray!Material materials;
+    bool visible = true;
 
     this(ResourceManager rm)
     {
@@ -80,7 +81,6 @@ class Scene: Drawable
     Entity addEntity(string name, Entity e)
     {
         entities[name] = e;
-        rm.lm.addObject(e);
         return e;
     }
 
@@ -117,6 +117,8 @@ class Scene: Drawable
 
     void freeEntities()
     {
+        foreach(i, e; entities)
+            e.free();
         entities.free();
     }
 
@@ -143,8 +145,13 @@ class Scene: Drawable
 
     void draw(double dt)
     {
-        // TODO: draw only entities
-        rm.lm.draw(dt);
+        if (visible)
+        foreach(i, e; entities)
+        {
+            rm.lm.bind(e, dt);
+            e.draw(dt);
+            rm.lm.unbind(e);
+        }
     }
 
     void free()

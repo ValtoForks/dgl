@@ -36,18 +36,20 @@ import dlib.image.io.png;
 import dlib.filesystem.filesystem;
 import vegan.stdfs;
 import vegan.image;
+import dgl.core.interfaces;
 import dgl.vfs.vfs;
 import dgl.graphics.texture;
 import dgl.ui.font;
 import dgl.asset.scene;
 import dgl.graphics.lightmanager;
 
-class ResourceManager: ManuallyAllocatable
+class ResourceManager: ManuallyAllocatable, Drawable
 {
     VirtualFileSystem fs;
     VeganImageFactory imgFac;
     AArray!Font fonts;
     AArray!Texture textures;
+    AArray!Scene scenes;
     LightManager lm;
     
     this()
@@ -56,6 +58,7 @@ class ResourceManager: ManuallyAllocatable
         imgFac = New!VeganImageFactory();
         fonts = New!(AArray!Font)();
         textures = New!(AArray!Texture)();
+        scenes = New!(AArray!Scene)();
         lm = New!LightManager();
         lm.lightsVisible = true; 
     }
@@ -107,6 +110,23 @@ class ResourceManager: ManuallyAllocatable
         }
     }
 
+    Scene loadScene(string filename, bool visible = true)
+    {
+        Scene scene = New!Scene(this);
+        scene.load(filename);
+        scene.visible = visible;
+        scenes[filename] = scene;
+        return scene;
+    }
+
+    Scene addEmptyScene(string name, bool visible = true)
+    {
+        Scene scene = New!Scene(this);
+        scene.visible = visible;
+        scenes[name] = scene;
+        return scene;
+    }
+
     void freeFonts()
     {
         foreach(i, f; fonts)
@@ -120,6 +140,13 @@ class ResourceManager: ManuallyAllocatable
             t.free();
         textures.free();
     }
+
+    void freeScenes()
+    {
+        foreach(i, s; scenes)
+            s.free();
+        scenes.free();
+    }
     
     void free()
     {
@@ -127,8 +154,17 @@ class ResourceManager: ManuallyAllocatable
         fs.free();
         freeFonts();
         freeTextures();
+        freeScenes();
         lm.free();
         Delete(this);
+    }
+
+    void draw(double dt)
+    {
+        foreach(i, s; scenes)
+            s.draw(dt);
+
+        lm.draw(dt);
     }
 
     bool fileExists(string filename)
