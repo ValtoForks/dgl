@@ -6,34 +6,46 @@ import dlib.core.memory;
 import dlib.container.aarray;
 
 import dgl.core.interfaces;
-import dgl.graphics.texture;
 import dgl.graphics.material;
+import dgl.graphics.texture;
 import dgl.graphics.lightmanager;
-import dgl.ui.font;
+import dgl.asset.resman;
 import dgl.asset.entity;
 import dgl.asset.mesh;
+import dgl.asset.dgl2;
+
+/*
+ * Scene class stores a number of entities
+ * together with their meshes and materials.
+ * Textures are stored separately, in ResourceManager
+ * (because textures may be shared between several
+ * Scenes).
+ * Scene is bind to ResourceManager.
+ * Scene data is loaded from DGL2 file.
+ */
 
 class Scene: Drawable
 {
-    LightManager lm;
+    ResourceManager rm;
     AArray!Entity entities;
-    AArray!Drawable drawables;
     AArray!Mesh meshes;
-    AArray!Texture textures;
     AArray!Material materials;
-    AArray!Font fonts;
 
-    this()
+    this(ResourceManager rm)
     {
-        lm = New!LightManager();
-        lm.lightsVisible = true;
-
+        this.rm = rm;
         entities = New!(AArray!Entity)();
-        drawables = New!(AArray!Drawable)();
         meshes = New!(AArray!Mesh)();
-        textures = New!(AArray!Texture)();
         materials = New!(AArray!Material)();
-        fonts = New!(AArray!Font)();
+    }
+
+    void load(string filename)
+    {
+        // TODO: free the data
+        auto fstrm = rm.fs.openForInput(filename);
+        loadDGL2(fstrm, this);
+        fstrm.free();
+        resolveLinks();
     }
 
     void resolveLinks()
@@ -68,14 +80,8 @@ class Scene: Drawable
     Entity addEntity(string name, Entity e)
     {
         entities[name] = e;
-        lm.addObject(e);
+        rm.lm.addObject(e);
         return e;
-    }
-    
-    Drawable addDrawable(string name, Drawable d)
-    {
-        drawables[name] = d;
-        return d;
     }
 
     Mesh addMesh(string name, Mesh m)
@@ -84,32 +90,10 @@ class Scene: Drawable
         return m;
     }
 
-    Texture addTexture(string name, Texture t)
-    {
-        textures[name] = t;
-        return t;
-    }
-
     Material addMaterial(string name, Material m)
     {
         materials[name] = m;
         return m;
-    }
-    
-    Font addFont(string name, Font f)
-    {
-        fonts[name] = f;
-        return f;
-    }
-
-    Drawable getDrawable(string name)
-    {
-        return drawables[name];
-    }
-    
-    Font getFont(string name)
-    {
-        return fonts[name];
     }
 
     Material getMaterialById(int id)
@@ -126,16 +110,14 @@ class Scene: Drawable
         return res;
     }
 
+    Texture getTexture(string filename)
+    {
+        return rm.getTexture(filename);
+    }
+
     void freeEntities()
     {
         entities.free();
-    }
-    
-    void freeDrawables()
-    {
-        foreach(i, d; drawables)
-            d.free();
-        drawables.free();
     }
 
     void freeMeshes()
@@ -144,13 +126,6 @@ class Scene: Drawable
             m.free();
         meshes.free();
     }
-    
-    void freeTextures()
-    {
-        foreach(i, t; textures)
-            t.free();
-        textures.free();
-    }
 
     void freeMaterials()
     {
@@ -158,28 +133,18 @@ class Scene: Drawable
             m.free();
         materials.free();
     }
-    
-    void freeFonts()
-    {
-        foreach(i, f; fonts)
-            f.free();
-        fonts.free();
-    }
 
     void freeContent()
     {
-        lm.free();
         freeEntities();
-        freeDrawables();
         freeMeshes();
-        freeTextures();
         freeMaterials();
-        freeFonts();
     }
 
     void draw(double dt)
     {
-        lm.draw(dt);
+        // TODO: draw only entities
+        rm.lm.draw(dt);
     }
 
     void free()

@@ -31,45 +31,64 @@ module dgl.asset.resman;
 import std.stdio;
 import std.file;
 import dlib.core.memory;
+import dlib.container.aarray;
 import dlib.image.io.png;
 import dlib.filesystem.filesystem;
 import vegan.stdfs;
 import vegan.image;
 import dgl.vfs.vfs;
 import dgl.graphics.texture;
+import dgl.ui.font;
 import dgl.asset.scene;
-import dgl.asset.dgl2;
+import dgl.graphics.lightmanager;
 
 class ResourceManager: ManuallyAllocatable
 {
-    //StdFileSystem stdfs;
     VirtualFileSystem fs;
     VeganImageFactory imgFac;
-    Scene scene;
+    AArray!Font fonts;
+    AArray!Texture textures;
+    LightManager lm;
     
-    this(Scene scene)
+    this()
     {
         fs = New!VirtualFileSystem();
         imgFac = New!VeganImageFactory();
-        //scene = New!Scene();
-        this.scene = scene;        
+        fonts = New!(AArray!Font)();
+        textures = New!(AArray!Texture)();
+        lm = New!LightManager();
+        lm.lightsVisible = true; 
     }
 
-    void loadScene(string filename)
+    Font addFont(string name, Font f)
     {
-        auto fstrm = fs.openForInput(filename);
-        loadDGL2(fstrm, this);
-        //Delete(fstrm);
-        fstrm.free();
-        scene.resolveLinks();
+        fonts[name] = f;
+        return f;
+    }
+
+    Font getFont(string name)
+    {
+        return fonts[name];
+    }
+
+    Texture addTexture(string name, Texture t)
+    {
+        textures[name] = t;
+        return t;
     }
     
     Texture getTexture(string filename)
     {
-        if (filename in scene.textures)
-            return scene.textures[filename];
+        if (filename in textures)
+            return textures[filename];
             
         writefln("Loading texture %s...", filename);
+
+        if (!fileExists(filename))
+        {
+            writefln("Warning: cannot find image file (trying to load \'%s\')", filename);
+            return null;
+        }
         
         auto fstrm = fs.openForInput(filename);
         auto res = loadPNG(fstrm, imgFac);
@@ -84,22 +103,36 @@ class ResourceManager: ManuallyAllocatable
         {
             auto tex = New!Texture(res[0]);
             res[0].free();
-            return scene.addTexture(filename, tex);
+            return addTexture(filename, tex);
         }
+    }
+
+    void freeFonts()
+    {
+        foreach(i, f; fonts)
+            f.free();
+        fonts.free();
+    }
+
+    void freeTextures()
+    {
+        foreach(i, t; textures)
+            t.free();
+        textures.free();
     }
     
     void free()
     {
         Delete(imgFac);
         fs.free();
-        //scene.free();
+        freeFonts();
+        freeTextures();
+        lm.free();
         Delete(this);
     }
 
     bool fileExists(string filename)
     {
-        // TODO: use stdfs
-        //return exists(filename);
         FileStat stat;
         return fs.stat(filename, stat);
     }

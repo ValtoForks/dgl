@@ -45,6 +45,7 @@ import dgl.graphics.material;
 import dgl.graphics.texture;
 import dgl.dml.dml;
 import dgl.asset.resman;
+import dgl.asset.scene;
 import dgl.asset.entity;
 import dgl.asset.mesh;
 import dgl.asset.serialization;
@@ -133,7 +134,7 @@ void calcTriangleData(Triangle* tri, DGLTriangle* dglTri)
     tri.edges[2] = tri.v[0] - tri.v[2];
 }
 
-void loadDGL2(InputStream istrm, ResourceManager rm)
+void loadDGL2(InputStream istrm, Scene scene)
 {
     DataChunk readChunk()
     {
@@ -172,11 +173,11 @@ void loadDGL2(InputStream istrm, ResourceManager rm)
             // TODO: duplicate
             //e.name = chunk.name;
             auto dataStrm = New!ArrayStream(chunk.data, chunk.data.length);
-            decodeEntity(e, dataStrm, rm);
+            decodeEntity(e, dataStrm, scene);
             Delete(dataStrm);
             
             version(DGLDebug) writefln("----\nEntity:\n%s", e);
-            rm.scene.addEntity(chunk.name, e);
+            scene.addEntity(chunk.name, e);
         }
         else if (chunk.type == ChunkType.MATERIAL)
         {
@@ -185,11 +186,11 @@ void loadDGL2(InputStream istrm, ResourceManager rm)
             // TODO: duplicate
             //mat.name = chunk.name;
             auto dataStrm = New!ArrayStream(chunk.data, chunk.data.length);
-            decodeMaterial(mat, dataStrm, rm);
+            decodeMaterial(mat, dataStrm, scene);
             Delete(dataStrm);
 
             version(DGLDebug) writefln("----\nMaterial:\n%s", mat);
-            rm.scene.addMaterial(chunk.name, mat);
+            scene.addMaterial(chunk.name, mat);
         }
         else if (chunk.type == ChunkType.TRIMESH)
         {
@@ -210,7 +211,7 @@ void loadDGL2(InputStream istrm, ResourceManager rm)
             mesh.id = chunk.id;
             // TODO: duplicate
             //mesh.name = chunk.name;
-            rm.scene.addMesh(chunk.name, mesh);
+            scene.addMesh(chunk.name, mesh);
 
             version(DGLDebug) writefln("numTris: %s", numTris);
         }
@@ -219,7 +220,7 @@ void loadDGL2(InputStream istrm, ResourceManager rm)
     }
 }
 
-void decodeEntity(Entity e, InputStream istrm, ResourceManager rm)
+void decodeEntity(Entity e, InputStream istrm, Scene scene)
 {
     e.type = read!uint(istrm);
     e.materialId = read!int(istrm);
@@ -241,7 +242,7 @@ void decodeEntity(Entity e, InputStream istrm, ResourceManager rm)
     }
 }
 
-void decodeMaterial(Material m, InputStream istrm, ResourceManager rm)
+void decodeMaterial(Material m, InputStream istrm, Scene scene)
 {
     DMLData dml;
 
@@ -280,13 +281,13 @@ void decodeMaterial(Material m, InputStream istrm, ResourceManager rm)
                 string filename;
                 int blendType;
                 formattedRead(texStr, "[%s, %s]", &filename, &blendType);
-                if (rm.fileExists(filename))
-                {
-                    Texture tex = rm.getTexture(filename);
+                //if (rm.fileExists(filename))
+                //{
+                    Texture tex = scene.getTexture(filename);
                     m.textures[i] = tex;
-                }
-                else
-                    writefln("Warning: cannot find image file (trying to load \'%s\')", filename);
+                //}
+                //else
+                //    writefln("Warning: cannot find image file (trying to load \'%s\')", filename);
             }
         }
     }
