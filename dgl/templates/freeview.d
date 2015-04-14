@@ -35,28 +35,20 @@ import dlib.core.memory;
 import dlib.image.color;
 
 import dgl.core.event;
-//import dgl.core.application;
 import dgl.core.layer;
 import dgl.graphics.tbcamera;
-//import dgl.graphics.axes;
 
 class FreeviewLayer: Layer
 {
-    //int currentWindowWidth = 0;
-    //int currentWindowHeight = 0;
-
     TrackballCamera camera;
-    //int tempMouseX = 0;
-    //int tempMouseY = 0;
+    int tempMouseX = 0;
+    int tempMouseY = 0;
 
     bool grabMouse = true;
 
     this(EventManager emngr, uint w, uint h)
     {
         super(emngr, LayerType.Layer3D);
-
-        //currentWindowWidth = w;
-        //currentWindowHeight = h;
 
         camera = New!TrackballCamera();
         camera.pitch(45.0f);
@@ -79,30 +71,43 @@ class FreeviewLayer: Layer
 
     override void onMouseButtonDown(int button)
     {
-        if (!grabMouse)
-            return;
+        if (grabMouse)
+        {
+            if (button == SDL_BUTTON_RIGHT) 
+            {
+                tempMouseX = eventManager.mouseX;
+                tempMouseY = eventManager.mouseY;
+                eventManager.setMouseToCenter();
+            }
+            else if (button == SDL_BUTTON_MIDDLE) 
+            {
+                tempMouseX = eventManager.mouseX;
+                tempMouseY = eventManager.mouseY;
+                eventManager.setMouseToCenter();
+            }
+            else if (button == SDL_BUTTON_WHEELUP) 
+            {
+                camera.zoomSmooth(-2.0f, 16.0f);
+            }
+            else if (button == SDL_BUTTON_WHEELDOWN) 
+            {
+                camera.zoomSmooth(2.0f, 16.0f);
+            }
+        }
+    }
 
-        if (button == SDL_BUTTON_RIGHT) 
+    override void onMouseButtonUp(int button)
+    {
+        if (grabMouse)
         {
-            //tempMouseX = eventManager.mouseX;
-            //tempMouseY = eventManager.mouseY;
-            SDL_WarpMouse(cast(ushort)eventManager.windowWidth/2, 
-                          cast(ushort)eventManager.windowHeight/2);
-        }
-        else if (button == SDL_BUTTON_MIDDLE) 
-        {
-            //tempMouseX = eventManager.mouseX;
-            //tempMouseY = eventManager.mouseY;
-            SDL_WarpMouse(cast(ushort)eventManager.windowWidth/2, 
-                          cast(ushort)eventManager.windowHeight/2);
-        }
-        else if (button == SDL_BUTTON_WHEELUP) 
-        {
-            camera.zoomSmooth(-2.0f, 16.0f);
-        }
-        else if (button == SDL_BUTTON_WHEELDOWN) 
-        {
-            camera.zoomSmooth(2.0f, 16.0f);
+            if (button == SDL_BUTTON_RIGHT) 
+            {
+                eventManager.setMouse(tempMouseX, tempMouseY);
+            }
+            else if (button == SDL_BUTTON_MIDDLE) 
+            {
+                eventManager.setMouse(tempMouseX, tempMouseY);
+            }
         }
     }
 
@@ -110,29 +115,27 @@ class FreeviewLayer: Layer
     {
         if (grabMouse)
         {
-        if (eventManager.mouseButtonPressed[SDL_BUTTON_RIGHT])
-        {
-            float turn_m = (cast(float)eventManager.windowWidth/2 - eventManager.mouseX)/8.0f;
-            float pitch_m = -(cast(float)eventManager.windowHeight/2 - eventManager.mouseY)/8.0f;
-            camera.pitchSmooth(pitch_m, 16.0f);
-            camera.turnSmooth(turn_m, 16.0f);
-            SDL_WarpMouse(cast(ushort)eventManager.windowWidth/2, 
-                          cast(ushort)eventManager.windowHeight/2);
-            SDL_ShowCursor(0);
-        }
-        else if (eventManager.mouseButtonPressed[SDL_BUTTON_MIDDLE] || 
-                (eventManager.mouseButtonPressed[SDL_BUTTON_LEFT] && eventManager.keyPressed[SDLK_LSHIFT]))
-        {
-            float shift_x = (cast(float)eventManager.windowWidth/2 - eventManager.mouseX)/16.0f;
-            float shift_y = (cast(float)eventManager.windowHeight/2 - eventManager.mouseY)/16.0f;
-            camera.moveSmooth(shift_y, 16.0f);
-            camera.strafeSmooth(-shift_x, 16.0f);
-            SDL_WarpMouse(cast(ushort)eventManager.windowWidth/2, 
-                          cast(ushort)eventManager.windowHeight/2);
-            SDL_ShowCursor(0);
-        }
-        else
-            SDL_ShowCursor(1);
+            if (eventManager.mouseButtonPressed[SDL_BUTTON_RIGHT])
+            {
+                float turn_m = (cast(float)eventManager.windowWidth/2 - eventManager.mouseX)/8.0f;
+                float pitch_m = -(cast(float)eventManager.windowHeight/2 - eventManager.mouseY)/8.0f;
+                camera.pitchSmooth(pitch_m, 16.0f);
+                camera.turnSmooth(turn_m, 16.0f);
+                eventManager.setMouseToCenter();
+                eventManager.showCursor(false);
+            }
+            else if (eventManager.mouseButtonPressed[SDL_BUTTON_MIDDLE] || 
+                    (eventManager.mouseButtonPressed[SDL_BUTTON_LEFT] && eventManager.keyPressed[SDLK_LSHIFT]))
+            {
+                float shift_x = (cast(float)eventManager.windowWidth/2 - eventManager.mouseX)/16.0f;
+                float shift_y = (cast(float)eventManager.windowHeight/2 - eventManager.mouseY)/16.0f;
+                camera.moveSmooth(shift_y, 16.0f);
+                camera.strafeSmooth(-shift_x, 16.0f);
+                eventManager.setMouseToCenter();
+                eventManager.showCursor(false);
+            }
+            else
+                eventManager.showCursor(true);
         }
             
         super.draw(dt);

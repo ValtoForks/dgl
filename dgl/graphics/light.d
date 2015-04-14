@@ -77,3 +77,4 @@ Light pointLight(
         constantAttenuation, linearAttenuation,
         quadraticAttenuation);
 }
+

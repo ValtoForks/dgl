@@ -40,8 +40,9 @@ import dgl.core.interfaces;
 import dgl.vfs.vfs;
 import dgl.graphics.texture;
 import dgl.ui.font;
-import dgl.asset.scene;
+import dgl.graphics.scene;
 import dgl.graphics.lightmanager;
+import dgl.asset.dgl2;
 
 class ResourceManager: ManuallyAllocatable, Drawable
 {
@@ -113,7 +114,13 @@ class ResourceManager: ManuallyAllocatable, Drawable
     Scene loadScene(string filename, bool visible = true)
     {
         Scene scene = New!Scene(this);
-        scene.load(filename);
+
+        scene.clearArrays();
+        auto fstrm = fs.openForInput(filename);
+        loadDGL2(fstrm, scene);
+        fstrm.free();
+        scene.resolveLinks();
+
         scene.visible = visible;
         scenes[filename] = scene;
         return scene;

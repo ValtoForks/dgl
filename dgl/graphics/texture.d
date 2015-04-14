@@ -49,6 +49,7 @@ class Texture: Modifier
     Vector2f scroll;
 
 /*
+    // TODO
     this(uint w, uint h)
     {
         free();

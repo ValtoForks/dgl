@@ -41,13 +41,13 @@ import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.geometry.triangle;
 
+import dgl.dml.dml;
 import dgl.graphics.material;
 import dgl.graphics.texture;
-import dgl.dml.dml;
+import dgl.graphics.scene;
+import dgl.graphics.entity;
+import dgl.graphics.mesh;
 import dgl.asset.resman;
-import dgl.asset.scene;
-import dgl.asset.entity;
-import dgl.asset.mesh;
 import dgl.asset.serialization;
 
 version = DGLDebug;
@@ -136,6 +136,11 @@ void calcTriangleData(Triangle* tri, DGLTriangle* dglTri)
 
 void loadDGL2(InputStream istrm, Scene scene)
 {
+    assert(scene !is null);
+    assert(scene.entities !is null);
+    assert(scene.meshes !is null);
+    assert(scene.materials !is null);
+
     DataChunk readChunk()
     {
         DataChunk chunk;
@@ -218,6 +223,8 @@ void loadDGL2(InputStream istrm, Scene scene)
 
         chunk.free();
     }
+
+    writeln("end");
 }
 
 void decodeEntity(Entity e, InputStream istrm, Scene scene)

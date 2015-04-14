@@ -26,10 +26,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.asset.entity;
+module dgl.graphics.entity;
 
 import std.string;
-//import std.json;
 
 import derelict.opengl.gl;
 import dlib.core.memory;
@@ -40,7 +39,7 @@ import dlib.math.quaternion;
 import dlib.geometry.aabb;
 import dgl.core.interfaces;
 import dgl.graphics.object3d;
-import dgl.asset.mesh;
+import dgl.graphics.mesh;
 
 class Entity: Object3D
 {

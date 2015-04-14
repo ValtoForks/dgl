@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.asset.mesh;
+module dgl.graphics.mesh;
 
 import std.stdio;
 
@@ -39,7 +39,7 @@ import derelict.opengl.glext;
 
 import dgl.core.interfaces;
 import dgl.graphics.material;
-import dgl.asset.scene;
+import dgl.graphics.scene;
 
 class FaceGroup: ManuallyAllocatable
 {

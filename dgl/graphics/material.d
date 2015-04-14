@@ -50,7 +50,6 @@ enum TextureCombinerMode: ushort
     Dot3Alpha = 5
 }
 
-// TODO: shaders
 class Material: Modifier
 {
     int id;
