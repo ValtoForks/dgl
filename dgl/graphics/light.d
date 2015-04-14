@@ -28,11 +28,13 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.graphics.light;
 
+import derelict.opengl.gl;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
+import dgl.graphics.object3d;
 
-class Light: ManuallyAllocatable
+class Light: Drawable3D
 {
     Vector4f position;
     Color4f diffuseColor;
@@ -42,6 +44,7 @@ class Light: ManuallyAllocatable
     float quadraticAttenuation;
     float brightness;
     bool enabled = true;
+    bool debugDraw = true;
     
     this(
         Vector4f position,
@@ -57,6 +60,28 @@ class Light: ManuallyAllocatable
         this.constantAttenuation = constantAttenuation;
         this.linearAttenuation = linearAttenuation;
         this.quadraticAttenuation = quadraticAttenuation;
+    }
+
+    void draw(double dt)
+    {
+        if (debugDraw)
+        {
+            glDisable(GL_LIGHTING);
+            glColor4fv(diffuseColor.arrayof.ptr);
+            glPointSize(5.0f);
+            glBegin(GL_POINTS);
+            glVertex3f(0, 0, 0);
+            glEnd();
+            glPointSize(1.0f);
+            glEnable(GL_LIGHTING);
+        }
+    }
+
+    void draw(Object3D obj, double dt)
+    {
+        position = Vector4f(obj.getPosition);
+        position.w = 1.0f;
+        draw(dt);
     }
     
     mixin FreeImpl;

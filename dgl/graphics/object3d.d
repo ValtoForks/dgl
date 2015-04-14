@@ -39,6 +39,11 @@ interface Object3D: Drawable
     AABB getAABB();
 }
 
+interface Drawable3D: Drawable
+{
+    void draw(Object3D obj, double dt);
+}
+
 interface Modifier3D: ManuallyAllocatable
 {
     void bind(Object3D obj, double dt);

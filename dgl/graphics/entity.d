@@ -40,6 +40,7 @@ import dlib.geometry.aabb;
 import dgl.core.interfaces;
 import dgl.graphics.object3d;
 import dgl.graphics.mesh;
+import dgl.dml.dml;
 
 class Entity: Object3D
 {
@@ -58,6 +59,8 @@ class Entity: Object3D
     Vector3f scaling;
 
     Matrix4x4f transformation;
+
+    DMLData props;
     
     this(Drawable drw, Vector3f pos)
     {
@@ -125,16 +128,22 @@ class Entity: Object3D
     {
         if (modifier !is null)
             modifier.bind(dt);
-            
+
+        glPushMatrix();
+        glMultMatrixf(transformation.arrayof.ptr);            
         if (drawable !is null)
         {
-            glPushMatrix();
-            glMultMatrixf(transformation.arrayof.ptr);
-            drawable.draw(dt);
-            glPopMatrix();
+            Drawable3D drw3d = cast(Drawable3D)drawable;
+            if (drw3d)
+                drw3d.draw(this, dt);
+            else
+                drawable.draw(dt);
         }
         else if (debugDraw)
+        {
             drawPoint();
+        }
+        glPopMatrix();
         
         if (modifier !is null)
             modifier.unbind();
@@ -142,7 +151,7 @@ class Entity: Object3D
 
     void drawPoint()
     {
-        glDisable(GL_DEPTH_TEST);
+        //glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
         glColor4f(1,1,1,1);
         glPointSize(5.0f);
@@ -151,15 +160,12 @@ class Entity: Object3D
         glEnd();
         glPointSize(1.0f);
         glEnable(GL_LIGHTING);
-        glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_DEPTH_TEST);
     }
 
     override string toString()
     {
         return format(
-            //"type = %s\n"
-            //"id = %s\n"
-            //"name = %s\n",
             "type = %s\n"
             "materialId = %s\n"
             "meshId = %s\n"
@@ -174,11 +180,17 @@ class Entity: Object3D
             getScaling()
         );
     }
-    
-    override void free()
+
+    void freeContent()
     {
         if (name.length)
             Delete(name);
+        props.free();
+    }
+    
+    override void free()
+    {
+        freeContent();
         Delete(this);
     }
     

@@ -32,6 +32,7 @@ import std.stdio;
 
 import dlib.core.memory;
 import dlib.container.aarray;
+import dlib.image.color;
 
 import dgl.core.interfaces;
 import dgl.graphics.material;
@@ -102,6 +103,21 @@ class Scene: Drawable
         foreach(mi, mesh; meshes)
         {
             mesh.genFaceGroups(this);
+        }
+    }
+
+    void createDynamicLights(bool debugDraw = true)
+    {
+        foreach(i, e; entities)
+        {
+            if (e.type == 1)
+            {
+                Color4f col = e.props["color"].toColor4f;
+                auto light = rm.lm.addPointLight(e.position);
+                light.debugDraw = debugDraw;
+                light.diffuseColor = col;
+                e.drawable = light;
+            }            
         }
     }
 

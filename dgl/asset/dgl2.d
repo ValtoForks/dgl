@@ -238,6 +238,7 @@ void decodeEntity(Entity e, InputStream istrm, Scene scene)
     Vector3f scaling = read!(Vector3f, true)(istrm);
     e.setTransformation(position, rotation, scaling);
 
+    DMLData dml;
     auto dmlSize = read!uint(istrm);
     if (dmlSize > 0)
     {
@@ -245,8 +246,10 @@ void decodeEntity(Entity e, InputStream istrm, Scene scene)
         istrm.fillArray(dmlBytes);
         string dmlStr = cast(string)dmlBytes;
         version(DGLDebug) writefln("----\ndmlStr:\n%s", dmlStr);
+        parseDML(dmlStr, &dml);
         Delete(dmlBytes);
     }
+    e.props = dml;
 }
 
 void decodeMaterial(Material m, InputStream istrm, Scene scene)

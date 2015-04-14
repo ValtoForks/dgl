@@ -128,12 +128,12 @@ def writeMesh(f, obj, meshId, materials, maxMaterialId):
 
     f.write(packChunk(ChunkType.TRIMESH, meshId, obj.data.name, triBuffer))
 
-    bpy.context.scene.objects.active = obj
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.tris_convert_to_quads()
-    bpy.context.scene.update()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    #bpy.context.scene.objects.active = obj
+    #bpy.ops.object.mode_set(mode='EDIT')
+    #bpy.ops.mesh.select_all(action='SELECT')
+    #bpy.ops.mesh.tris_convert_to_quads()
+    #bpy.context.scene.update()
+    #bpy.ops.object.mode_set(mode='OBJECT')
 
     return maxMaterialId
 
@@ -156,8 +156,18 @@ def writeEntity(f, obj, entityId, meshes, materials):
     rot = mat.to_quaternion()
     rotation = (rot.x, rot.y, rot.z, rot.w)
     scaling = obj.scale #TODO: fix axes
-    dml = ""
-    dmlASCII = dml.encode('ascii')
+
+    dml = {}
+
+    if obj.type == 'LAMP':
+        col = obj.data.color
+        entityType = 1
+        dml = {
+            "color": vecToStr([col.r, col.g, col.b, 1.0])
+        }
+
+    dmlStr = encodeDML(dml)
+    dmlASCII = dmlStr.encode('ascii')
     dmlSize = len(dmlASCII)
 
     data = bytearray()
@@ -178,7 +188,7 @@ def vecToStr(vec):
 def encodeDML(d):
     res = "{"
     for k, v in d.items():
-        res += str(k) + "=" + "\"" + v[0] + "\";"
+        res += str(k) + "=" + "\"" + str(v[0]) + "\";"
     res += "}"
     return res
 

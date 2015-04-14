@@ -84,6 +84,7 @@ struct DMLValue
 struct DMLStruct
 {
     DMLValue[string] data;
+    alias data this;
 
     bool addKeyValue(Lexeme key, Lexeme val)
     {
@@ -99,12 +100,22 @@ struct DMLStruct
             return true;
         }
     }
+
+    void free()
+    {
+        // TODO
+    }
 }
 
 struct DMLData
 {
     DMLStruct root;
     alias root this;
+
+    void free()
+    {
+        root.free();
+    }
 }
 
 bool parseDML(string text, DMLData* data)
