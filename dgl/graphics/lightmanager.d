@@ -45,6 +45,7 @@ class LightManager: Modifier3D, Drawable
     DynamicArray!Light lights;
     uint maxLightsPerObject = 4;
     bool lightsVisible = false;
+    bool lightsOn = true;
 
     Light addLight(Light light)
     {
@@ -77,9 +78,16 @@ class LightManager: Modifier3D, Drawable
 
     void calcBrightness(Light light, Vector3f objPos)
     {
-        Vector3f d = (light.position.xyz - objPos);
-        float quadraticAttenuation = d.lengthsqr;
-        light.brightness = -quadraticAttenuation;
+        if (!light.enabled && !light.forceOn)
+        {
+            light.brightness = 0.0f;
+        }
+        else
+        {
+            Vector3f d = (light.position.xyz - objPos);
+            float quadraticAttenuation = d.lengthsqr;
+            light.brightness = 1.0f / quadraticAttenuation;
+        }
     }
 
     void sortLights()
@@ -90,16 +98,17 @@ class LightManager: Modifier3D, Drawable
         auto ldata = lights.data;
 
         foreach(i, v; ldata)
-        if (v.enabled)
         {
             j = i;
             size_t k = i;
 
             while (k < ldata.length)
             {
-                if (ldata[j].brightness < ldata[k].brightness)
+                float b1 = ldata[j].brightness;
+                float b2 = ldata[k].brightness;
+                if (b2 > b1)
                     j = k;
-                k += 1;
+                k++;
             }
 
             tmp = ldata[i];
@@ -113,7 +122,8 @@ class LightManager: Modifier3D, Drawable
         auto ldata = lights.data;
     
         foreach(light; ldata)
-            calcBrightness(light, objPos);
+            if (lightsOn || light.forceOn)
+                calcBrightness(light, objPos);
 
         sortLights();
 
@@ -121,16 +131,22 @@ class LightManager: Modifier3D, Drawable
         if (i < lights.length)
         {
             auto light = ldata[i];
-            if (light.enabled)
+            if (light.enabled && (lightsOn || light.forceOn))
             {
                 glEnable(GL_LIGHT0 + i);
                 glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
+				glLightfv(GL_LIGHT0 + i, GL_SPECULAR, light.diffuseColor.arrayof.ptr);
                 glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.diffuseColor.arrayof.ptr);
                 glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.ambientColor.arrayof.ptr);
                 glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
                 glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
             }
+			else
+			{
+			    Vector4f p = Vector4f(0, 0, 0, 2);
+			    glLightfv(GL_LIGHT0 + i, GL_POSITION, p.arrayof.ptr);
+			}
         }      
     }
 
@@ -147,6 +163,7 @@ class LightManager: Modifier3D, Drawable
         {
             glPointSize(5.0f);
             foreach(light; lights.data)
+            if (light.debugDraw)
             {
                 glColor4fv(light.diffuseColor.arrayof.ptr);
                 glBegin(GL_POINTS);

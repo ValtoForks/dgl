@@ -50,6 +50,10 @@ enum TextureCombinerMode: ushort
     Dot3Alpha = 5
 }
 
+// TODO: VERY dirty hack, use class for this!
+//bool matUseShaders = true;
+bool useDimLight = false;
+
 class Material: Modifier
 {
     int id;
@@ -64,10 +68,11 @@ class Material: Modifier
     Texture[8] textures;
     ushort[8] texBlendMode;
     bool shadeless = false;
+    bool useTextures = true;
 
     this()
     {
-        ambientColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+        ambientColor = Color4f(0.7f, 0.7f, 0.7f, 1.0f);
         diffuseColor = Color4f(0.8f, 0.8f, 0.8f, 1.0f);
         specularColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         emissionColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
@@ -92,12 +97,13 @@ class Material: Modifier
         glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shininess);
 
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        if (shadeless)
+        if (shadeless && !useDimLight)
         {
             glDisable(GL_LIGHTING);
             glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
         }
 
+        if (useTextures)
         foreach(i, tex; textures)
         {
             if (tex !is null)
@@ -107,15 +113,16 @@ class Material: Modifier
             }
         }
 
-        if (shader)
+        if (shader && !useDimLight)
             shader.bind(dt);
     }
 
     void unbind()
     {
-        if (shader)
+        if (shader && !useDimLight)
             shader.unbind();
 
+        if (useTextures)
         foreach(i, tex; textures)
         {
             if (tex !is null)
@@ -127,7 +134,7 @@ class Material: Modifier
 
         glActiveTextureARB(GL_TEXTURE0_ARB);
 		
-        if (shadeless)
+        if (shadeless && !useDimLight)
             glEnable(GL_LIGHTING);
     }
 

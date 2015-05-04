@@ -51,6 +51,7 @@ import dgl.core.event;
 class Application: EventListener
 {
     Color4f clearColor;
+    bool exitOnEscapePress = true;
     
     // TODO: configuration manager
     this(
@@ -76,7 +77,7 @@ class Application: EventListener
         environment["SDL_VIDEO_WINDOW_POS"] = "";
         environment["SDL_VIDEO_CENTERED"] = "1";
         
-        auto screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_RESIZABLE);
+        auto screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL); // | SDL_FULLSCREEN
         if (screen is null)
             throw new Exception("Failed to set video mode: " ~ to!string(SDL_GetError()));
             
@@ -131,19 +132,25 @@ class Application: EventListener
     // Override me
     override void onKeyDown(int key)
     {    
-        if (key == SDLK_ESCAPE)
+        if (key == SDLK_ESCAPE && exitOnEscapePress)
         {
             eventManager.running = false;
             onQuit();
         }
     }
+
+    void exit()
+    {
+        eventManager.running = false;
+        onQuit();
+    }
     
     override void onResize(int width, int height)
     {
-        writefln("Application resized to %s, %s", eventManager.windowWidth, eventManager.windowHeight);
-        SDL_Surface* screen = SDL_SetVideoMode(eventManager.windowWidth, 
-                                               eventManager.windowHeight, 
-                                               0, SDL_OPENGL | SDL_RESIZABLE);
+        writefln("Application resized to %s, %s", width, height);
+        SDL_Surface* screen = SDL_SetVideoMode(width, 
+                                               height, 
+                                               0, SDL_OPENGL);
         if (screen is null)
             throw new Exception("failed to set video mode: " ~ to!string(SDL_GetError()));
     }
@@ -167,13 +174,13 @@ void loadLibraries()
 {
     version(Windows)
     {
-        enum sharedLibSDL = "SDL.dll";
-        enum sharedLibFT = "freetype.dll";
+        enum sharedLibSDL = "lib/SDL.dll";
+        enum sharedLibFT = "lib/freetype.dll";
     }
     version(linux)
     {
-        enum sharedLibSDL = "./libsdl.so";
-        enum sharedLibFT = "./libfreetype.so";
+        enum sharedLibSDL = "./lib/libsdl.so";
+        enum sharedLibFT = "./lib/libfreetype.so";
     }
     
     DerelictGL.load();

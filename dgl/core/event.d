@@ -212,7 +212,6 @@ class EventManager
                     writefln("Window resized to %s : %s", event.resize.w, event.resize.h);
                     windowWidth = event.resize.w;
                     windowHeight = event.resize.h;
-                    //writefln("Window resized to %s : %s", windowWidth, windowHeight);
                     e = Event(EventType.Resize);
                     e.width = windowWidth;
                     e.height = windowHeight;
@@ -400,9 +399,6 @@ abstract class EventListener: ManuallyAllocatable
     mixin ManualModeImpl;
 }
 
-/*
- * Causes GC allocation
- */
 import std.conv;
 
 class TextListener: EventListener

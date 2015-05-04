@@ -102,7 +102,7 @@ class Entity: Object3D
     
     override Vector3f getPosition()
     {
-        return position; //transformation.translation;
+        return transformation.translation;
     }
 
     Quaternionf getRotation()
@@ -126,11 +126,16 @@ class Entity: Object3D
     
     override void draw(double dt)
     {
-        if (modifier !is null)
-            modifier.bind(dt);
-
         glPushMatrix();
         glMultMatrixf(transformation.arrayof.ptr);            
+        drawModel(dt);
+        glPopMatrix();
+    }
+
+    void drawModel(double dt)
+    {
+        if (modifier !is null)
+            modifier.bind(dt);
         if (drawable !is null)
         {
             Drawable3D drw3d = cast(Drawable3D)drawable;
@@ -143,24 +148,18 @@ class Entity: Object3D
         {
             drawPoint();
         }
-        glPopMatrix();
-        
         if (modifier !is null)
             modifier.unbind();
     }
 
     void drawPoint()
     {
-        //glDisable(GL_DEPTH_TEST);
-        glDisable(GL_LIGHTING);
         glColor4f(1,1,1,1);
         glPointSize(5.0f);
         glBegin(GL_POINTS);
         glVertex3f(0, 0, 0);
         glEnd();
         glPointSize(1.0f);
-        glEnable(GL_LIGHTING);
-        //glEnable(GL_DEPTH_TEST);
     }
 
     override string toString()

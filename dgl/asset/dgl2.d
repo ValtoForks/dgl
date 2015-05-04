@@ -50,7 +50,7 @@ import dgl.graphics.mesh;
 import dgl.asset.resman;
 import dgl.asset.serialization;
 
-version = DGLDebug;
+//version = DGLDebug;
 
 enum ChunkType
 {
@@ -137,9 +137,6 @@ void calcTriangleData(Triangle* tri, DGLTriangle* dglTri)
 void loadDGL2(InputStream istrm, Scene scene)
 {
     assert(scene !is null);
-    assert(scene.entities !is null);
-    assert(scene.meshes !is null);
-    assert(scene.materials !is null);
 
     DataChunk readChunk()
     {
@@ -224,7 +221,7 @@ void loadDGL2(InputStream istrm, Scene scene)
         chunk.free();
     }
 
-    writeln("end");
+    version(DGLDebug) writeln("end");
 }
 
 void decodeEntity(Entity e, InputStream istrm, Scene scene)
@@ -268,10 +265,7 @@ void decodeMaterial(Material m, InputStream istrm, Scene scene)
     }
 
     if ("diffuseColor" in dml.root.data)
-    {
         m.diffuseColor = dml.root.data["diffuseColor"].toColor4f;
-        m.ambientColor = m.diffuseColor;
-    }
 
     if ("specularColor" in dml.root.data)
         m.specularColor = dml.root.data["specularColor"].toColor4f;
@@ -291,13 +285,8 @@ void decodeMaterial(Material m, InputStream istrm, Scene scene)
                 string filename;
                 int blendType;
                 formattedRead(texStr, "[%s, %s]", &filename, &blendType);
-                //if (rm.fileExists(filename))
-                //{
-                    Texture tex = scene.getTexture(filename);
-                    m.textures[i] = tex;
-                //}
-                //else
-                //    writefln("Warning: cannot find image file (trying to load \'%s\')", filename);
+                Texture tex = scene.getTexture(filename);
+                m.textures[i] = tex;
             }
         }
     }

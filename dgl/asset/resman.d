@@ -31,6 +31,7 @@ module dgl.asset.resman;
 import std.stdio;
 import std.file;
 import dlib.core.memory;
+import dlib.container.array;
 import dlib.container.aarray;
 import dlib.image.io.png;
 import dlib.filesystem.filesystem;
@@ -42,6 +43,7 @@ import dgl.graphics.texture;
 import dgl.ui.font;
 import dgl.graphics.scene;
 import dgl.graphics.lightmanager;
+import dgl.graphics.shadow;
 import dgl.asset.dgl2;
 
 class ResourceManager: ManuallyAllocatable, Drawable
@@ -50,8 +52,13 @@ class ResourceManager: ManuallyAllocatable, Drawable
     VeganImageFactory imgFac;
     AArray!Font fonts;
     AArray!Texture textures;
-    AArray!Scene scenes;
-    LightManager lm;
+	
+	DynamicArray!Scene _scenes;
+	AArray!size_t scenesByName;
+    
+	LightManager lm;
+    ShadowMap shadow;
+    bool enableShadows = false;
     
     this()
     {
@@ -59,7 +66,7 @@ class ResourceManager: ManuallyAllocatable, Drawable
         imgFac = New!VeganImageFactory();
         fonts = New!(AArray!Font)();
         textures = New!(AArray!Texture)();
-        scenes = New!(AArray!Scene)();
+        scenesByName = New!(AArray!size_t)();
         lm = New!LightManager();
         lm.lightsVisible = true; 
     }
@@ -85,8 +92,6 @@ class ResourceManager: ManuallyAllocatable, Drawable
     {
         if (filename in textures)
             return textures[filename];
-            
-        writefln("Loading texture %s...", filename);
 
         if (!fileExists(filename))
         {
@@ -100,7 +105,6 @@ class ResourceManager: ManuallyAllocatable, Drawable
         
         if (res[0] is null)
         {
-            writeln(res[1]);
             return null;
         }
         else
@@ -122,7 +126,8 @@ class ResourceManager: ManuallyAllocatable, Drawable
         scene.resolveLinks();
 
         scene.visible = visible;
-        scenes[filename] = scene;
+		_scenes.append(scene);
+        scenesByName[filename] = _scenes.length;
         return scene;
     }
 
@@ -130,7 +135,8 @@ class ResourceManager: ManuallyAllocatable, Drawable
     {
         Scene scene = New!Scene(this);
         scene.visible = visible;
-        scenes[name] = scene;
+		_scenes.append(scene);
+        scenesByName[name] = _scenes.length;
         return scene;
     }
 
@@ -150,9 +156,10 @@ class ResourceManager: ManuallyAllocatable, Drawable
 
     void freeScenes()
     {
-        foreach(i, s; scenes)
+        foreach(i, s; _scenes.data)
             s.free();
-        scenes.free();
+        _scenes.free();
+		scenesByName.free();
     }
     
     void free()
@@ -163,13 +170,19 @@ class ResourceManager: ManuallyAllocatable, Drawable
         freeTextures();
         freeScenes();
         lm.free();
+        if (shadow !is null)
+            shadow.free();
         Delete(this);
     }
 
     void draw(double dt)
     {
-        foreach(i, s; scenes)
-            s.draw(dt);
+        if (enableShadows && shadow)
+            shadow.draw(dt);
+
+        foreach(i, s; _scenes.data)
+            if (s.visible)
+                s.draw(dt);
 
         lm.draw(dt);
     }

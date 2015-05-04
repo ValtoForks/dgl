@@ -44,7 +44,8 @@ class Light: Drawable3D
     float quadraticAttenuation;
     float brightness;
     bool enabled = true;
-    bool debugDraw = true;
+    bool debugDraw = false;
+    bool forceOn = false;
     
     this(
         Vector4f position,
