@@ -10,6 +10,9 @@ Main changes:
 * Room system
 * Resource manager
 * DGL2 scene file format without JSON dependency
+* Dynamic shadows
+* Shader-based materials with normal mapping
+* Configuration files support
 
 What already done:
 * Core functionality and interfaces (event system, application, layers, rooms)
@@ -19,9 +22,9 @@ What already done:
 * Some geometric shapes
 * Font/Text rendering
 * VFS (without ZIP archives support for now)
+* GLSL and ARB shaders
 
 TODO:
-* ARB shaders
 * Actors, IQM format loading
 * I8n
 * CD/physics support
