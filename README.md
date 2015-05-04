@@ -13,16 +13,17 @@ Main changes:
 * Dynamic shadows
 * Shader-based materials with normal mapping
 * Configuration files support
+* Own data markup language - DML
 
 What already done:
 * Core functionality and interfaces (event system, application, layers, rooms)
 * Light manager
 * Trackball camera
-* Materials, textures, GLSL shaders
+* Materials and textures
+* GLSL and ARB shaders
 * Some geometric shapes
 * Font/Text rendering
 * VFS (without ZIP archives support for now)
-* GLSL and ARB shaders
 
 TODO:
 * Actors, IQM format loading
