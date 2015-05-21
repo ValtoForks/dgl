@@ -247,6 +247,9 @@ void decodeEntity(Entity e, InputStream istrm, Scene scene)
         Delete(dmlBytes);
     }
     e.props = dml;
+    
+    if ("visible" in dml.root.data)
+        e.visible = cast(bool)dml.root.data["visible"].toInt;
 }
 
 void decodeMaterial(Material m, InputStream istrm, Scene scene)

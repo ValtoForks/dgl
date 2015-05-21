@@ -96,7 +96,6 @@ class ShadowMap: Drawable
             GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, null);
 
         glLoadIdentity();
-        //gluPerspective(120.0f, 1.0f, 0.1f, 100.0f);
         glOrtho(-20, 20, -20, 20, -100.0f, 100.0f);
         glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix.arrayof.ptr);
         glLoadIdentity();
@@ -141,17 +140,17 @@ class ShadowMap: Drawable
         
         //matUseShaders = false;
 
-        if (castScene)
-        {
-            castScene.lighted = false;
-            dgl.graphics.material.useDimLight = true;
-            castScene.draw(dt);
-        }
         if (receiveScene)
         {
             receiveScene.lighted = false;
             dgl.graphics.material.useDimLight = true;
             receiveScene.draw(dt);
+        }
+        if (castScene)
+        {
+            castScene.lighted = false;
+            dgl.graphics.material.useDimLight = true;
+            castScene.draw(dt);
         }
 
         //Draw with bright light

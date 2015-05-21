@@ -72,7 +72,9 @@ class EventManager
 {
     enum maxNumEvents = 50;
     Event[maxNumEvents] eventStack;
+    Event[maxNumEvents] userEventStack;
     uint numEvents;
+    uint numUserEvents;
     
     bool running = true;
     
@@ -114,11 +116,22 @@ class EventManager
             writeln("Warning: event stack overflow");
     }
     
+    void addUserEvent(Event e)
+    {
+        if (numUserEvents < maxNumEvents)
+        {
+            userEventStack[numUserEvents] = e;
+            numUserEvents++;
+        }
+        else
+            writeln("Warning: user event stack overflow");
+    }
+    
     void generateUserEvent(int code)
     {
         Event e = Event(EventType.UserEvent);
         e.userCode = code;
-        addEvent(e);
+        addUserEvent(e);
     }
     
     void update()
@@ -128,6 +141,14 @@ class EventManager
         
         if (SDL_WasInit(SDL_INIT_JOYSTICK))
             SDL_JoystickUpdate();
+            
+        for (uint i = 0; i < numUserEvents; i++)
+        {
+            Event e = userEventStack[i];
+            addEvent(e);
+        }
+        
+        numUserEvents = 0;
 
         SDL_Event event;
 
@@ -286,7 +307,7 @@ class EventManager
             FPSCounter = 0;
             FPSTickCounter = 0;
             averageDelta = 1.0 / cast(double)(fps);
-	}
+	    }
     }
 
     void setMouse(int x, int y)
@@ -298,11 +319,11 @@ class EventManager
 
     void setMouseToCenter()
     {
-        int x = windowWidth / 2;
-        int y = windowHeight / 2;
-        SDL_WarpMouse(cast(ushort)x, cast(ushort)(windowHeight - y));
-        mouseX = x;
-        mouseY = y;
+        float x = (cast(float)windowWidth)/2;
+        float y = (cast(float)windowHeight)/2;
+        SDL_WarpMouse(cast(ushort)x, cast(ushort)(y));
+        mouseX = cast(int)x;
+        mouseY = cast(int)y;
     }
 
     void showCursor(bool mode)
@@ -334,50 +355,55 @@ abstract class EventListener: ManuallyAllocatable
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
             Event* e = &eventManager.eventStack[i];
-            switch(e.type)
-            {
-                case EventType.KeyDown:
-                    onKeyDown(e.key);
-                    break;
-                case EventType.KeyUp:
-                    onKeyUp(e.key);
-                    break;
-                case EventType.TextInput:
-                    onTextInput(e.unicode);
-                    break;
-                case EventType.MouseButtonDown:
-                    onMouseButtonDown(e.button);
-                    break;
-                case EventType.MouseButtonUp:
-                    onMouseButtonUp(e.button);
-                    break;
-                case EventType.JoystickButtonDown:
-                    onJoystickButtonDown(e.joystickButton);
-                    break;
-                case EventType.JoystickButtonUp:
-                    onJoystickButtonDown(e.joystickButton);
-                    break;
-                case EventType.JoystickAxisMotion:
-                    onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
-                    break;
-                case EventType.Resize:
-                    onResize(e.width, e.height);
-                    break;
-                case EventType.FocusLoss:
-                    onFocusLoss();
-                    break;
-                case EventType.FocusGain:
-                    onFocusGain();
-                    break;
-                case EventType.Quit:
-                    onQuit();
-                    break;
-                case EventType.UserEvent:
-                    onUserEvent(e.userCode);
-                    break;
-                default:
-                    break;
-            }
+            processEvent(e);
+        }
+    }
+    
+    void processEvent(Event* e)
+    {
+        switch(e.type)
+        {
+            case EventType.KeyDown:
+                onKeyDown(e.key);
+                break;
+            case EventType.KeyUp:
+                onKeyUp(e.key);
+                break;
+            case EventType.TextInput:
+                onTextInput(e.unicode);
+                break;
+            case EventType.MouseButtonDown:
+                onMouseButtonDown(e.button);
+                break;
+            case EventType.MouseButtonUp:
+                onMouseButtonUp(e.button);
+                break;
+            case EventType.JoystickButtonDown:
+                onJoystickButtonDown(e.joystickButton);
+                break;
+            case EventType.JoystickButtonUp:
+                onJoystickButtonDown(e.joystickButton);
+                break;
+            case EventType.JoystickAxisMotion:
+                onJoystickAxisMotion(e.joystickAxis, e.joystickAxisValue);
+                break;
+            case EventType.Resize:
+                onResize(e.width, e.height);
+                break;
+            case EventType.FocusLoss:
+                onFocusLoss();
+                break;
+            case EventType.FocusGain:
+                onFocusGain();
+                break;
+            case EventType.Quit:
+                onQuit();
+                break;
+            case EventType.UserEvent:
+                onUserEvent(e.userCode);
+                break;
+            default:
+                break;
         }
     }
 

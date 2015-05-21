@@ -51,7 +51,6 @@ enum TextureCombinerMode: ushort
 }
 
 // TODO: VERY dirty hack, use class for this!
-//bool matUseShaders = true;
 bool useDimLight = false;
 
 class Material: Modifier
@@ -96,6 +95,8 @@ class Material: Modifier
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emissionColor.arrayof.ptr);
         glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shininess);
 
+		//glDisable(GL_NORMALIZE);
+
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadeless && !useDimLight)
         {
@@ -115,6 +116,8 @@ class Material: Modifier
 
         if (shader && !useDimLight)
             shader.bind(dt);
+			
+		//glEnable(GL_NORMALIZE);
     }
 
     void unbind()

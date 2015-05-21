@@ -94,7 +94,7 @@ class Mesh: Drawable
             genTangents();
     } 
     
-    void genTangents()
+    protected void genTangents()
     {
         DynamicArray!Vector3f vertices;
         DynamicArray!Vector3f normals;
@@ -242,7 +242,7 @@ class Mesh: Drawable
         }
     }
 
-    FaceGroup getFaceGroupByMaterialId(int m)
+    protected FaceGroup getFaceGroupByMaterialId(int m)
     {
         foreach(i, fg; fgroups.data)
         {

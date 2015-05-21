@@ -49,7 +49,7 @@ class Entity: Object3D
     uint type = 0;
     int materialId = -1;
     int meshId = -1;
-    bool debugDraw = true;
+    bool debugDraw = false;
 
     Drawable drawable;
     Modifier modifier;
@@ -61,6 +61,8 @@ class Entity: Object3D
     Matrix4x4f transformation;
 
     DMLData props;
+    
+    bool visible = true;
     
     this(Drawable drw, Vector3f pos)
     {
@@ -85,7 +87,7 @@ class Entity: Object3D
         position = Vector3f(0, 0, 0);
         rotation = Quaternionf.identity;
         scaling = Vector3f(1, 1, 1);
-        transformation = translationMatrix(position);
+        setTransformation(position, rotation, scaling);
         drawable = null;
     }
 
@@ -126,10 +128,13 @@ class Entity: Object3D
     
     override void draw(double dt)
     {
-        glPushMatrix();
-        glMultMatrixf(transformation.arrayof.ptr);            
-        drawModel(dt);
-        glPopMatrix();
+        if (visible)
+        {
+            glPushMatrix();
+            glMultMatrixf(transformation.arrayof.ptr);            
+            drawModel(dt);
+            glPopMatrix();
+        }
     }
 
     void drawModel(double dt)
