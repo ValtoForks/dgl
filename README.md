@@ -31,6 +31,11 @@ TODO:
 * I8n
 * CD/physics support
 
+Screenshots
+-----------
+[![Screenshot1](/screenshots/001_thumb.jpg)](/screenshots/001.jpg)
+Screenshot is taken from [Atrium](http://github.com/gecko0307/atrium), a physics-based action game built upon DGL.
+
 License
 -------
 Copyright (c) 2013-2014 Timur Gafarov. Distributed under the Boost Software License, Version 1.0. (See accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt)
