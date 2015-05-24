@@ -34,6 +34,7 @@ TODO:
 Screenshots
 -----------
 [![Screenshot1](/screenshots/001_thumb.jpg)](/screenshots/001.jpg)
+
 Screenshot is taken from [Atrium](http://github.com/gecko0307/atrium), a physics-based action game built upon DGL.
 
 License
