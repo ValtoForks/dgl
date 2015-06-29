@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -48,7 +48,7 @@ class ShapeSphere: Drawable
         glNewList(displayList, GL_COMPILE);
         gluSphere(quadric, r, 24, 16);
         glEndList();
-        
+
         gluDeleteQuadric(quadric);
     }
 
@@ -59,11 +59,13 @@ class ShapeSphere: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
+
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
 
 class ShapeBox: Drawable
@@ -79,7 +81,7 @@ class ShapeBox: Drawable
         Vector3f pmin = -hsize;
 
         glBegin(GL_QUADS);
-    
+
             glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
             glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
             glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
@@ -109,7 +111,7 @@ class ShapeBox: Drawable
             glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
             glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
             glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
-        
+
         glEnd();
 
         glEndList();
@@ -122,11 +124,13 @@ class ShapeBox: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
+
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
 
 class ShapeCylinder: Drawable
@@ -147,10 +151,10 @@ class ShapeCylinder: Drawable
         glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
         gluCylinder(quadric, r, r, h, 16, 2);
         gluQuadricOrientation(quadric, GLU_INSIDE);
-        gluDisk(quadric, 0, r, 16, 1);  
+        gluDisk(quadric, 0, r, 16, 1);
         gluQuadricOrientation(quadric, GLU_OUTSIDE);
         glTranslatef(0.0f, 0.0f, h);
-        gluDisk(quadric, 0, r, 16, 1); 
+        gluDisk(quadric, 0, r, 16, 1);
         glEndList();
 
         // TODO: delete quadric
@@ -163,11 +167,13 @@ class ShapeCylinder: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
 
 class ShapeCone: Drawable
@@ -175,9 +181,9 @@ class ShapeCone: Drawable
     GLUquadricObj* quadric;
     // TODO: slices, stacks
     uint displayList;
-    
+
     this(float h, float r)
-    {      
+    {
         quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
@@ -192,7 +198,7 @@ class ShapeCone: Drawable
 
         // TODO: delete quadric
     }
-    
+
     override void draw(double dt)
     {
         glCallList(displayList);
@@ -200,11 +206,13 @@ class ShapeCone: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
 
 class ShapeEllipsoid: Drawable
@@ -213,11 +221,11 @@ class ShapeEllipsoid: Drawable
     uint displayList;
 
     Vector3f radii;
-    
+
     this(Vector3f r)
     {
         radii = r;
-  
+
         quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
@@ -229,7 +237,7 @@ class ShapeEllipsoid: Drawable
 
         // TODO: delete quadric
     }
-    
+
     override void draw(double dt)
     {
         glPushMatrix();
@@ -240,18 +248,20 @@ class ShapeEllipsoid: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
 
 class ShapeTriangle: Drawable
 {
     Vector3f[3] v;
     uint displayList;
-    
+
     this(Vector3f a, Vector3f b, Vector3f c)
     {
         v[0] = a;
@@ -267,7 +277,7 @@ class ShapeTriangle: Drawable
         glEnd();
         glEndList();
     }
-    
+
     override void draw(double dt)
     {
         glPushMatrix();
@@ -281,10 +291,11 @@ class ShapeTriangle: Drawable
 
     void free()
     {
-        glDeleteLists(displayList, 1);
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        glDeleteLists(displayList, 1);
+    }
 }
-

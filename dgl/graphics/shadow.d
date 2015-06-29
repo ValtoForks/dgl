@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -61,10 +61,10 @@ class ShadowMap: Drawable
 
     uint width, height;
     GLint[4] viewport;
-    
+
     float ofsFactor = 4.7;
     float ofsUnits = 5.3;
-	
+
 	bool useShader = true;
 
     this(uint w, uint h)
@@ -75,7 +75,7 @@ class ShadowMap: Drawable
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_DEPTH_TEST);
 
-        glGenTextures(1, &depthBuffer);  
+        glGenTextures(1, &depthBuffer);
         glBindTexture(GL_TEXTURE_2D, depthBuffer);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST for sharp edges
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //GL_NEAREST for sharp edges
@@ -91,12 +91,12 @@ class ShadowMap: Drawable
         //Shadow comparison should generate an INTENSITY result
         glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, 
-            GL_DEPTH_COMPONENT, width, height, 0, 
+        glTexImage2D(GL_TEXTURE_2D, 0,
+            GL_DEPTH_COMPONENT, width, height, 0,
             GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, null);
 
         glLoadIdentity();
-        glOrtho(-20, 20, -20, 20, -100.0f, 100.0f);
+        glOrtho(-13, 13, -13, 13, -100.0f, 100.0f);
         glGetFloatv(GL_MODELVIEW_MATRIX, lightProjectionMatrix.arrayof.ptr);
         glLoadIdentity();
 
@@ -137,7 +137,7 @@ class ShadowMap: Drawable
         glLightfv(GL_LIGHT7, GL_SPECULAR, black.arrayof.ptr);
         glEnable(GL_LIGHT7);
         glEnable(GL_LIGHTING);
-        
+
         //matUseShaders = false;
 
         if (receiveScene)
@@ -160,7 +160,7 @@ class ShadowMap: Drawable
         glDisable(GL_LIGHTING);
 
         //Bind & enable shadow map texture
-        glActiveTextureARB(GL_TEXTURE2_ARB);
+        glActiveTextureARB(GL_TEXTURE3_ARB);
         bindDepthBuffer();
 
         // Calculate texture matrix for projection
@@ -204,7 +204,7 @@ class ShadowMap: Drawable
 
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(ofsFactor, ofsUnits);
-        
+
         //matUseShaders = true;
 
         if (castScene)
@@ -219,11 +219,11 @@ class ShadowMap: Drawable
             dgl.graphics.material.useDimLight = false;
             receiveScene.draw(dt);
         }
-        
+
         //glPolygonOffset(0, 0);
 
         //Disable textures and texgen
-        glActiveTextureARB(GL_TEXTURE2_ARB);
+        glActiveTextureARB(GL_TEXTURE3_ARB);
         unbindDepthBuffer();
 
         glDisable(GL_TEXTURE_GEN_S);
@@ -257,7 +257,7 @@ class ShadowMap: Drawable
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadMatrixf(lightViewMatrix.arrayof.ptr);
-        
+
         //matUseShaders = false;
 
         // Draw the scene
@@ -291,9 +291,13 @@ class ShadowMap: Drawable
 
     void free()
     {
-        if (glIsTexture(depthBuffer)) 
-            glDeleteTextures(1, &depthBuffer);
         Delete(this);
+    }
+
+    ~this()
+    {
+        if (glIsTexture(depthBuffer))
+            glDeleteTextures(1, &depthBuffer);
     }
 
     void bindDepthBuffer()
@@ -307,7 +311,4 @@ class ShadowMap: Drawable
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
     }
-
-    mixin ManualModeImpl;
 }
-

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -30,12 +30,12 @@ module dgl.core.interfaces;
 
 import dlib.core.memory;
 
-interface Drawable: ManuallyAllocatable
+interface Drawable: Freeable
 {
     void draw(double dt);
 }
 
-interface Modifier: ManuallyAllocatable
+interface Modifier: Freeable
 {
     void bind(double delta);
     void unbind();

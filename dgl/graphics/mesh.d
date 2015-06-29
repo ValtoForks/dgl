@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -44,7 +44,7 @@ import dgl.core.interfaces;
 import dgl.graphics.material;
 import dgl.graphics.scene;
 
-class FaceGroup: ManuallyAllocatable
+class FaceGroup: Freeable
 {
     DynamicArray!Triangle tris;
     uint displayList;
@@ -53,13 +53,15 @@ class FaceGroup: ManuallyAllocatable
 
     void free()
     {
-        if (glIsList(displayList))
-            glDeleteLists(displayList, 1);
-        tris.free();
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        if (glIsList(displayList))
+            glDeleteLists(displayList, 1);
+        tris.free();
+    }
 }
 
 bool vectorsAlmostSame(Vector3f v1, Vector3f v2) nothrow
@@ -89,18 +91,18 @@ class Mesh: Drawable
     this(Triangle[] tris)
     {
         this.tris = tris;
-        
+
         if (generateTangentVectors)
             genTangents();
-    } 
-    
+    }
+
     protected void genTangents()
     {
         DynamicArray!Vector3f vertices;
         DynamicArray!Vector3f normals;
         DynamicArray!Vector2f texcoords;
         DynamicArray!(uint[3]) triangles;
-        
+
         foreach(ref tri; tris)
         {
             uint[3] triangle;
@@ -109,9 +111,9 @@ class Mesh: Drawable
                 Vector3f v = tri.v[i];
                 Vector3f n = tri.n[i];
                 Vector2f t = tri.t1[i];
-            
+
                 int vi = vertices.hasVector(v);
-            
+
                 if (vi == -1)
                 {
                     vertices.append(v);
@@ -126,16 +128,16 @@ class Mesh: Drawable
             }
             triangles.append(triangle);
         }
-        
+
         Vector3f[] sTan = New!(Vector3f[])(vertices.length);
         Vector3f[] tTan = New!(Vector3f[])(vertices.length);
-        
+
         foreach(i, v; sTan)
         {
             sTan[i] = Vector3f(0.0f, 0.0f, 0.0f);
             tTan[i] = Vector3f(0.0f, 0.0f, 0.0f);
         }
-        
+
         foreach(ref tri; triangles.data)
         {
             uint i0 = tri[0];
@@ -149,7 +151,7 @@ class Mesh: Drawable
             Vector2f w0 = texcoords.data[i0];
             Vector2f w1 = texcoords.data[i1];
             Vector2f w2 = texcoords.data[i2];
-            
+
             float x1 = v1.x - v0.x;
             float x2 = v2.x - v0.x;
             float y1 = v1.y - v0.y;
@@ -186,7 +188,7 @@ class Mesh: Drawable
             sTan[i2] += sDir;
             tTan[i2] += tDir;
         }
-        
+
         Vector3f[] tangents = New!(Vector3f[])(vertices.length);
 
         // Calculate vertex tangent
@@ -203,7 +205,7 @@ class Mesh: Drawable
             if (dot(cross(n, t), tTan[i]) < 0.0f)
 	        tangents[i] = -tangents[i];
         }
-        
+
         foreach(ti, ref tri; tris)
         foreach(i; 0..3)
         {
@@ -229,8 +231,8 @@ class Mesh: Drawable
             fg.tris.append(tri);
         }
 
-        // Assign materials to face groups 
-        // and create display lists for them 
+        // Assign materials to face groups
+        // and create display lists for them
         foreach(fg; fgroups.data)
         {
             if (fg.materialIndex != -1)
@@ -262,7 +264,7 @@ class Mesh: Drawable
         foreach(tri; triangles)
         {
             glBegin(GL_TRIANGLES);
-            // TODO: add possibility to select between 
+            // TODO: add possibility to select between
             // per face normals and per vertex normals
             //glNormal3fv(tri.normal.arrayof.ptr);
 
@@ -272,14 +274,14 @@ class Mesh: Drawable
             glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[0].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[0].arrayof.ptr);
             glVertex3fv(tri.v[0].arrayof.ptr);
-            
+
             glNormal3fv(tri.n[1].arrayof.ptr);
             if (generateTangentVectors)
                 glColor3fv(tri.tg[1].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[1].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[1].arrayof.ptr);
             glVertex3fv(tri.v[1].arrayof.ptr);
-            
+
             glNormal3fv(tri.n[2].arrayof.ptr);
             if (generateTangentVectors)
                 glColor3fv(tri.tg[2].arrayof.ptr);
@@ -305,7 +307,7 @@ class Mesh: Drawable
         }
     }
 
-    void free()
+    void freeContent()
     {
         if (name.length)
             Delete(name);
@@ -313,10 +315,15 @@ class Mesh: Drawable
         foreach(fg; fgroups.data)
             fg.free();
         fgroups.free();
+    }
+
+    void free()
+    {
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        freeContent();
+    }
 }
-
-

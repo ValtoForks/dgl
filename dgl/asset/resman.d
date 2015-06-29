@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -35,8 +35,8 @@ import dlib.container.array;
 import dlib.container.aarray;
 import dlib.image.io.png;
 import dlib.filesystem.filesystem;
-import dgl.vfs.stdfs;
-import dgl.asset.image;
+import dlib.filesystem.stdfs;
+import dlib.image.unmanaged;
 import dgl.core.interfaces;
 import dgl.vfs.vfs;
 import dgl.graphics.texture;
@@ -46,29 +46,29 @@ import dgl.graphics.lightmanager;
 import dgl.graphics.shadow;
 import dgl.asset.dgl2;
 
-class ResourceManager: ManuallyAllocatable, Drawable
+class ResourceManager: Freeable, Drawable
 {
     VirtualFileSystem fs;
-    VeganImageFactory imgFac;
+    UnmanagedImageFactory imgFac;
     AArray!Font fonts;
     AArray!Texture textures;
-	
-	DynamicArray!Scene _scenes;
-	AArray!size_t scenesByName;
-    
-	LightManager lm;
+
+	  DynamicArray!Scene _scenes;
+	  AArray!size_t scenesByName;
+
+	  LightManager lm;
     ShadowMap shadow;
     bool enableShadows = false;
-    
+
     this()
     {
         fs = New!VirtualFileSystem();
-        imgFac = New!VeganImageFactory();
+        imgFac = New!UnmanagedImageFactory();
         fonts = New!(AArray!Font)();
         textures = New!(AArray!Texture)();
         scenesByName = New!(AArray!size_t)();
         lm = New!LightManager();
-        lm.lightsVisible = true; 
+        lm.lightsVisible = true;
     }
 
     Font addFont(string name, Font f)
@@ -87,7 +87,7 @@ class ResourceManager: ManuallyAllocatable, Drawable
         textures[name] = t;
         return t;
     }
-    
+
     Texture getTexture(string filename)
     {
         if (filename in textures)
@@ -98,11 +98,11 @@ class ResourceManager: ManuallyAllocatable, Drawable
             writefln("Warning: cannot find image file (trying to load \'%s\')", filename);
             return null;
         }
-        
+
         auto fstrm = fs.openForInput(filename);
         auto res = loadPNG(fstrm, imgFac);
-        fstrm.free();
-        
+        Delete(fstrm);
+
         if (res[0] is null)
         {
             return null;
@@ -122,7 +122,7 @@ class ResourceManager: ManuallyAllocatable, Drawable
         scene.clearArrays();
         auto fstrm = fs.openForInput(filename);
         loadDGL2(fstrm, scene);
-        fstrm.free();
+        Delete(fstrm);
         scene.resolveLinks();
 
         scene.visible = visible;
@@ -144,14 +144,14 @@ class ResourceManager: ManuallyAllocatable, Drawable
     {
         foreach(i, f; fonts)
             f.free();
-        fonts.free();
+        Delete(fonts);
     }
 
     void freeTextures()
     {
         foreach(i, t; textures)
             t.free();
-        textures.free();
+        Delete(textures);
     }
 
     void freeScenes()
@@ -159,10 +159,10 @@ class ResourceManager: ManuallyAllocatable, Drawable
         foreach(i, s; _scenes.data)
             s.free();
         _scenes.free();
-		scenesByName.free();
+		  Delete(scenesByName);
     }
-    
-    void free()
+
+    ~this()
     {
         Delete(imgFac);
         fs.free();
@@ -172,6 +172,10 @@ class ResourceManager: ManuallyAllocatable, Drawable
         lm.free();
         if (shadow !is null)
             shadow.free();
+    }
+
+    void free()
+    {
         Delete(this);
     }
 
@@ -198,10 +202,7 @@ class ResourceManager: ManuallyAllocatable, Drawable
     {
         auto fstrm = fs.openForInput(filename);
         string text = .readText(fstrm);
-        fstrm.free();
+        Delete(fstrm);
         return text;
     }
-    
-    mixin ManualModeImpl;
 }
-

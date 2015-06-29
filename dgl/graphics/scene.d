@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -41,6 +41,7 @@ import dgl.graphics.texture;
 import dgl.graphics.lightmanager;
 import dgl.graphics.entity;
 import dgl.graphics.mesh;
+import dgl.graphics.shader;
 import dgl.asset.resman;
 
 /*
@@ -54,7 +55,7 @@ import dgl.asset.resman;
 class Scene: Drawable
 {
     ResourceManager rm;
-	
+
 	DynamicArray!Entity _entities;
 	DynamicArray!Mesh _meshes;
 	DynamicArray!Material _materials;
@@ -62,14 +63,14 @@ class Scene: Drawable
 	AArray!size_t entitiesByName;
 	AArray!size_t meshesByName;
 	AArray!size_t materialsByName;
-	
+
     bool visible = true;
     bool lighted = true;
-	
+
 	Entity[] entities() {return _entities.data;}
 	Mesh[] meshes() {return _meshes.data;}
 	Material[] materials() {return _materials.data;}
-	
+
 	Entity entity(string name)
 	{
 	    if (name in entitiesByName)
@@ -77,7 +78,7 @@ class Scene: Drawable
 		else
 		    return null;
 	}
-	
+
 	Mesh mesh(string name)
 	{
 	    if (name in meshesByName)
@@ -85,7 +86,7 @@ class Scene: Drawable
 		else
 		    return null;
 	}
-	
+
 	Material material(string name)
 	{
 	    if (name in materialsByName)
@@ -104,12 +105,14 @@ class Scene: Drawable
     {
 	    entitiesByName = New!(AArray!size_t);
 	    meshesByName = New!(AArray!size_t);
-		materialsByName = New!(AArray!size_t);
+		  materialsByName = New!(AArray!size_t);
     }
 
     void clearArrays()
     {
-        freeContent();
+        freeEntities();
+        freeMeshes();
+        freeMaterials();
         createArrays();
     }
 
@@ -153,7 +156,7 @@ class Scene: Drawable
                 light.debugDraw = debugDraw;
                 light.diffuseColor = col;
                 e.drawable = light;
-            }            
+            }
         }
     }
 
@@ -202,7 +205,7 @@ class Scene: Drawable
         foreach(i, e; _entities.data)
             e.free();
         _entities.free();
-		entitiesByName.free();
+		    Delete(entitiesByName);
     }
 
     void freeMeshes()
@@ -210,7 +213,7 @@ class Scene: Drawable
         foreach(i, m; _meshes.data)
             m.free();
         _meshes.free();
-		meshesByName.free();
+		    Delete(meshesByName);
     }
 
     void freeMaterials()
@@ -218,14 +221,7 @@ class Scene: Drawable
         foreach(i, m; _materials.data)
             m.free();
         _materials.free();
-		materialsByName.free();
-    }
-
-    void freeContent()
-    {
-        freeEntities();
-        freeMeshes();
-        freeMaterials();
+		    Delete(materialsByName);
     }
 
     void setMaterialsShadeless(bool shadeless)
@@ -235,17 +231,50 @@ class Scene: Drawable
             m.shadeless = shadeless;
         }
     }
-    
+
     void setMaterialsUseTextures(bool mode)
     {
         foreach(i, m; _materials.data)
             m.useTextures = mode;
     }
 
+    void setMaterialsAmbientColor(Color4f col)
+    {
+        foreach(i, m; _materials.data)
+        {
+            m.ambientColor = col;
+        }
+    }
+
+    void setMaterialsSpecularColor(Color4f col)
+    {
+        foreach(i, m; _materials.data)
+        {
+            m.specularColor = col;
+        }
+    }
+
+    void setMaterialsShader(Shader shader)
+    {
+        foreach(i, m; _materials.data)
+        {
+            m.shader = shader;
+        }
+    }
+
+    void setMaterialsTextureSlot(uint src, uint dest)
+    {
+        foreach(i, m; _materials.data)
+        {
+            m.textures[dest] = m.textures[src];
+            m.textures[src] = null;
+        }
+    }
+
     void draw(double dt)
     {
         foreach(i, e; _entities.data)
-        {        
+        {
             if (!lighted)
                 rm.lm.lightsOn = false;
             rm.lm.bind(e, dt);
@@ -258,10 +287,13 @@ class Scene: Drawable
 
     void free()
     {
-        freeContent();
         Delete(this);
     }
 
-    mixin ManualModeImpl;
+    ~this()
+    {
+        freeEntities();
+        freeMeshes();
+        freeMaterials();
+    }
 }
-

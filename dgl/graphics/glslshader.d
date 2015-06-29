@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -31,22 +31,25 @@ module dgl.graphics.glslshader;
 import std.stdio;
 import std.string;
 import std.conv;
-import dlib.core.memory; 
+import dlib.core.memory;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
+import dgl.core.event;
 import dgl.graphics.shader;
 
 final class GLSLShader: Shader
 {
+    EventManager eventManager;
     GLenum shaderVert;
     GLenum shaderFrag;
     GLenum shaderProg;
     bool _supported;
-	
-	char*[8] texStrings;
 
-    this(string vertexProgram, string fragmentProgram)
+	char*[9] texStrings;
+
+    this(EventManager emgr, string vertexProgram, string fragmentProgram)
     {
+        eventManager = emgr;
         _supported = supported;
 
         if (_supported)
@@ -82,7 +85,7 @@ final class GLSLShader: Shader
             glGetInfoLogARB(shaderFrag, 999, &infobufferlen, infobuffer.ptr);
             if (infobuffer[0] != 0)
                 writefln("GLSL: error in fragment shader:\n%s\n", infobuffer.ptr.to!string);
-				
+
             texStrings[0] = cast(char*)toStringz("dgl_Texture0");
 			texStrings[1] = cast(char*)toStringz("dgl_Texture1");
 			texStrings[2] = cast(char*)toStringz("dgl_Texture2");
@@ -91,6 +94,7 @@ final class GLSLShader: Shader
 			texStrings[5] = cast(char*)toStringz("dgl_Texture5");
 			texStrings[6] = cast(char*)toStringz("dgl_Texture6");
 			texStrings[7] = cast(char*)toStringz("dgl_Texture7");
+            texStrings[8] = cast(char*)toStringz("dgl_WindowSize");
         }
     }
 
@@ -113,6 +117,8 @@ final class GLSLShader: Shader
             glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[5]), 5);
             glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[6]), 6);
             glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[7]), 7);
+
+            glUniform2fARB(glGetUniformLocationARB(shaderProg, texStrings[8]), eventManager.windowWidth, eventManager.windowHeight);
         }
     }
 
@@ -124,14 +130,13 @@ final class GLSLShader: Shader
         }
     }
 
-    void free()
+    ~this()
     {
         unbind();
-        //glDeleteShaderARB(shaderVert);
-        //glDeleteShaderARB(shaderFrag);
-        //glDeleteProgramARB(shaderProg);
-        Delete(this);
     }
 
-    mixin ManualModeImpl;
+    void free()
+    {
+        Delete(this);
+    }
 }

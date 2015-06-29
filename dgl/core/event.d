@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -75,28 +75,28 @@ class EventManager
     Event[maxNumEvents] userEventStack;
     uint numEvents;
     uint numUserEvents;
-    
+
     bool running = true;
-    
+
     bool keyPressed[512] = false;
     bool mouseButtonPressed[255] = false;
     int mouseX = 0;
     int mouseY = 0;
-    
+
     double deltaTime = 0.0;
     double averageDelta = 0.0;
     uint deltaTimeMs = 0;
     int fps = 0;
-    
+
     uint videoWidth;
     uint videoHeight;
-    
+
     uint windowWidth;
     uint windowHeight;
     bool windowFocused = true;
-    
+
     this(uint winWidth, uint winHeight)
-    {       
+    {
         windowWidth = winWidth;
         windowHeight = winHeight;
 
@@ -104,7 +104,7 @@ class EventManager
         videoWidth = videoInfo.current_w;
         videoHeight = videoInfo.current_h;
     }
-    
+
     void addEvent(Event e)
     {
         if (numEvents < maxNumEvents)
@@ -115,7 +115,7 @@ class EventManager
         else
             writeln("Warning: event stack overflow");
     }
-    
+
     void addUserEvent(Event e)
     {
         if (numUserEvents < maxNumEvents)
@@ -126,28 +126,28 @@ class EventManager
         else
             writeln("Warning: user event stack overflow");
     }
-    
+
     void generateUserEvent(int code)
     {
         Event e = Event(EventType.UserEvent);
         e.userCode = code;
         addUserEvent(e);
     }
-    
+
     void update()
     {
         numEvents = 0;
         updateTimer();
-        
+
         if (SDL_WasInit(SDL_INIT_JOYSTICK))
             SDL_JoystickUpdate();
-            
+
         for (uint i = 0; i < numUserEvents; i++)
         {
             Event e = userEventStack[i];
             addEvent(e);
         }
-        
+
         numUserEvents = 0;
 
         SDL_Event event;
@@ -157,9 +157,9 @@ class EventManager
             Event e;
             switch (event.type)
             {
-                case SDL_KEYDOWN:                        
+                case SDL_KEYDOWN:
                     if ((event.key.keysym.unicode & 0xFF80) == 0)
-                    {         
+                    {
                         auto asciiChar = event.key.keysym.unicode & 0x7F;
                         if (isPrintable(asciiChar))
                         {
@@ -174,53 +174,53 @@ class EventManager
                         e.unicode = event.key.keysym.unicode;
                         addEvent(e);
                     }
-                    
+
                     keyPressed[event.key.keysym.sym] = true;
                     e = Event(EventType.KeyDown);
                     e.key = event.key.keysym.sym;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_KEYUP:
                     keyPressed[event.key.keysym.sym] = false;
                     e = Event(EventType.KeyUp);
                     e.key = event.key.keysym.sym;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_MOUSEMOTION:
                     mouseX = event.motion.x;
                     mouseY = windowHeight - event.motion.y;
                     break;
-                    
+
                 case SDL_MOUSEBUTTONDOWN:
                     mouseButtonPressed[event.button.button] = true;
                     e = Event(EventType.MouseButtonDown);
                     e.button = event.button.button;
-                    addEvent(e);                    
+                    addEvent(e);
                     break;
-                    
+
                 case SDL_MOUSEBUTTONUP:
                     mouseButtonPressed[event.button.button] = false;
                     e = Event(EventType.MouseButtonUp);
                     e.button = event.button.button;
-                    addEvent(e);                    
+                    addEvent(e);
                     break;
-                    
+
                 case SDL_JOYBUTTONDOWN:
                     // TODO: add state modification
                     e = Event(EventType.JoystickButtonDown);
                     e.button = event.jbutton.button+1;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_JOYBUTTONUP:
                     // TODO: add state modification
                     e = Event(EventType.JoystickButtonUp);
                     e.button = event.jbutton.button+1;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_JOYAXISMOTION:
                     // TODO: add state modification
                     e = Event(EventType.JoystickAxisMotion);
@@ -228,7 +228,7 @@ class EventManager
                     e.joystickAxis = event.jaxis.value;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_VIDEORESIZE:
                     writefln("Window resized to %s : %s", event.resize.w, event.resize.h);
                     windowWidth = event.resize.w;
@@ -238,7 +238,7 @@ class EventManager
                     e.height = windowHeight;
                     addEvent(e);
                     break;
-                    
+
                 case SDL_ACTIVEEVENT:
                     if (event.active.state & SDL_APPACTIVE)
                     {
@@ -272,19 +272,19 @@ class EventManager
                     }
                     addEvent(e);
                     break;
-                    
+
                 case SDL_QUIT:
                     running = false;
                     e = Event(EventType.Quit);
                     addEvent(e);
                     break;
-                    
+
                 default:
                     break;
             }
         }
     }
-    
+
     void updateTimer()
     {
         static int currentTime;
@@ -332,33 +332,33 @@ class EventManager
     }
 }
 
-abstract class EventListener: ManuallyAllocatable
+abstract class EventListener: Freeable
 {
     EventManager eventManager;
     bool enabled = true;
-    
+
     this(EventManager emngr)
     {
         eventManager = emngr;
     }
-    
+
     protected void generateUserEvent(int code)
     {
         eventManager.generateUserEvent(code);
     }
-    
+
     void processEvents()
     {
         if (!enabled)
             return;
-    
+
         for (uint i = 0; i < eventManager.numEvents; i++)
         {
             Event* e = &eventManager.eventStack[i];
             processEvent(e);
         }
     }
-    
+
     void processEvent(Event* e)
     {
         switch(e.type)
@@ -420,9 +420,11 @@ abstract class EventListener: ManuallyAllocatable
     void onFocusGain() {}
     void onQuit() {}
     void onUserEvent(int code) {}
-    
-    mixin FreeImpl;
-    mixin ManualModeImpl;
+
+    void free()
+    {
+        Delete(this);
+    }
 }
 
 import std.conv;
@@ -436,7 +438,7 @@ class TextListener: EventListener
     {
         super(emngr);
     }
-    
+
     override void onTextInput(dchar code)
     {
         if (pos < 100)
@@ -445,29 +447,32 @@ class TextListener: EventListener
             pos++;
         }
     }
-    
+
     override void onKeyDown(int key)
     {
         if (key == SDLK_BACKSPACE)
             back();
     }
-    
+
     void reset()
     {
         arr[] = 0;
         pos = 0;
     }
-    
+
     void back()
     {
         if (pos > 0)
             pos--;
     }
-    
+
     override string toString()
     {
         return to!string(arr[0..pos]);
     }
-    
-    mixin FreeImpl;
+
+    override void free()
+    {
+        Delete(this);
+    }
 }

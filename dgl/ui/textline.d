@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -71,7 +71,7 @@ class TextLine: Drawable
 
     override void draw(double dt)
     {
-        glPushAttrib(GL_LIST_BIT | GL_CURRENT_BIT  | GL_ENABLE_BIT | GL_TRANSFORM_BIT);    
+        glPushAttrib(GL_LIST_BIT | GL_CURRENT_BIT  | GL_ENABLE_BIT | GL_TRANSFORM_BIT);
         glDisable(GL_LIGHTING);
         glEnable(GL_TEXTURE_2D);
         glDisable(GL_DEPTH_TEST);
@@ -92,8 +92,10 @@ class TextLine: Drawable
         glPopAttrib();
     }
 
-    mixin FreeImpl;
-    mixin ManualModeImpl;
+    void free()
+    {
+        Delete(this);
+    }
 
     void setFont(Font font)
     {
@@ -107,15 +109,14 @@ class TextLine: Drawable
         this.textWidth = font.textWidth(text);
     }
 
-    void setPosition(Vector2f pos) 
+    void setPosition(Vector2f pos)
     {
         this.position = pos;
     }
 
-    void setPosition(float x, float y) 
+    void setPosition(float x, float y)
     {
         this.position.x = x;
         this.position.y = y;
     }
 }
-

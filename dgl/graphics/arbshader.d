@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -33,12 +33,12 @@ private
     import std.stdio;
     import std.string;
     import std.conv;
-    
+
     import dlib.core.memory;
-	
+
     import derelict.opengl.gl;
     import derelict.opengl.glext;
-	
+
     import dgl.graphics.shader;
 }
 
@@ -47,7 +47,7 @@ final class ARBShader: Shader
     GLuint vertShader;
     GLuint fragShader;
     bool _supported;
-    
+
     this(string vertexProgram, string fragmentProgram)
     {
         _supported = supported;
@@ -55,42 +55,42 @@ final class ARBShader: Shader
         if (_supported)
         {
             int err;
-            
-            // Vertex shader 
+
+            // Vertex shader
             glEnable(GL_VERTEX_PROGRAM_ARB);
             glGenProgramsARB(1, &vertShader);
             glBindProgramARB(GL_VERTEX_PROGRAM_ARB, vertShader);
-            glProgramStringARB(GL_VERTEX_PROGRAM_ARB, 
-                               GL_PROGRAM_FORMAT_ASCII_ARB, 
-                               vertexProgram.length, 
+            glProgramStringARB(GL_VERTEX_PROGRAM_ARB,
+                               GL_PROGRAM_FORMAT_ASCII_ARB,
+                               vertexProgram.length,
                                toStringz(vertexProgram));
             glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &err);
             if (err >= 0)
                 writefln("Error in vertex shader:\n%s",
     		        to!string(glGetString(GL_PROGRAM_ERROR_STRING_ARB)));
-                    
+
             // Fragment shader
             glEnable(GL_FRAGMENT_PROGRAM_ARB);
             glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, fragShader);
-            glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, 
+            glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB,
                                GL_PROGRAM_FORMAT_ASCII_ARB,
-  			                   fragmentProgram.length, 
+  			                   fragmentProgram.length,
                                toStringz(fragmentProgram));
             glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &err);
             if (err >= 0)
                 writefln("Error in fragment shader:\n%s",
     		        to!string(glGetString(GL_PROGRAM_ERROR_STRING_ARB)));
-                        
+
             unbind();
         }
     }
-    
+
     override @property bool supported()
     {
         return DerelictGL.isExtensionSupported("GL_ARB_vertex_program") &&
                DerelictGL.isExtensionSupported("GL_ARB_fragment_program");
     }
-    
+
     override void bind(double delta)
     {
         if (_supported)
@@ -101,7 +101,7 @@ final class ARBShader: Shader
             glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, fragShader);
         }
     }
-    
+
     override void unbind()
     {
         if (_supported)
@@ -112,17 +112,14 @@ final class ARBShader: Shader
             glDisable(GL_FRAGMENT_PROGRAM_ARB);
         }
     }
-    
-    void free()
+
+    ~this()
     {
         unbind();
-        //glUseProgramObjectARB(0);
-        //glDeleteShaderARB(shaderVert);
-        //glDeleteShaderARB(shaderFrag);
-        //glDeleteProgramARB(shaderProg);
-        Delete(this);
     }
 
-    mixin ManualModeImpl;
+    void free()
+    {
+        Delete(this);
+    }
 }
-

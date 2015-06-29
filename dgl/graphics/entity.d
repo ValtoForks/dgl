@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -61,9 +61,9 @@ class Entity: Object3D
     Matrix4x4f transformation;
 
     DMLData props;
-    
+
     bool visible = true;
-    
+
     this(Drawable drw, Vector3f pos)
     {
         position = pos;
@@ -72,7 +72,7 @@ class Entity: Object3D
         transformation = translationMatrix(position);
         drawable = drw;
     }
-    
+
     this(Vector3f pos)
     {
         position = pos;
@@ -96,12 +96,12 @@ class Entity: Object3D
         position = pos;
         rotation = rot;
         scaling = scal;
-        transformation = 
+        transformation =
             translationMatrix(pos) *
             rot.toMatrix4x4 *
             scaleMatrix(scaling);
     }
-    
+
     override Vector3f getPosition()
     {
         return transformation.translation;
@@ -120,18 +120,18 @@ class Entity: Object3D
         //return transformation.scaling;
         return scaling;
     }
-    
+
     override AABB getAABB()
     {
         return AABB(transformation.translation, Vector3f(1, 1, 1));
     }
-    
+
     override void draw(double dt)
     {
         if (visible)
         {
             glPushMatrix();
-            glMultMatrixf(transformation.arrayof.ptr);            
+            glMultMatrixf(transformation.arrayof.ptr);
             drawModel(dt);
             glPopMatrix();
         }
@@ -185,18 +185,16 @@ class Entity: Object3D
         );
     }
 
-    void freeContent()
+    override void free()
     {
+        Delete(this);
+    }
+
+    ~this()
+    {
+        // TODO: test if name belongs to GC
         if (name.length)
             Delete(name);
         props.free();
     }
-    
-    override void free()
-    {
-        freeContent();
-        Delete(this);
-    }
-    
-    mixin ManualModeImpl;
 }

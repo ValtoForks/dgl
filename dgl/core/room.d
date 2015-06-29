@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -43,34 +43,34 @@ class Room: EventListener
 {
     RoomApplication app;
     DynamicArray!Layer layers;
-    
+
     this(EventManager em, RoomApplication app)
     {
         super(em);
         this.app = app;
     }
-    
+
     // Add window-aligned layer
     Layer addLayer(LayerType type)
     {
         Layer layer = New!Layer(
-            eventManager, 
+            eventManager,
             type);
         layers.append(layer);
         return layer;
     }
-    
+
     // Add user layer
     Layer addLayer(Layer layer)
     {
         layers.append(layer);
         return layer;
     }
-    
+
     void onEnter()
     {
     }
-    
+
     void onUpdate()
     {
         processEvents();
@@ -79,7 +79,7 @@ class Room: EventListener
             layer.processEvents();
         }
     }
-    
+
     void onRedraw()
     {
         foreach(i, layer; layers.data)
@@ -87,21 +87,20 @@ class Room: EventListener
             layer.draw(eventManager.deltaTime);
         }
     }
-    
-    void freeContent()
+
+    override void free()
+    {
+        Delete(this);
+    }
+
+    ~this()
     {
         version (MemoryDebug) writefln("Deleting %s layer(s) in Room...", layers.length);
         foreach(i, layer; layers.data)
             layer.free();
         layers.free();
     }
-    
-    override void free()
-    {
-        freeContent();
-        Delete(this);
-    }
-    
+
     override void onResize(int width, int height)
     {
         foreach(i, layer; layers.data)
@@ -110,28 +109,29 @@ class Room: EventListener
 }
 
 class RoomApplication: Application
-{    
+{
     AArray!Room rooms;
     Room currentRoom;
     string currentRoomName;
 
     // TODO: configuration manager
     this(
-        uint width = 800, 
-        uint height = 600, 
-        string caption = "DGL application", 
-        bool unicodeInput = true, 
+        uint width = 800,
+        uint height = 600,
+        string caption = "DGL application",
+        bool unicodeInput = true,
         bool showCursor = true,
         bool resizableWindow = true)
     {
         super(width, height, caption, unicodeInput, showCursor, resizableWindow);
+        rooms = New!(AArray!Room)();
     }
-    
+
     Room getRoom(string name)
     {
         return rooms[name];
     }
-    
+
     void addRoom(string name, Room room)
     {
         if (name in rooms)
@@ -141,12 +141,12 @@ class RoomApplication: Application
         }
         rooms[name] = room;
     }
-    
+
     void loadRoom(string name, bool deleteCurrent = false)
     {
         setCurrentRoom(name, deleteCurrent);
     }
-    
+
     void setCurrentRoom(string name, bool deleteCurrent = false)
     {
         if (currentRoom)
@@ -161,40 +161,37 @@ class RoomApplication: Application
         currentRoomName = name;
         currentRoom.onEnter();
     }
-    
+
     override void onUpdate()
     {
         if (currentRoom)
             currentRoom.onUpdate();
     }
-    
+
     override void onRedraw()
     {
         if (currentRoom)
             currentRoom.onRedraw();
     }
-    
+
     override void onResize(int width, int height)
     {
         super.onResize(width, height);
         foreach(i, r; rooms)
             r.onResize(width, height);
     }
-    
-    override void freeContent()
+
+    override void free()
     {
-        super.freeContent();
-        
+        Delete(this);
+    }
+
+    ~this()
+    {
         version (MemoryDebug) writefln("Deleting RoomApplication...");
 
         foreach(i, room; rooms)
             room.free();
         Delete(rooms);
-    }
-    
-    override void free()
-    {
-        freeContent();
-        Delete(this);
     }
 }

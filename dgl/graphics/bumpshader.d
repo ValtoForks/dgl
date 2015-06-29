@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 module dgl.graphics.bumpshader;
 
 import dlib.core.memory;
+import dgl.core.event;
 import dgl.graphics.shader;
 import dgl.graphics.glslshader;
 
@@ -42,7 +43,8 @@ varying vec3 n, t, b;
 		
 void main(void)
 {
-    gl_TexCoord[0] =  gl_MultiTexCoord0;
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+    gl_TexCoord[1] = gl_MultiTexCoord1;
 
     n = normalize(gl_NormalMatrix * gl_Normal);
     t = normalize(gl_NormalMatrix * gl_Color.xyz);
@@ -64,7 +66,9 @@ varying vec3 n, t, b;
 		
 uniform sampler2D dgl_Texture0;
 uniform sampler2D dgl_Texture1;
-uniform sampler2DShadow dgl_Texture2;
+uniform sampler2D dgl_Texture2;
+//uniform sampler2D dgl_Texture3; // lightmap
+//uniform sampler2DShadow dgl_Texture3;
 
 vec3 reflect (vec3 N, vec3 L) 
 { 
@@ -77,7 +81,7 @@ void main (void)
 	float shadow = 1.0;
 	// Used to lower moire pattern and self-shadowing
 	//shadowCoordinateWdivide.z += 0.0005;
-	//float shadow = shadow2DProj(dgl_Texture2, shadowCoord,  0.0005).x;
+	//float shadow = shadow2DProj(dgl_Texture3, shadowCoord,  0.0005).x;
 
 	vec3 normal = 2.0 * texture2D(dgl_Texture1, gl_TexCoord[0].st).rgb - 1.0;
 	normal = normalize(normal);
@@ -93,26 +97,40 @@ void main (void)
     vec3 lightDirection;
     float attenuation; 
     vec3 L_tan;
+    const float lightRadiusSqr = 17.0;
 
     vec4 tex = texture2D(dgl_Texture0, gl_TexCoord[0].st);
+    vec4 emit = vec4(0.0, 0.0, 0.0, 1.0);
+    if (gl_FrontMaterial.emission.w > 0.0)
+        emit = texture2D(dgl_Texture2, gl_TexCoord[0].st);
     vec4 col = vec4(0.0, 0.0, 0.0, 1.0);
+    //vec4 lm = texture2D(dgl_Texture3, gl_TexCoord[1].st);
+    //col = lm;
     for (int i = 0; i < 4; i++)
 	{
 	    if (gl_LightSource[i].position.w < 2.0)
 	    {
-	        vec4 Ca = tex * gl_FrontMaterial.ambient * gl_LightSource[i].ambient; 
-	        vec4 Cd = tex * gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse; 
-	        vec4 Cs = tex * gl_FrontMaterial.specular * gl_LightSource[i].specular;  
-	
+	        vec4 Ca = gl_FrontMaterial.ambient * gl_LightSource[i].ambient; 
+	        vec4 Cd = gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse; 
+	        vec4 Cs = gl_FrontMaterial.specular * gl_LightSource[i].specular;  
+            
 	        vec3 positionToLightSource = vec3(gl_LightSource[i].position.xyz - position);
 	
 	        float distance = length(positionToLightSource);
+            
+            lightDirection = normalize(positionToLightSource);
+            
+	/*
 	        lightDirection = normalize(positionToLightSource);
 	        attenuation = 
 		 	    1.0 / (gl_LightSource[i].constantAttenuation
 			         + gl_LightSource[i].linearAttenuation * distance
 			         + gl_LightSource[i].quadraticAttenuation * distance * distance);
-	
+	*/
+            //attenuation = clamp(1.0 - distance/lightRadiusSqr, 0.0, 1.0);
+            //attenuation *= attenuation;
+            attenuation = clamp(1.0 - distance/lightRadiusSqr, 0.0, 1.0);
+    
 	        //vec3 L_eye = normalize(positionToLightSource);
    
             L_tan.x = dot(lightDirection, t);
@@ -127,13 +145,13 @@ void main (void)
 	    }
 	}
 
-	gl_FragColor = col * shadow;
+	gl_FragColor = tex * col * shadow + emit;
 	gl_FragColor.a = 1.0;
 }
 
 };
 
-Shader bumpShader()
+Shader bumpShader(EventManager emgr)
 {
-    return New!GLSLShader(_bumpVertexShader, _bumpFragmentShader);
+    return New!GLSLShader(emgr, _bumpVertexShader, _bumpFragmentShader);
 }

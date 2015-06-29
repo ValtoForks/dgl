@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -82,9 +82,6 @@ final class TrackballCamera: Modifier
     public bool movingToTarget = false;
 
     public:
-    
-    mixin FreeImpl;
-    mixin ManualModeImpl;
 
     this()
     {
@@ -101,9 +98,9 @@ final class TrackballCamera: Modifier
         if (current_zoom < target_zoom)
         {
             current_zoom += (target_zoom - current_zoom) / zoom_smooth;
-            if (zoomIn) 
+            if (zoomIn)
                 zoom((target_zoom - current_zoom) / zoom_smooth);
-            else 
+            else
                 zoom(-(target_zoom - current_zoom) / zoom_smooth);
         }
         if (current_translate != target_translate)
@@ -220,7 +217,7 @@ final class TrackballCamera: Modifier
     {
         zoom_smooth = smooth;
 
-        if (z < 0) 
+        if (z < 0)
             zoomIn = true;
         else
             zoomIn = false;
@@ -283,13 +280,13 @@ final class TrackballCamera: Modifier
     }
 
     void screenToWorld(
-        int scrx, 
-        int scry, 
-        int scrw, 
-        int scrh, 
-        float yfov, 
-        ref float worldx, 
-        ref float worldy, 
+        int scrx,
+        int scry,
+        int scrw,
+        int scrh,
+        float yfov,
+        ref float worldx,
+        ref float worldy,
         bool snap)
     {
         Vector3f camPos = getPosition();
@@ -299,7 +296,7 @@ final class TrackballCamera: Modifier
 
         float xfov = fovXfromY(yfov, aspect);
 
-        float tfov1 = tan(yfov*PI/360.0f); 
+        float tfov1 = tan(yfov*PI/360.0f);
         float tfov2 = tan(xfov*PI/360.0f);
 
         Vector3f camUp = getUpVector() * tfov1;
@@ -314,5 +311,10 @@ final class TrackballCamera: Modifier
 
         worldx = snap? floor(camPos.x - mx * camPos.y / my) : (camPos.x - mx * camPos.y / my);
         worldy = snap? floor(camPos.z - mz * camPos.y / my) : (camPos.z - mz * camPos.y / my);
+    }
+
+    void free()
+    {
+        Delete(this);
     }
 }

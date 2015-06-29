@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -30,13 +30,9 @@ module dgl.ui.font;
 
 import dlib.core.memory;
 
-abstract class Font: ManuallyAllocatable
+abstract class Font: Freeable
 {
     float height;
     void draw(string str);
     float textWidth(string str);
-    
-    mixin FreeImpl;
-    mixin ManualModeImpl;
 }
-

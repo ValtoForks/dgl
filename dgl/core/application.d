@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -52,43 +52,43 @@ class Application: EventListener
 {
     Color4f clearColor;
     bool exitOnEscapePress = true;
-    
+
     // TODO: configuration manager
     this(
-        uint width, 
-        uint height, 
-        string caption = "DGL application", 
-        bool unicodeInput = true, 
+        uint width,
+        uint height,
+        string caption = "DGL application",
+        bool unicodeInput = true,
         bool showCursor = true,
         bool resizableWindow = true)
     {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
             throw new Exception("Failed to init SDL: " ~ to!string(SDL_GetError()));
-            
+
         SDL_EnableUNICODE(unicodeInput);
-        
+
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
         SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-        
+
         environment["SDL_VIDEO_WINDOW_POS"] = "";
         environment["SDL_VIDEO_CENTERED"] = "1";
-        
+
         auto screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_RESIZABLE); // | SDL_FULLSCREEN
         if (screen is null)
             throw new Exception("Failed to set video mode: " ~ to!string(SDL_GetError()));
-            
+
         SDL_WM_SetCaption(toStringz(caption), null);
         SDL_ShowCursor(showCursor);
-        
-        DerelictGL.loadClassicVersions(GLVersion.GL12); 
+
+        DerelictGL.loadClassicVersions(GLVersion.GL12);
         DerelictGL.loadExtensions();
-        
+
         clearColor = Color4f(0, 0, 0);
-        
+
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         glEnable(GL_NORMALIZE);
@@ -98,11 +98,11 @@ class Application: EventListener
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glEnable(GL_CULL_FACE);
-        
+
         EventManager emngr = New!EventManager(width, height);
         super(emngr);
     }
-    
+
     void run()
     {
         while(eventManager.running)
@@ -113,25 +113,25 @@ class Application: EventListener
             glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glLoadIdentity();
-            
+
             onUpdate();
             onRedraw();
-            
+
             SDL_GL_SwapBuffers();
         }
 
         SDL_Quit();
     }
-    
+
     // Override me
     void onUpdate() {}
-    
+
     // Override me
     void onRedraw() {}
-    
+
     // Override me
     override void onKeyDown(int key)
-    {    
+    {
         if (key == SDLK_ESCAPE && exitOnEscapePress)
         {
             eventManager.running = false;
@@ -144,32 +144,31 @@ class Application: EventListener
         eventManager.running = false;
         onQuit();
     }
-    
+
     override void onResize(int width, int height)
     {
         writefln("Application resized to %s, %s", width, height);
-        SDL_Surface* screen = SDL_SetVideoMode(width, 
-                                               height, 
+        SDL_Surface* screen = SDL_SetVideoMode(width,
+                                               height,
                                                0, SDL_OPENGL | SDL_RESIZABLE);
         if (screen is null)
             throw new Exception("failed to set video mode: " ~ to!string(SDL_GetError()));
     }
-    
-    void freeContent()
+
+    ~this()
     {
         Delete(eventManager);
     }
-    
+
     override void free()
     {
-        freeContent();
         Delete(this);
     }
 }
 
 // TODO:
 // Under Linunx, user should be able to select
-// between system libraries and local ones 
+// between system libraries and local ones
 void loadLibraries()
 {
     version(Windows)
@@ -182,7 +181,7 @@ void loadLibraries()
         enum sharedLibSDL = "./lib/libsdl.so";
         enum sharedLibFT = "./lib/libfreetype.so";
     }
-    
+
     DerelictGL.load();
     DerelictGLU.load();
     DerelictSDL.load(sharedLibSDL);

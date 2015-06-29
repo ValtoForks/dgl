@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -46,7 +46,7 @@ class Light: Drawable3D
     bool enabled = true;
     bool debugDraw = false;
     bool forceOn = false;
-    
+
     this(
         Vector4f position,
         Color4f diffuseColor,
@@ -84,14 +84,16 @@ class Light: Drawable3D
         position.w = 1.0f;
         draw(dt);
     }
-    
-    mixin FreeImpl;
-    mixin ManualModeImpl;
+
+    override void free()
+    {
+        Delete(this);
+    }
 }
 
 Light pointLight(
-    Vector3f pos, 
-    Color4f diffuseColor, 
+    Vector3f pos,
+    Color4f diffuseColor,
     Color4f ambientColor,
     float constantAttenuation = 1.0f,
     float linearAttenuation = 0.1f,
@@ -103,4 +105,3 @@ Light pointLight(
         constantAttenuation, linearAttenuation,
         quadraticAttenuation);
 }
-

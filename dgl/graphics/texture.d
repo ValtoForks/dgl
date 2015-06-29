@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -36,7 +36,7 @@ import derelict.opengl.glu;
 import dlib.core.memory;
 import dlib.image.image;
 import dlib.math.vector;
-  
+
 import dgl.core.interfaces;
 
 class Texture: Modifier
@@ -48,11 +48,11 @@ class Texture: Modifier
     int height;
     Vector2f scroll;
 
-/*
     // TODO
+    /*
     this(uint w, uint h)
     {
-        free();
+        //free();
 
         width = w;
         height = h;
@@ -65,20 +65,44 @@ class Texture: Modifier
     }
 */
 
+    this(uint w, uint h)
+    {
+        scroll = Vector2f(0, 0);
+
+        width = w;
+        height = h;
+/*
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
+        glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+ */
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
+
     this(SuperImage img, bool genMipmaps = true)
     {
-        scroll = Vector2f(0, 0);   
+        scroll = Vector2f(0, 0);
         createFromImage(img, genMipmaps);
     }
-    
+
     void createFromImage(SuperImage img, bool genMipmaps = true)
     {
-        if (glIsTexture(tex)) 
+        if (glIsTexture(tex))
             glDeleteTextures(1, &tex);
 
         width = img.width;
         height = img.height;
-        
+
         glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
 
@@ -89,7 +113,7 @@ class Texture: Modifier
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
-        else 
+        else
         {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,15 +139,15 @@ class Texture: Modifier
                 assert(0, "Texture.createFromImage is not implemented for PixelFormat " ~ img.pixelFormat.to!string);
         }
 
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 
-            format, width, height, format, 
+        gluBuild2DMipmaps(GL_TEXTURE_2D,
+            format, width, height, format,
             type, cast(void*)img.data.ptr);
     }
 
     void bind(double dt)
     {
         glEnable(GL_TEXTURE_2D);
-        if (glIsTexture(tex)) 
+        if (glIsTexture(tex))
             glBindTexture(GL_TEXTURE_2D, tex);
         //else throw new Exception("Texture error");
         glMatrixMode(GL_TEXTURE);
@@ -131,7 +155,7 @@ class Texture: Modifier
         glLoadIdentity();
         glTranslatef(scroll.x, scroll.y, 0);
         glMatrixMode(GL_MODELVIEW);
-    }	
+    }
 
     void unbind()
     {
@@ -142,22 +166,22 @@ class Texture: Modifier
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
     }
-	
+
+    ~this()
+    {
+        if (glIsTexture(tex))
+            glDeleteTextures(1, &tex);
+    }
+
     void free()
     {
-        if (glIsTexture(tex)) 
-            glDeleteTextures(1, &tex);
-            
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
 
     void copyRendered()
     {
         glBindTexture(GL_TEXTURE_2D, tex);
         glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
-        glBindTexture(GL_TEXTURE_2D, 0);	
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
-

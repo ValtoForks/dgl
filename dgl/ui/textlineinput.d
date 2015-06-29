@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -45,58 +45,62 @@ class TextLineInput: TextListener, Drawable
     TextLine cursor;
     bool alignToWindow = true;
     int oldWindowHeight;
-    
+
     this(EventManager emngr, Font font, Vector2f pos)
     {
         super(emngr);
-        
+
         textLine = New!TextLine(font, "", pos);
         textLine.alignment = Alignment.Left;
         textLine.color = Color4f(1, 1, 1);
-        
+
         cursor = New!TextLine(font, "_", pos);
         cursor.alignment = Alignment.Left;
         cursor.color = Color4f(1, 1, 1);
-        
+
         oldWindowHeight = emngr.windowHeight;
     }
-    
+
     override void onKeyDown(int key)
     {
         super.onKeyDown(key);
-        
+
         textLine.setText(toString);
         cursor.setPosition(textLine.textWidth + cursor.textWidth, cursor.position.y);
     }
-    
+
     float timer = 0.0f;
     bool cursorState = true;
-    
+
     override void draw(double dt)
     {
         processEvents();
-        
+
         textLine.draw(dt);
-        
+
         timer += dt;
         if (timer >= 0.5f)
         {
             cursorState = !cursorState;
             timer = 0.0f;
         }
-        
+
         if (cursorState)
             cursor.draw(dt);
     }
-    
-    override void free()
+
+    ~this()
     {
-        writeln("Deleting TextLineInput...");
+        //writeln("Deleting TextLineInput...");
         textLine.free();
         cursor.free();
+    }
+
+    override void free()
+    {
         Delete(this);
     }
-    
+
     override void onResize(int width, int height)
     {
         if (alignToWindow)

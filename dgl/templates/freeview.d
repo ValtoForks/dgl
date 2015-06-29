@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -46,7 +46,7 @@ class FreeviewLayer: Layer
 
     bool grabMouse = true;
 
-    this(EventManager emngr, uint w, uint h)
+    this(EventManager emngr)
     {
         super(emngr, LayerType.Layer3D);
 
@@ -56,40 +56,38 @@ class FreeviewLayer: Layer
         camera.setZoom(20.0f);
         addModifier(camera);
     }
-    
-    override void freeContent()
-    {
-        super.freeContent();
-        camera.free();
-    }
-    
+
     override void free()
     {
-        freeContent();
         Delete(this);
+    }
+
+    ~this()
+    {
+        camera.free();
     }
 
     override void onMouseButtonDown(int button)
     {
         if (grabMouse)
         {
-            if (button == SDL_BUTTON_RIGHT) 
+            if (button == SDL_BUTTON_RIGHT)
             {
                 tempMouseX = eventManager.mouseX;
                 tempMouseY = eventManager.mouseY;
                 eventManager.setMouseToCenter();
             }
-            else if (button == SDL_BUTTON_MIDDLE) 
+            else if (button == SDL_BUTTON_MIDDLE)
             {
                 tempMouseX = eventManager.mouseX;
                 tempMouseY = eventManager.mouseY;
                 eventManager.setMouseToCenter();
             }
-            else if (button == SDL_BUTTON_WHEELUP) 
+            else if (button == SDL_BUTTON_WHEELUP)
             {
                 camera.zoomSmooth(-2.0f, 16.0f);
             }
-            else if (button == SDL_BUTTON_WHEELDOWN) 
+            else if (button == SDL_BUTTON_WHEELDOWN)
             {
                 camera.zoomSmooth(2.0f, 16.0f);
             }
@@ -100,11 +98,11 @@ class FreeviewLayer: Layer
     {
         if (grabMouse)
         {
-            if (button == SDL_BUTTON_RIGHT) 
+            if (button == SDL_BUTTON_RIGHT)
             {
                 eventManager.setMouse(tempMouseX, tempMouseY);
             }
-            else if (button == SDL_BUTTON_MIDDLE) 
+            else if (button == SDL_BUTTON_MIDDLE)
             {
                 eventManager.setMouse(tempMouseX, tempMouseY);
             }
@@ -124,7 +122,7 @@ class FreeviewLayer: Layer
                 eventManager.setMouseToCenter();
                 eventManager.showCursor(false);
             }
-            else if (eventManager.mouseButtonPressed[SDL_BUTTON_MIDDLE] || 
+            else if (eventManager.mouseButtonPressed[SDL_BUTTON_MIDDLE] ||
                     (eventManager.mouseButtonPressed[SDL_BUTTON_LEFT] && eventManager.keyPressed[SDLK_LSHIFT]))
             {
                 float shift_x = (cast(float)eventManager.windowWidth/2 - eventManager.mouseX)/16.0f;
@@ -137,7 +135,7 @@ class FreeviewLayer: Layer
             else
                 eventManager.showCursor(true);
         }
-            
+
         super.draw(dt);
     }
 }

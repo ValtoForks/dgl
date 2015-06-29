@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -35,35 +35,48 @@ import dlib.math.vector;
 import dgl.core.event;
 import dgl.core.interfaces;
 import dgl.graphics.texture;
+import dgl.graphics.material;
 
 // TODO: make all these children of one Sprite class
 
 class ScreenSprite: EventListener, Drawable
 {
-    Texture loadingTex;
+    //Texture loadingTex;
+    //Color4f color;
+    Material material;
 
     this(EventManager em, Texture tex)
     {
         super(em);
-        loadingTex = tex;
+        //loadingTex = tex;
+        //color = Color4f(1, 1, 1, 1);
+        material = New!Material();
+        material.shadeless = true;
+        material.textures[0] = tex;
     }
 
     override void draw(double dt)
     {
-        loadingTex.bind(dt);
-        glColor4f(1, 1, 1, 1);
+        material.bind(dt);
+        //glColor4fv(color.arrayof.ptr);
         glBegin(GL_QUADS);
         glTexCoord2f(0, 1); glVertex2f(0, eventManager.windowHeight);
         glTexCoord2f(0, 0); glVertex2f(0, 0);
         glTexCoord2f(1, 0); glVertex2f(eventManager.windowWidth, 0);
         glTexCoord2f(1, 1); glVertex2f(eventManager.windowWidth, eventManager.windowHeight);
         glEnd();
-        loadingTex.unbind();
+        material.unbind();
+        glDisable(GL_LIGHTING);
     }
 
     override void free()
     {
         Delete(this);
+    }
+
+    ~this()
+    {
+        material.free();
     }
 }
 
@@ -73,7 +86,7 @@ class Sprite: Drawable
     uint width;
     uint height;
     Vector2f position;
-    
+
     this(Texture tex, uint w, uint h)
     {
         texture = tex;
@@ -81,9 +94,9 @@ class Sprite: Drawable
         height = h;
         position = Vector2f(0, 0);
     }
-    
+
     void draw(double dt)
-    {       
+    {
         glDisable(GL_DEPTH_TEST);
         glPushMatrix();
         glColor4f(1,1,1,1);
@@ -91,22 +104,24 @@ class Sprite: Drawable
         glScalef(width, height, 1.0f);
         texture.bind(dt);
         glBegin(GL_QUADS);
+        glTexCoord2f(0, 1); glVertex2f(0, 1);
         glTexCoord2f(0, 0); glVertex2f(0, 0);
         glTexCoord2f(1, 0); glVertex2f(1, 0);
         glTexCoord2f(1, 1); glVertex2f(1, 1);
-        glTexCoord2f(0, 1); glVertex2f(0, 1);
         glEnd();
         texture.unbind();
         glPopMatrix();
         glEnable(GL_DEPTH_TEST);
     }
-    
+
+    ~this()
+    {
+    }
+
     void free()
     {
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
 }
 
 class AnimatedSprite: Drawable
@@ -121,7 +136,7 @@ class AnimatedSprite: Drawable
     float framerate = 1.0f / 25.0f;
     double counter = 0.0;
     Vector2f position;
-    
+
     this(Texture sheetTex, uint w, uint h)
     {
         texture = sheetTex;
@@ -131,7 +146,7 @@ class AnimatedSprite: Drawable
         numVTiles = texture.height / tileHeight;
         position = Vector2f(0, 0);
     }
-    
+
     void draw(double dt)
     {
         counter += dt;
@@ -140,12 +155,12 @@ class AnimatedSprite: Drawable
             counter = 0.0;
             advanceFrame();
         }
-        
+
         float u = cast(float)(tx * tileWidth) / texture.width;
         float v = cast(float)(ty * tileHeight) / texture.height;
         float w = cast(float)tileWidth / texture.width;
         float h = cast(float)tileHeight / texture.height;
-        
+
         glDisable(GL_DEPTH_TEST);
         glPushMatrix();
         glColor4f(1,1,1,1);
@@ -162,7 +177,7 @@ class AnimatedSprite: Drawable
         glPopMatrix();
         glEnable(GL_DEPTH_TEST);
     }
-    
+
     void advanceFrame()
     {
         tx++;
@@ -170,7 +185,7 @@ class AnimatedSprite: Drawable
         {
             tx = 0;
             ty++;
-            
+
             if (ty >= numVTiles)
             {
                 ty = 0;
@@ -178,10 +193,12 @@ class AnimatedSprite: Drawable
         }
     }
 
+    ~this()
+    {
+    }
+
     void free()
     {
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
 }

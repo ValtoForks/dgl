@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -73,7 +73,8 @@ class Axes: Drawable
         glEnable(GL_LIGHTING);
     }
 
-    mixin FreeImpl;
-    mixin ManualModeImpl;
+    override void free()
+    {
+        Delete(this);
+    }
 }
-

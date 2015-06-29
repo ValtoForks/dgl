@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -44,9 +44,8 @@ interface Drawable3D: Drawable
     void draw(Object3D obj, double dt);
 }
 
-interface Modifier3D: ManuallyAllocatable
+interface Modifier3D: Freeable
 {
     void bind(Object3D obj, double dt);
     void unbind(Object3D obj);
 }
-

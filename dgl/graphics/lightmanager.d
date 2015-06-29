@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -52,12 +52,12 @@ class LightManager: Modifier3D, Drawable
         lights.append(light);
         return light;
     }
-    
+
     Light addPointLight(Vector3f position)
     {
         Light light = pointLight(
-            position, 
-            Color4f(1.0f, 1.0f, 1.0f, 1.0f), 
+            position,
+            Color4f(1.0f, 1.0f, 1.0f, 1.0f),
             Color4f(0.1f, 0.1f, 0.1f, 1.0f));
         lights.append(light);
         return light;
@@ -72,7 +72,7 @@ class LightManager: Modifier3D, Drawable
     void unbind(Object3D obj)
     {
         foreach(i; 0..maxLightsPerObject)
-            glDisable(GL_LIGHT0 + i); 
+            glDisable(GL_LIGHT0 + i);
         glDisable(GL_LIGHTING);
     }
 
@@ -94,7 +94,7 @@ class LightManager: Modifier3D, Drawable
     {
         size_t j = 0;
         Light tmp;
-        
+
         auto ldata = lights.data;
 
         foreach(i, v; ldata)
@@ -120,7 +120,7 @@ class LightManager: Modifier3D, Drawable
     void apply(Vector3f objPos)
     {
         auto ldata = lights.data;
-    
+
         foreach(light; ldata)
             if (lightsOn || light.forceOn)
                 calcBrightness(light, objPos);
@@ -147,15 +147,15 @@ class LightManager: Modifier3D, Drawable
 			    Vector4f p = Vector4f(0, 0, 0, 2);
 			    glLightfv(GL_LIGHT0 + i, GL_POSITION, p.arrayof.ptr);
 			}
-        }      
+        }
     }
 
     void unapply()
     {
         foreach(i; 0..maxLightsPerObject)
-            glDisable(GL_LIGHT0 + i); 
+            glDisable(GL_LIGHT0 + i);
     }
-    
+
     void draw(double dt)
     {
         // Draw lights
@@ -176,12 +176,13 @@ class LightManager: Modifier3D, Drawable
 
     void free()
     {
+        Delete(this);
+    }
+
+    ~this()
+    {
         foreach(light; lights.data)
             light.free();
         lights.free();
-        
-        Delete(this);
     }
-    
-    mixin ManualModeImpl;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov 
+Copyright (c) 2013-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -35,7 +35,7 @@ import derelict.opengl.glext;
 
 import dlib.core.memory;
 import dlib.image.color;
-	
+
 import dgl.core.interfaces;
 import dgl.graphics.texture;
 import dgl.graphics.shader;
@@ -68,13 +68,14 @@ class Material: Modifier
     ushort[8] texBlendMode;
     bool shadeless = false;
     bool useTextures = true;
+    bool additiveBlending = false;
 
     this()
     {
         ambientColor = Color4f(0.7f, 0.7f, 0.7f, 1.0f);
         diffuseColor = Color4f(0.8f, 0.8f, 0.8f, 1.0f);
         specularColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        emissionColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+        emissionColor = Color4f(0.0f, 0.0f, 0.0f, 0.0f);
         shininess = 64.0f;
     }
 
@@ -97,6 +98,9 @@ class Material: Modifier
 
 		//glDisable(GL_NORMALIZE);
 
+        if (additiveBlending)
+            glBlendFunc(GL_ONE, GL_ONE);
+
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadeless && !useDimLight)
         {
@@ -116,7 +120,7 @@ class Material: Modifier
 
         if (shader && !useDimLight)
             shader.bind(dt);
-			
+
 		//glEnable(GL_NORMALIZE);
     }
 
@@ -136,9 +140,12 @@ class Material: Modifier
         }
 
         glActiveTextureARB(GL_TEXTURE0_ARB);
-		
+
         if (shadeless && !useDimLight)
             glEnable(GL_LIGHTING);
+
+        if (additiveBlending)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     override string toString()
@@ -161,11 +168,8 @@ class Material: Modifier
 
     void free()
     {
-        if (name.length)
-            Delete(name);
+        //if (name.length)
+        //    Delete(name);
         Delete(this);
     }
-    
-    mixin ManualModeImpl;
 }
-

@@ -4,6 +4,7 @@ public
 {
     import derelict.opengl.gl;
     import derelict.opengl.glu;
+    import derelict.opengl.glext;
     import derelict.sdl.sdl;
 
     import dgl.core.application;
@@ -12,7 +13,7 @@ public
     import dgl.core.interfaces;
     import dgl.core.layer;
     import dgl.core.room;
-    
+
     import dgl.graphics.arbshader;
     import dgl.graphics.axes;
     import dgl.graphics.billboard;
@@ -31,20 +32,18 @@ public
     import dgl.graphics.sprite;
     import dgl.graphics.tbcamera;
     import dgl.graphics.texture;
-    
+
     import dgl.ui.font;
     import dgl.ui.ftfont;
     import dgl.ui.textline;
     import dgl.ui.textlineinput;
-    
+
     import dgl.asset.dgl2;
     import dgl.asset.resman;
     import dgl.asset.serialization;
-    import dgl.asset.image;
-    
+
     import dgl.vfs.vfs;
-    import dgl.vfs.stdfs;
     import dgl.dml.dml;
 
-    import dgl.templates.freeview;   
+    import dgl.templates.freeview;
 }

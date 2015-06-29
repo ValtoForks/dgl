@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -66,12 +66,12 @@ class CharStorage(T): BST!(T)
     {
         super();
     }
-    
+
     void opIndexAssign(T v, dchar k)
     {
         insert(k, v);
     }
-    
+
     T opIndex(dchar k)
     {
         auto node = find(k);
@@ -80,7 +80,7 @@ class CharStorage(T): BST!(T)
         else
             return node.value;
     }
-    
+
     T* opIn_r(dchar k)
     {
         auto node = find(k);
@@ -89,7 +89,7 @@ class CharStorage(T): BST!(T)
         else
             return null;
     }
-    
+
     size_t length()
     {
         uint len = 1;
@@ -103,7 +103,7 @@ final class FreeTypeFont: Font
 {
     FT_Face ftFace;
     FT_Library ftLibrary;
-    
+
     CharStorage!Glyph glyphs;
 
     this(string filename, uint height)
@@ -111,17 +111,17 @@ final class FreeTypeFont: Font
         enum ASCII_CHARS = 128;
         this.height = height;
 
-        if (FT_Init_FreeType(&ftLibrary)) 
+        if (FT_Init_FreeType(&ftLibrary))
             throw new Exception("FT_Init_FreeType failed");
 
         if (!exists(filename))
             throw new Exception("Cannot find font file " ~ filename);
 
-        if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace)) 
+        if (FT_New_Face(ftLibrary, toStringz(filename), 0, &ftFace))
             throw new Exception("FT_New_Face failed (there is probably a problem with your font file)");
-        
+
         FT_Set_Char_Size(ftFace, height << 6, height << 6, 96, 96);
-        
+
         glyphs = New!(CharStorage!Glyph)();
 
         foreach(i; 0..ASCII_CHARS)
@@ -131,13 +131,17 @@ final class FreeTypeFont: Font
             loadGlyph(i, tex);
         }
     }
-    
-    override void free()
+
+    ~this()
     {
         //writefln("Deleting %s glyph(s) in FTFont...", glyphs.length);
         foreach(i, glyph; glyphs)
             glDeleteTextures(1, &glyph.textureId);
         Delete(glyphs);
+    }
+
+    void free()
+    {
         Delete(this);
     }
 
@@ -182,7 +186,7 @@ final class FreeTypeFont: Font
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glTexImage2D(GL_TEXTURE_2D, 
+        glTexImage2D(GL_TEXTURE_2D,
             0, GL_RGBA, width, height,
             0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, img.ptr);
 
@@ -209,7 +213,7 @@ final class FreeTypeFont: Font
             glyph = glyphs[code];
         else
             glyph = glyphs[loadChar(code)];
-        
+
         FT_BitmapGlyph bitmapGlyph = cast(FT_BitmapGlyph)(glyph.ftGlyph);
         FT_Bitmap bitmap = bitmapGlyph.bitmap;
 
@@ -235,7 +239,7 @@ final class FreeTypeFont: Font
         glPopMatrix();
         float shift = glyph.advanceX >> 6;
         glTranslatef(shift, 0, 0);
-        
+
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return shift;
@@ -284,4 +288,3 @@ final class FreeTypeFont: Font
         return width;
     }
 }
-
