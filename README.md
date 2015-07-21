@@ -12,7 +12,7 @@ Main changes:
 * DGL2 scene file format without JSON dependency
 * Dynamic shadows
 * Shader-based materials with normal mapping
-* Billboards and 2D sprites
+* Billboards and 2D sprites, including animated ones
 * Own data markup language - DML
 
 What already ported from ~master:
