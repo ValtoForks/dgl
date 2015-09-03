@@ -114,6 +114,10 @@ def writeMesh(f, obj, meshId, materials, maxMaterialId):
                 uv[uvmapi][0] = uvmap.data[facei].uv1
                 uv[uvmapi][1] = uvmap.data[facei].uv2
                 uv[uvmapi][2] = uvmap.data[facei].uv3
+                
+                uv[uvmapi][0][1] = 1.0 - uv[uvmapi][0][1]
+                uv[uvmapi][1][1] = 1.0 - uv[uvmapi][1][1]
+                uv[uvmapi][2][1] = 1.0 - uv[uvmapi][2][1]
 
         if len(uvtex) == 1:
             uv[1][0] = uvtex[0].data[facei].uv1
@@ -128,13 +132,6 @@ def writeMesh(f, obj, meshId, materials, maxMaterialId):
 
     f.write(packChunk(ChunkType.TRIMESH, meshId, obj.data.name, triBuffer))
 
-    #bpy.context.scene.objects.active = obj
-    #bpy.ops.object.mode_set(mode='EDIT')
-    #bpy.ops.mesh.select_all(action='SELECT')
-    #bpy.ops.mesh.tris_convert_to_quads()
-    #bpy.context.scene.update()
-    #bpy.ops.object.mode_set(mode='OBJECT')
-
     return maxMaterialId
 
 def writeEntity(f, obj, entityId, meshes, materials):
@@ -147,10 +144,11 @@ def writeEntity(f, obj, entityId, meshes, materials):
     # TODO: material id
     materialId = -1
 
-    meshName = obj.data.name
     meshId = -1
-    if meshName in meshes:
-        meshId = meshes[meshName]
+    if not obj.data is None:
+        meshName = obj.data.name
+        if meshName in meshes:
+            meshId = meshes[meshName]
 
     position = rotX * obj.location #mat.translation
     rot = mat.to_quaternion()
@@ -166,6 +164,8 @@ def writeEntity(f, obj, entityId, meshes, materials):
             "color": vecToStr([col.r, col.g, col.b, 1.0])
         }
     else:
+        if "type" in obj:
+            entityType = obj["type"]
         dml = {
             "visible": str(int(not obj.hide_render))
         }
