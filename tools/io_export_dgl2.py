@@ -167,8 +167,14 @@ def writeEntity(f, obj, entityId, meshes, materials):
         if "type" in obj:
             entityType = obj["type"]
         dml = {
-            "visible": str(int(not obj.hide_render))
+            "visible": str(int(not obj.hide_render)),
+            "bbox": vecToStr([obj.dimensions.x, obj.dimensions.z, obj.dimensions.y])
         }
+        
+        if len(obj.keys()) > 1:
+            for propName in obj.keys():
+                if propName not in '_RNA_UI' and propName != "type":
+                    dml[propName] = str(obj[propName])
 
     dmlStr = encodeDML(dml)
     dmlASCII = dmlStr.encode('ascii')

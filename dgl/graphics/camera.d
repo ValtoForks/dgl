@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,55 +25,13 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dgl.graphics.axes;
 
-import derelict.opengl.gl;
-import dlib.core.memory;
+module dgl.graphics.camera;
+
+import dlib.math.matrix;
 import dgl.core.interfaces;
 
-class Axes: Drawable
+interface Camera: Modifier
 {
-    override void draw(double dt)
-    {
-        //glDisable(GL_LIGHTING);
-        glPointSize(5.0f);
-        glPushMatrix();
-        glScalef(10.0f, 10.0f, 10.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glEnd();
-        glPopMatrix();
-        glPointSize(1.0f);
-        //glEnable(GL_LIGHTING);
-    }
-
-    override void free()
-    {
-        Delete(this);
-    }
+    Matrix4x4f getTransform();
 }

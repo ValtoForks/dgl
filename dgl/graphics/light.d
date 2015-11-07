@@ -46,6 +46,7 @@ class Light: Drawable3D
     bool enabled = true;
     bool debugDraw = false;
     bool forceOn = false;
+    bool highPriority = false;
 
     this(
         Vector4f position,
