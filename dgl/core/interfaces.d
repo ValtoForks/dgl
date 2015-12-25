@@ -28,15 +28,16 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.core.interfaces;
 
-import dlib.core.memory;
+//import dlib.core.memory;
 
-interface Drawable: Freeable
+interface Drawable
 {
     void draw(double dt);
 }
 
-interface Modifier: Freeable
+interface Modifier
 {
     void bind(double delta);
     void unbind();
 }
+

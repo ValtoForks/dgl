@@ -26,17 +26,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.dml.dml;
+module dgl.text.dml;
 
 import std.stdio;
 import std.conv;
 import dlib.core.memory;
+import dlib.container.array;
 import dlib.container.dict;
 import dlib.container.hash;
 import dlib.math.vector;
 import dlib.image.color;
-import dgl.dml.lexer;
-import dgl.dml.stringconv;
+import dlib.text.lexer;
+import dgl.text.stringconv;
 
 struct DMLValue
 {
@@ -61,10 +62,15 @@ struct DMLValue
     {
         return to!int(data);
     }
+    
+    int toUInt()
+    {
+        return to!uint(data);
+    }
 
     bool toBool()
     {
-        return cast(bool)to!int(data);
+        return cast(bool)cast(int)(to!float(data));
     }
 
     Vector3f toVector3f()
@@ -83,10 +89,10 @@ struct DMLValue
     }
 }
 
-//TODO: rewrite without GC
+alias Lexeme = dchar[];
+
 struct DMLStruct
 {
-    //DMLValue[string] data;
     Dict!(DMLValue, string) data;
     alias data this;
     
@@ -99,16 +105,16 @@ struct DMLStruct
 
     bool set(Lexeme key, Lexeme val)
     {
-        string k = convToStr(key.str.data);
-        string v = convToStr(val.str.data[1..$-1]);
-		return set(k, v);
+        string k = convToStr(key);
+        string v = convToStr(val[1..$-1]);
+        return set(k, v);
     }
 	
-    bool set(string k, string v)
-    {
+    private bool set(string k, string v)
+    {       
         if (data is null)
             data = dict!(DMLValue, string);
-        
+
         data[k] = DMLValue(v);
         return true;
     }
@@ -116,7 +122,9 @@ struct DMLStruct
     void free()
     {
         if (data !is null)
+        {
             Delete(data);
+        }
     }
 }
 
@@ -138,100 +146,123 @@ struct DMLData
     }
 }
 
+static string[] dmlDelimiters = 
+[
+    "=", "\"", ";",
+    " ", "\n", "\r",
+];
+
+Lexeme getNextLexeme(Lexer lexer)
+{
+    Lexeme lexeme = lexer.getLexeme();
+    while (lexeme == " " || lexeme == "\n")
+    {
+        Delete(lexeme);
+        lexeme = lexer.getLexeme();
+    }
+    return lexeme;
+}
+
 bool parseDML(string text, DMLData* data)
-{    
-    Lexer lexer = Lexer(text);
+{
+    Lexer lexer = New!Lexer(text, dmlDelimiters);
 
     Lexeme lexeme;
-    lexeme = lexer.get();
-    if (lexeme.valid)
+    lexeme = lexer.getNextLexeme();
+    bool res = true;
+    if (lexeme.length)
     {
-        if (lexeme.str.data == "{")
+        while(res && lexeme.length)
         {
-            lexeme.free();
-            return parseStruct(&lexer, &data.root);
-        }
-        else
-        {
-            lexeme.valid = false;
-            writefln("DML error at line %s: expected \"{\", not \"%s\"", lexer.line, lexeme.str.data);
-            return false;
+            res = parseStatement(lexeme, lexer, &data.root);
+            if (res)
+                lexeme = lexer.getNextLexeme();
         }
     }
     else
     {
         writeln("DML error: empty string");
-        return false;
+        res = false;
     }
+    
+    Delete(lexer);
+    return res;
 }
 
-bool parseStruct(Lexer* lexer, DMLStruct* stru)
-{
-    Lexeme lexeme = lexer.current;
-    bool noError = true;
-    while(noError && lexeme.valid && lexeme.str.data != "}")
-    {
-        lexeme = lexer.get();
-        if (lexeme.str.data != "}")
-        {
-            noError = parseStatement(lexer, stru);
-            lexeme = lexer.current;
-        }
-    }
-
-    if (lexeme.str.data != "}")
-    {
-        lexeme.free();
-        writefln("DML syntax error at line %s: missing \"}\"", lexer.line);
-        return false;
-    }
-
-    lexeme.free();
-    return noError;
-}
-
-bool parseStatement(Lexer* lexer, DMLStruct* stru)
+bool parseStatement(Lexeme lexeme, Lexer lexer, DMLStruct* stru)
 {
     Lexeme id, value;
-    Lexeme lexeme = lexer.current;
     // TODO: assert identifier
 
     id = lexeme;
-    lexeme = lexer.get();
-    if (lexeme.str.data != "=")
+    lexeme = lexer.getNextLexeme();
+    if (lexeme != "=")
     {
-        writefln("DML syntax error at line %s: \"=\" expected, got \"%s\"", lexer.line, lexeme.str.data);
-        lexeme.free();
+        writefln("DML syntax error: \"=\" expected, got \"%s\"", lexeme);
+        Delete(id);
+        Delete(lexeme);
         return false;
     }
-    lexeme.free();
-    lexeme = lexer.get();
-    if (!isString(lexeme))
+    Delete(lexeme);
+
+    lexeme = lexer.getNextLexeme();
+    DynamicArray!dchar valueArr;
+    if (lexeme == "\"")
     {
-        writefln("DML syntax error at line %s: string expected, got \"%s\"", lexer.line, lexeme.str.data);
-        lexeme.free();
+        valueArr.append(lexeme);
+        Delete(lexeme);
+        lexeme = lexer.getLexeme();
+        if (lexeme.length)
+        {
+            while(lexeme != "\"")
+            {
+                valueArr.append(lexeme);
+                Delete(lexeme);
+                lexeme = lexer.getLexeme();
+                
+                if (!lexeme.length)
+                {
+                    writefln("DML syntax error: unexpected end of input");
+                    return false;
+                }
+            }
+            
+            valueArr.append(lexeme);
+            Delete(lexeme);
+        }
+        else
+        {
+            writefln("DML syntax error: unexpected end of input");
+            return false;
+        }
+    }
+    
+    value = copyBuffer(valueArr.data);
+    valueArr.free();
+    
+    lexeme = lexer.getNextLexeme();
+    if (lexeme != ";")
+    {
+        writefln("DML syntax error: \";\" expected, got \"%s\"", lexeme);
+        Delete(lexeme);
         return false;
     }
-    value = lexeme;
-    lexeme = lexer.get();
-    if (lexeme.str.data != ";")
-    {
-        writefln("DML syntax error at line %s: \";\" expected, got \"%s\"", lexer.line, lexeme.str.data);
-        lexeme.free();
-        return false;
-    }
-    lexeme.free();
+    Delete(lexeme);
+    
+    //writeln(id);
+    //writeln(value);
 
     stru.set(id, value);
-    id.free();
-    value.free();
+
+    Delete(id);
+    Delete(value);
 
     return true;
 }
 
 bool isString(Lexeme lexeme)
 {
-    return lexeme.str.data[0] == '\"' &&
-           lexeme.str.data[$-1] == '\"';
+    return lexeme[0] == '\"' &&
+           lexeme[$-1] == '\"';
 }
 

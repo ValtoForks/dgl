@@ -31,7 +31,8 @@ module dgl.graphics.camera;
 import dlib.math.matrix;
 import dgl.core.interfaces;
 
-interface Camera: Modifier
+interface Camera
 {
-    Matrix4x4f getTransform();
+    Matrix4x4f getTransformation();
+    Matrix4x4f getInvTransformation();
 }

@@ -193,13 +193,13 @@ def writeEntity(f, obj, entityId, meshes, materials):
     f.write(packChunk(ChunkType.ENTITY, entityId, obj.name, data))
 
 def vecToStr(vec):
-    return "[" + ", ".join(str(x) for x in vec) + "]",
+    return "[" + ", ".join(str(x) for x in vec) + "]"
 
 def encodeDML(d):
-    res = "{"
+    res = ""
     for k, v in d.items():
-        res += str(k) + "=" + "\"" + str(v[0]) + "\";"
-    res += "}"
+        print(v);
+        res += k + "=" + "\"" + v + "\";"
     return res
 
 def writeMaterial(f, matName, matIndex):
@@ -208,12 +208,16 @@ def writeMaterial(f, matName, matIndex):
     diffuse = mat.diffuse_color
     specular = mat.specular_color
     shadeless = mat.use_shadeless
+    emission = mat.emit
 
     dml = {
         "diffuseColor": vecToStr([diffuse.r, diffuse.g, diffuse.b, 1.0]),
         "specularColor": vecToStr([specular.r, specular.g, specular.b, 1.0]),
-        "shadeless": str(int(shadeless))
+        "shadeless": str(int(shadeless)),
+        "emission": str(emission)
     }
+    
+    print(dml)
 
     # save texture slots
 

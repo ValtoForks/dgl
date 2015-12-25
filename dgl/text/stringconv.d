@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov
+Copyright (c) 2015 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,55 +25,45 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module dgl.graphics.axes;
 
-import derelict.opengl.gl;
+module dgl.text.stringconv;
+
+import std.stdio;
 import dlib.core.memory;
-import dgl.core.interfaces;
+import dlib.container.array;
+import std.conv;
 
-class Axes: Drawable
+string copyStr(string s)
 {
-    override void draw(double dt)
-    {
-        //glDisable(GL_LIGHTING);
-        glPointSize(5.0f);
-        glPushMatrix();
-        glScalef(10.0f, 10.0f, 10.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glBegin(GL_LINES);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 1.0f);
-        glEnd();
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glEnd();
-        glPopMatrix();
-        glPointSize(1.0f);
-        //glEnable(GL_LIGHTING);
-    }
+    auto res = New!(char[])(s.length);
+    foreach(i, c; s)
+        res[i] = c;
+    return cast(string)res[0..$];
+}
 
-    override void free()
+// GC-free storage for dynamically generated strings
+
+__gshared DynamicArray!string globalStringArray;
+
+// TODO: replace std.conv.to with completely GC-free converter
+string convToStr(T)(T v)
+{
+    string gcStr = to!string(v);
+    ubyte[] cStr = New!(ubyte[])(gcStr.length);
+    foreach(i, b; gcStr)
     {
-        Delete(this);
+        cStr[i] = b;
     }
+    string str = cast(string)cStr;
+    globalStringArray.append(str);
+    return str;
+}
+
+void freeGlobalStringArray()
+{
+    foreach(s; globalStringArray)
+    {
+        Delete(s);
+    }
+    globalStringArray.free();
 }

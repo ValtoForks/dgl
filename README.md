@@ -4,30 +4,29 @@ DGL is a minimalistic 3D and 2D real-time graphics engine written in D language 
 
 Features:
 * Fully GC-free
-* Supports Windows and Linux
+* Supports Windows, Linux and Mac OS X
 * Event system with user-defined events and Unicode keyboard input
 * Resource manager
 * Own scene file format (DGL2) with Blender exporter
+* Loading textures from PNG
 * Dynamic shadows
 * Unlimited number of dynamic light sources
+* GLSL shaders
 * Shader-based materials with normal mapping and parallax mapping
-* Loading textures from PNG
-* GLSL and ARB shaders
+* Antialiasing
 * Geometric shapes
 * Billboards and 2D sprites, including animated ones
 * Text rendering with TTF fonts and Unicode support
 * VFS
+* Configuration system
 
 TODO:
-* Configuration files
 * Actors, IQM format loading
 * I8n
 
 Screenshots
 -----------
-[![Screenshot1](/screenshots/002_thumb.jpg)](/screenshots/002.jpg)
-
-Screenshot is taken from [Atrium](http://github.com/gecko0307/atrium), a physics-based action game built upon DGL.
+[![Screenshot1](/screenshots/003_thumb.jpg)](/screenshots/003.jpg)
 
 License
 -------

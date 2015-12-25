@@ -64,6 +64,10 @@ class Texture: Modifier
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 */
+    this()
+    {
+        scroll = Vector2f(0, 0);
+    }
 
     this(uint w, uint h)
     {
@@ -158,6 +162,11 @@ class Texture: Modifier
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
     }
+    
+    bool valid()
+    {
+        return cast(bool)glIsTexture(tex);
+    }
 
     ~this()
     {
@@ -177,3 +186,4 @@ class Texture: Modifier
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
+

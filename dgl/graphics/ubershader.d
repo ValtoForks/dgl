@@ -29,10 +29,10 @@ DEALINGS IN THE SOFTWARE.
 module dgl.graphics.ubershader;
 
 import dlib.core.memory;
+import dgl.core.api;
 import dgl.core.event;
 import dgl.graphics.material;
 import dgl.graphics.shader;
-import dgl.graphics.glslshader;
 
 private string _uberVertexShader = q{
     varying vec4 shadowCoord;
@@ -40,7 +40,7 @@ private string _uberVertexShader = q{
     varying vec3 n, t, b;
     varying vec3 E;
     uniform bool bumpEnabled;
-		
+        
     void main(void)
     {
         gl_TexCoord[0] = gl_MultiTexCoord0;
@@ -49,7 +49,7 @@ private string _uberVertexShader = q{
         n = normalize(gl_NormalMatrix * gl_Normal);
         t = normalize(gl_NormalMatrix * gl_Color.xyz);
         b = cross(n, t);
-	    position = (gl_ModelViewMatrix * gl_Vertex).xyz;
+        position = (gl_ModelViewMatrix * gl_Vertex).xyz;
         
         E = position;
         if (bumpEnabled)
@@ -62,7 +62,7 @@ private string _uberVertexShader = q{
         
         shadowCoord = gl_TextureMatrix[7] * (gl_ModelViewMatrix * gl_Vertex);
         
-	    gl_Position = ftransform();
+        gl_Position = ftransform();
     }
 };
 
@@ -71,24 +71,28 @@ private string _uberFragmentShader = q{
     varying vec3 position;
     varying vec3 n, t, b;
     varying vec3 E;
-		
+        
     uniform sampler2D dgl_Texture0;
     uniform sampler2D dgl_Texture1;
     uniform sampler2D dgl_Texture2;
     uniform sampler2D dgl_Texture7;
     
     uniform bool shadeless;
+    const bool shadowEnabled = true;
     uniform bool textureEnabled;
     uniform bool bumpEnabled;
     uniform bool parallaxEnabled;
+    uniform bool glowMapEnabled;
+    uniform bool rimLightEnabled;
+    uniform float dgl_ShadowMapSize;
     
     const float parallaxScale = 0.06;
     const float parallaxBias = -0.03;
-    const float lightRadiusSqr = 8.5;
+    const float lightRadiusSqr = 9.0; //8.5;
     const float wrapFactor = 0.5;
-    const float shadowBrightness = 0.3;
+    const float shadowBrightness = 0.4;
     const float shininess = 32.0;
-    const float edgeWidth = 0.4;
+    const float edgeWidth = 0.3;
     
     float texture2DCompare(sampler2D depths, vec2 uv, float compare)
     {
@@ -96,11 +100,11 @@ private string _uberFragmentShader = q{
         return (depth < compare)? 0.0 : 1.0;
     }
     
-    float texture2DShadowLerp(sampler2D depths, vec2 size, vec2 uv, float compare)
+    float texture2DShadowLerp(sampler2D depths, vec2 uv, float compare)
     {
-        vec2 texelSize = vec2(1.0) / size;
-        vec2 f = fract(uv * size + 0.5);
-        vec2 centroidUV = floor(uv * size + 0.5) / size;
+        vec2 texelSize = vec2(1.0) / dgl_ShadowMapSize;
+        vec2 f = fract(uv * dgl_ShadowMapSize + 0.5);
+        vec2 centroidUV = floor(uv * dgl_ShadowMapSize + 0.5) / dgl_ShadowMapSize;
 
         float lb = texture2DCompare(depths, centroidUV + texelSize * vec2(0.0, 0.0), compare);
         float lt = texture2DCompare(depths, centroidUV + texelSize * vec2(0.0, 1.0), compare);
@@ -116,7 +120,32 @@ private string _uberFragmentShader = q{
     {
         return (b > 0.0)? pow(value, log2(b) / log2(0.5)) : 0.0;
     }
+/*
+    const float roughness_val = 0.2; //0.18;
+    float cookTor(vec3 L, vec3 V, vec3 N)
+    {
+        vec3 H = normalize(L + V);
 
+        float NdotL = max(0.0, dot(N, L));
+        float NdotV = max(0.0, dot(N, V));
+        float NdotH = max(1.0e-7, dot(N, H));
+        float VdotH = max(0.0, dot(V, H));
+
+        float geometric = 2.0 * NdotH / VdotH;
+        geometric = min( 1.0, geometric * min(NdotV, NdotL) );
+
+        float r_sq = roughness_val * roughness_val;
+        float NdotH_sq = NdotH * NdotH;
+        float NdotH_sq_r = 1.0 / (NdotH_sq * r_sq);
+        float roughness_exp = (NdotH_sq - 1.0) * ( NdotH_sq_r );
+        float roughness = exp(roughness_exp) * NdotH_sq_r / (4.0 * NdotH_sq );
+
+        float fresnel = 1.0 / (1.0 + NdotV);
+        
+        float Rs = min(shininess, (fresnel * geometric * roughness) / (NdotV * NdotL + 1.0e-7));
+        return Rs;
+    }
+*/
     void main(void) 
     {
         if (shadeless)
@@ -134,15 +163,18 @@ private string _uberFragmentShader = q{
         */
         
         // Shadow term
-	    vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
- 	    float shadow;
-        if (shadowCoord.w > 0.0)
+        float shadow = 1.0;
+        if (shadowEnabled)
         {
-            shadowCoordinateWdivide.z *= 1.005;
-            shadow = texture2DShadowLerp(dgl_Texture7, vec2(1024.0, 1024.0), 
-                shadowCoordinateWdivide.st, shadowCoordinateWdivide.z);
+            shadow = 0.0;
+            vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
+            if (shadowCoord.w > 0.0)
+            {
+                shadowCoordinateWdivide.z *= 1.005;
+                shadow = texture2DShadowLerp(dgl_Texture7, shadowCoordinateWdivide.st, shadowCoordinateWdivide.z);
+            }
+            shadow += shadowBrightness;
         }
-        shadow += shadowBrightness;
         
         // Parallax mapping
         vec2 texCoords = gl_TexCoord[0].st;
@@ -156,21 +188,23 @@ private string _uberFragmentShader = q{
         
         // Normal mapping
         vec3 N = bumpEnabled? normalize(2.0 * texture2D(dgl_Texture1, texCoords).rgb - 1.0) : n;
-	
+    
         // Texture
         vec4 tex = textureEnabled? texture2D(dgl_Texture0, texCoords) : vec4(1.0, 1.0, 1.0, 1.0);
         
         // Emission term
-        vec4 emit = (gl_FrontMaterial.emission.w > 0.0)? 
+        vec4 emit = glowMapEnabled?
             texture2D(dgl_Texture2, texCoords) * gl_FrontMaterial.emission.w :
             vec4(0.0, 0.0, 0.0, 1.0);
-	    
+        
         vec3 directionToLight;
         float distanceToLight;
-        float attenuation; 
+        float attenuation = 1.0; 
         vec3 L;
             
-        vec4 col = vec4(0.02, 0.02, 0.02, 1.0);
+        vec4 col_d = vec4(0.0, 0.0, 0.0, 1.0);
+        vec4 col_s = vec4(0.0, 0.0, 0.0, 1.0);
+        vec4 col_r = vec4(0.0, 0.0, 0.0, 1.0);
 
         float diffuse;
         float specular;
@@ -180,24 +214,27 @@ private string _uberFragmentShader = q{
         float NH;
         
         float edgeScale;
-        float rim;
+        float rim = 0.0;
         
+        //vec4 Cr = vec4(0.05, 0.2, 0.25, 1.0);
         vec4 Cr = vec4(0.1, 0.5, 0.5, 1.0);
+        const vec4 one = vec4(1.0, 1.0, 1.0, 1.0);
 
         for (int i = 0; i < 4; i++)
-	    {
-	        if (gl_LightSource[i].position.w < 2.0)
-	        {
-	            //vec4 Ca = gl_LightSource[i].ambient; 
+        {
+            if (gl_LightSource[i].position.w < 2.0)
+            {
+                //vec4 Ca = gl_LightSource[i].ambient; 
                 vec4 Md = gl_FrontMaterial.diffuse;
-	            vec4 Cd = Md * gl_LightSource[i].diffuse; 
-	            vec4 Cs = gl_FrontMaterial.specular * gl_LightSource[i].specular;  
+                vec4 Ms = gl_FrontMaterial.specular;
+                vec4 Ld = gl_LightSource[i].diffuse; 
+                vec4 Ls = gl_LightSource[i].specular;  
             
-	            vec3 positionToLightSource = vec3(gl_LightSource[i].position.xyz - position);
-	            distanceToLight = length(positionToLightSource);
+                vec3 positionToLightSource = vec3(gl_LightSource[i].position.xyz - position);
+                distanceToLight = length(positionToLightSource);
                 directionToLight = normalize(positionToLightSource);
             
-                attenuation = clamp(1.0 - distanceToLight/lightRadiusSqr, 0.0, 1.0) * 0.5;
+                attenuation = clamp(1.0 - distanceToLight/lightRadiusSqr, 0.0, 1.0);// * 0.5;
                 
                 L = bumpEnabled? 
                     vec3(dot(directionToLight, t),
@@ -206,85 +243,73 @@ private string _uberFragmentShader = q{
                     directionToLight;
                 
                 //NV = dot(N, E);
-			    NL = dot(N, L);
                 
-                // Hemispheric diffuse term
-                diffuse = (NL + 1.0) * 0.5;
+                // Diffuse term
+                NL = clamp(dot(N, L), 0.0, 1.0);
+                
+                diffuse = NL; // Lambert diffuse term
+                float negDiffuse = clamp(dot(N, -L), 0.0, 1.0) * 0.2;
                 
                 // Edge term
-                edgeScale = edgeBias(1.0 - dot(E, N), edgeWidth);
-		        edgeScale = max(0.5, edgeScale * 2.0);
-		        rim = edgeScale * 1.5;
+                rim = rimLightEnabled? 
+                    max(0.0, edgeBias(1.0 - dot(E, N), edgeWidth)):
+                    0.0;
                 
-                // Blinn-Phong specular term
+                // Specular term
                 H = normalize(L + E);
-			    NH = dot(N, H);
-			    specular = max(pow(NH, shininess), 0.0);
+                NH = dot(N, H);
+                
+                //vec3 R = normalize(-reflect(L, N));  
+                //specular = pow(max(dot(R, E), 0.0), shininess); // Phong
+                
+                specular = pow(max(NH, 0.0), shininess) * 3.0; // Blinn-Phong
+                
+                //specular = diffuse * cookTor(L, E, N); // Cook-Torrance
 
-	            col += ((Cd*diffuse) + (Cs*specular*3.0) + (Cr*Md*rim)) * attenuation;
-	        }
-	    }
+                //col += ((Md*Ld*diffuse) + (Ms*Ls*specular) + (Ld*Cr*rim)) * attenuation;
+                col_d += Md*Ld*diffuse*attenuation + Md*(one - Ld)*negDiffuse*attenuation;
+                col_s += Ms*Ls*specular*attenuation;
+                col_r += Cr*rim*attenuation * (1.0 - diffuse);
+            }
+        }
 
-        col *= 0.85;
-	    gl_FragColor = (tex * col * shadow + emit); //mix(fogColor, (tex * col * shadow + emit), fog);
-	    gl_FragColor.a = 1.0;
+        col_s *= 0.95;
+        col_d *= 0.95;
+        col_r *= 0.95;
+        
+        gl_FragColor = emit + tex * (gl_FrontMaterial.ambient + (col_d + col_s + col_r) * shadow); //mix(fogColor, (tex * col * shadow + emit), fog);
+        gl_FragColor.a = 1.0;
     }
 };
 
-/*
 class UberShader: Shader
-{
-    static GLSLShader uberShader;
-    Material material;
+{   
+    bool shadeless = false;
+    bool textureEnabled = false;
+    bool bumpEnabled = false;
     bool parallaxEnabled = false;
+    bool glowMapEnabled = false;
+    bool rimLightEnabled = false;
     
-    this(EventManager emgr, Material m)
+    this()
     {
-        if (!uberShader)
-            uberShader = New!GLSLShader(emgr, _uberVertexShader, _uberFragmentShader);
-        uberShader.setParamBool("shadeless", false);
-        uberShader.setParamBool("textureEnabled", false);
-        uberShader.setParamBool("bumpEnabled", false);
-        uberShader.setParamBool("parallaxEnabled", false);
+        super(_uberVertexShader, _uberFragmentShader);
     }
     
-    void bind(double dt)
+    override void bind(double dt)
     {
-        if (material.textures[0])
-            uberShader.setParamBool("textureEnabled", true);
-        if (material.textures[1])
-            uberShader.setParamBool("bumpEnabled", false);
-        if (material.parallaxEnabled)
-            uberShader.setParamBool("parallaxEnabled", true);
-        if (material.shadeless)
-            uberShader.setParamBool("shadeless", true);
-
-        uberShader.bind(dt);
+        super.bind(dt);
+        glUniform1i(glGetUniformLocation(shaderProg, "shadeless"), shadeless);
+        glUniform1i(glGetUniformLocation(shaderProg, "textureEnabled"), textureEnabled);
+        glUniform1i(glGetUniformLocation(shaderProg, "bumpEnabled"), bumpEnabled);
+        glUniform1i(glGetUniformLocation(shaderProg, "parallaxEnabled"), parallaxEnabled);
+        glUniform1i(glGetUniformLocation(shaderProg, "glowMapEnabled"), glowMapEnabled);
+        glUniform1i(glGetUniformLocation(shaderProg, "rimLightEnabled"), rimLightEnabled);
     }
     
-    void unbind()
+    override void unbind()
     {
-        uberShader.unbind();
-        
-        uberShader.setParamBool("shadeless", false);
-        uberShader.setParamBool("textureEnabled", false);
-        uberShader.setParamBool("bumpEnabled", false);
-        uberShader.setParamBool("parallaxEnabled", false);
-    }
-    
-    bool supported()
-    {
-        return uberShader.supported;
+        super.unbind();
     }
 }
-*/
 
-GLSLShader uberShader(EventManager emgr)
-{
-    auto shader = New!GLSLShader(emgr, _uberVertexShader, _uberFragmentShader);
-    shader.setParamBool("shadeless", false);
-    shader.setParamBool("textureEnabled", false);
-    shader.setParamBool("bumpEnabled", false);
-    shader.setParamBool("parallaxEnabled", false);
-    return shader;
-}

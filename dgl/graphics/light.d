@@ -29,12 +29,17 @@ DEALINGS IN THE SOFTWARE.
 module dgl.graphics.light;
 
 import derelict.opengl.gl;
+
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.image.color;
-import dgl.graphics.object3d;
+import dlib.container.array;
 
-class Light: Drawable3D
+import dgl.core.interfaces;
+import dgl.graphics.entity;
+import dgl.graphics.scene;
+
+class Light: Drawable
 {
     Vector4f position;
     Color4f diffuseColor;
@@ -78,31 +83,197 @@ class Light: Drawable3D
             glEnable(GL_LIGHTING);
         }
     }
-
-    void draw(Object3D obj, double dt)
-    {
-        position = Vector4f(obj.getPosition);
-        position.w = 1.0f;
-        draw(dt);
-    }
-
-    override void free()
-    {
-        Delete(this);
-    }
 }
 
 Light pointLight(
     Vector3f pos,
     Color4f diffuseColor,
     Color4f ambientColor,
-    float constantAttenuation = 1.0f,
+    float constantAttenuation = 0.5f,
     float linearAttenuation = 0.0f,
-    float quadraticAttenuation = 0.2f)
+    float quadraticAttenuation = 0.1f)
 {
     return New!Light(
         Vector4f(pos.x, pos.y, pos.z, 1.0f),
         diffuseColor, ambientColor,
         constantAttenuation, linearAttenuation,
         quadraticAttenuation);
+}
+
+enum maxLightsPerObject = 4;
+
+class LightManager
+{
+    DynamicArray!Light lights;
+
+    bool lightsVisible = false;
+    bool lightsOn = true;
+    bool useUpdateTreshold = false;
+    Vector3f referencePoint = Vector3f(0, 0, 0);
+    float updateThreshold = 400.0f;
+
+    Light addLight(Light light)
+    {
+        lights.append(light);
+        return light;
+    }
+
+    Light addPointLight(Vector3f position)
+    {
+        Light light = pointLight(
+            position,
+            Color4f(1.0f, 1.0f, 1.0f, 1.0f),
+            Color4f(0.1f, 0.1f, 0.1f, 1.0f));
+        lights.append(light);
+        return light;
+    }
+
+    void calcLighting(Scene s)
+    {
+        foreach(e; s.entities)
+            if (e.visible && !e.shadeless)
+                calcLighting(e);
+    }
+
+    void calcLighting(Entity e)
+    {
+        Vector3f ePos = e.position;
+        if (useUpdateTreshold)
+        {
+            if ((ePos - referencePoint).lengthsqr < updateThreshold)
+                calcLighting(ePos);
+        }
+        else
+            calcLighting(ePos);
+
+        sortLights();
+
+        e.numLights = 0;
+        foreach(i; 0..maxLightsPerObject)
+        if (i < lights.length)
+        {
+            e.lights[i] = lights.data[i];
+            e.numLights++;
+        }
+    }
+
+    void calcLighting(Vector3f pos)
+    {
+        auto ldata = lights.data;
+        foreach(light; ldata)
+            if (lightsOn || light.forceOn)
+                calcBrightness(light, pos);
+    }
+
+    void calcBrightness(Light light, Vector3f objPos)
+    {
+        if (!light.enabled && !light.forceOn)
+        {
+            light.brightness = 0.0f;
+        }
+        else
+        {
+            Vector3f d = (light.position.xyz - objPos);
+            float distSqr = d.lengthsqr;
+            if (light.highPriority && distSqr < 50)
+                light.brightness = float.max;
+            else
+                light.brightness = 1.0f / distSqr;
+        }
+    }
+
+    void sortLights()
+    {
+        size_t j = 0;
+        Light tmp;
+
+        auto ldata = lights.data;
+
+        foreach(i, v; ldata)
+        {
+            j = i;
+            size_t k = i;
+
+            while (k < ldata.length)
+            {
+                float b1 = ldata[j].brightness;
+                float b2 = ldata[k].brightness;
+                
+                if (b2 > b1)
+                    j = k;
+                
+                k++;
+            }
+
+            tmp = ldata[i];
+            ldata[i] = ldata[j];
+            ldata[j] = tmp;
+        }
+    }
+
+    static void bindLighting(Entity e)
+    {
+        glEnable(GL_LIGHTING);
+        foreach(i; 0..maxLightsPerObject)
+        if (i < e.numLights)
+        {
+            auto light = e.lights[i];
+            if (light.enabled)
+            {
+                glEnable(GL_LIGHT0 + i);
+                glLightfv(GL_LIGHT0 + i, GL_POSITION, light.position.arrayof.ptr);
+				glLightfv(GL_LIGHT0 + i, GL_SPECULAR, light.diffuseColor.arrayof.ptr);
+                glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, light.diffuseColor.arrayof.ptr);
+                glLightfv(GL_LIGHT0 + i, GL_AMBIENT, light.ambientColor.arrayof.ptr);
+                glLightf( GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, light.constantAttenuation);
+                glLightf( GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, light.linearAttenuation);
+                glLightf( GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, light.quadraticAttenuation);
+            }
+            else
+            {
+                Vector4f p = Vector4f(0, 0, 0, 2);
+                glLightfv(GL_LIGHT0 + i, GL_POSITION, p.arrayof.ptr);
+            }
+        }
+    }
+
+    static void unbindLighting()
+    {
+        foreach(i; 0..maxLightsPerObject)
+            glDisable(GL_LIGHT0 + i);
+        glDisable(GL_LIGHTING);
+    }
+    
+/*
+    // TODO
+    void draw(double dt)
+    {
+        // Draw lights
+        if (lightsVisible)
+        {
+            glPointSize(5.0f);
+            foreach(light; lights.data)
+            if (light.debugDraw)
+            {
+                glColor4fv(light.diffuseColor.arrayof.ptr);
+                glBegin(GL_POINTS);
+                glVertex3fv(light.position.arrayof.ptr);
+                glEnd();
+            }
+            glPointSize(1.0f);
+        }
+    }
+*/
+
+    void freeLights()
+    {
+        foreach(light; lights.data)
+            Delete(light);
+        lights.free();
+    }
+
+    ~this()
+    {
+        freeLights();
+    }
 }

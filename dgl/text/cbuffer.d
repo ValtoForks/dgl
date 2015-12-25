@@ -1,5 +1,5 @@
-/*
-Copyright (c) 2015 Timur Gafarov 
+﻿/*
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,17 +26,63 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.core.compat;
+module dgl.text.cbuffer;
 
-import derelict.opengl.gl;
+import std.c.stdio;
+import std.c.string;
+import std.traits;
 
-bool isShadowmapSupported()
+/*
+ * GC-free character buffer.
+ * Exists primarily for string formatting and converting various data to string 
+ */
+
+struct CharBuffer(size_t len)
 {
-    return DerelictGL.isExtensionSupported("GL_ARB_shadow") &&
-           DerelictGL.isExtensionSupported("GL_ARB_depth_texture");
+    size_t length;
+    char[len+1] buffer;
+
+    this(string str)
+    {
+        if (str.length > len)
+            length = len;
+        else
+            length = str.length;
+        memcpy(buffer.ptr, str.ptr, length);
+    }
+
+    char* ptr() @property
+    {
+        return buffer.ptr;
+    }
+
+    string asString()
+    {
+        if (length == 0)
+            return "";
+        else
+            return cast(string)buffer[0..length];
+    }
+
+    void format(string formatStr, T...)(T v)
+    {
+        length = snprintf(buffer.ptr, buffer.length, formatStr.ptr, v);
+    }
+
+    void from(T)(T v)
+    {
+        static if (is(T == int))
+        {
+            format!"%i"(v);
+        }
+        else static if (is(T == float) || is(T == double))
+        {
+            format!"%f"(v);
+        }
+        else
+        {
+            static assert(0, "Unsupported type for CharBuffer.from");
+        }
+    }
 }
 
-bool isGLSLSupported()
-{
-    return DerelictGL.isExtensionSupported("GL_ARB_shading_language_100");
-}

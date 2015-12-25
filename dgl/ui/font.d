@@ -28,11 +28,10 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.ui.font;
 
-import dlib.core.memory;
-
-abstract class Font: Freeable
+abstract class Font
 {
     float height;
     void draw(string str);
     float textWidth(string str);
 }
+

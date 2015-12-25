@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -26,26 +26,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.graphics.object3d;
+module dgl.graphics.state;
 
-import dlib.core.memory;
-import dlib.math.vector;
-import dlib.geometry.aabb;
-import dgl.core.interfaces;
-
-interface Object3D: Drawable
+class PipelineState
 {
-    Vector3f getPosition();
-    AABB getAABB();
+    static
+    {
+        bool materialsActive = true;
+        uint viewportX;
+        uint viewportY;
+        uint viewportWidth;
+        uint viewportHeight;
+        uint shadowMapSize;
+    }
 }
 
-interface Drawable3D: Drawable
-{
-    void draw(Object3D obj, double dt);
-}
-
-interface Modifier3D: Freeable
-{
-    void bind(Object3D obj, double dt);
-    void unbind(Object3D obj);
-}

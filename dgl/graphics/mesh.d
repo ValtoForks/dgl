@@ -44,17 +44,12 @@ import dgl.core.interfaces;
 import dgl.graphics.material;
 import dgl.graphics.scene;
 
-class FaceGroup: Freeable
+class FaceGroup
 {
     DynamicArray!Triangle tris;
     uint displayList;
     int materialIndex;
     Material material;
-
-    void free()
-    {
-        Delete(this);
-    }
 
     ~this()
     {
@@ -79,7 +74,7 @@ int hasVector(ref DynamicArray!Vector3f arr, Vector3f vec)
     return -1;
 }
 
-bool generateTangentVectors = true;
+__gshared bool generateTangentVectors = true;
 
 class Mesh: Drawable
 {
@@ -221,7 +216,7 @@ class Mesh: Drawable
         triangles.free();
     }
 
-    void genFaceGroups(Scene scene)
+    void genFaceGroups(MaterialLibrary matlib)
     {
         // Assign tris to corresponding face groups
         foreach(tri; tris)
@@ -236,7 +231,7 @@ class Mesh: Drawable
         foreach(fg; fgroups.data)
         {
             if (fg.materialIndex != -1)
-                fg.material = scene.getMaterialById(fg.materialIndex);
+                fg.material = matlib.getMaterial(fg.materialIndex);
             fg.displayList = glGenLists(1);
             glNewList(fg.displayList, GL_COMPILE);
             drawTris(fg.tris.data);
@@ -312,14 +307,9 @@ class Mesh: Drawable
         if (name.length)
             Delete(name);
         Delete(tris);
-        foreach(fg; fgroups.data)
-            fg.free();
+        foreach(fg; fgroups)
+            Delete(fg);
         fgroups.free();
-    }
-
-    void free()
-    {
-        Delete(this);
     }
 
     ~this()

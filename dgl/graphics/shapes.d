@@ -28,10 +28,9 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.graphics.shapes;
 
-import derelict.opengl.gl;
-import derelict.opengl.glu;
 import dlib.core.memory;
 import dlib.math.vector;
+import dgl.core.api;
 import dgl.core.interfaces;
 
 class ShapeSphere: Drawable
@@ -57,11 +56,6 @@ class ShapeSphere: Drawable
         glCallList(displayList);
     }
 
-    void free()
-    {
-        Delete(this);
-    }
-
     ~this()
     {
         glDeleteLists(displayList, 1);
@@ -71,6 +65,11 @@ class ShapeSphere: Drawable
 class ShapeBox: Drawable
 {
     uint displayList;
+
+    this(float sx, float sy, float sz)
+    {
+        this(Vector3f(sx, sy, sz));
+    }
 
     this(Vector3f hsize)
     {
@@ -82,35 +81,35 @@ class ShapeBox: Drawable
 
         glBegin(GL_QUADS);
 
-            glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
-            glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 1); glNormal3f(0,0,1); glVertex3f(pmin.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(0,0,1); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(0,0,1); glVertex3f(pmax.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(0,0,1); glVertex3f(pmin.x,pmax.y,pmax.z);
 
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(1,0,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(1,0,0); glVertex3f(pmax.x,pmax.y,pmax.z);
 
-            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
-            glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 1); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+        glTexCoord2f(1, 1); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(0,1,0); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(0,1,0); glVertex3f(pmin.x,pmax.y,pmin.z);
 
-            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
-            glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
+        glTexCoord2f(0, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(0,0,-1); glVertex3f(pmin.x,pmax.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 0); glNormal3f(0,0,-1); glVertex3f(pmax.x,pmin.y,pmin.z);
 
-            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
-            glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
-            glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+        glTexCoord2f(0, 1); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 0); glNormal3f(0,-1,0); glVertex3f(pmax.x,pmin.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(0,-1,0); glVertex3f(pmin.x,pmin.y,pmax.z);
 
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
-            glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
+        glTexCoord2f(0, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmin.z);
+        glTexCoord2f(1, 1); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmin.y,pmax.z);
+        glTexCoord2f(1, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmax.z);
+        glTexCoord2f(0, 0); glNormal3f(-1,0,0); glVertex3f(pmin.x,pmax.y,pmin.z);
 
         glEnd();
 
@@ -122,11 +121,6 @@ class ShapeBox: Drawable
         glCallList(displayList);
     }
 
-    void free()
-    {
-        Delete(this);
-    }
-
     ~this()
     {
         glDeleteLists(displayList, 1);
@@ -135,13 +129,12 @@ class ShapeBox: Drawable
 
 class ShapeCylinder: Drawable
 {
-    GLUquadricObj* quadric;
     // TODO: slices, stacks
     uint displayList;
 
     this(float h, float r)
     {
-        quadric = gluNewQuadric();
+        GLUquadricObj* quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
 
@@ -157,17 +150,12 @@ class ShapeCylinder: Drawable
         gluDisk(quadric, 0, r, 16, 1);
         glEndList();
 
-        // TODO: delete quadric
+        gluDeleteQuadric(quadric);
     }
 
     override void draw(double dt)
     {
         glCallList(displayList);
-    }
-
-    void free()
-    {
-        Delete(this);
     }
 
     ~this()
@@ -178,13 +166,12 @@ class ShapeCylinder: Drawable
 
 class ShapeCone: Drawable
 {
-    GLUquadricObj* quadric;
     // TODO: slices, stacks
     uint displayList;
 
     this(float h, float r)
     {
-        quadric = gluNewQuadric();
+        GLUquadricObj* quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
 
@@ -196,17 +183,12 @@ class ShapeCone: Drawable
         gluDisk(quadric, 0, r, 16, 1);
         glEndList();
 
-        // TODO: delete quadric
+        gluDeleteQuadric(quadric);
     }
 
     override void draw(double dt)
     {
         glCallList(displayList);
-    }
-
-    void free()
-    {
-        Delete(this);
     }
 
     ~this()
@@ -217,16 +199,19 @@ class ShapeCone: Drawable
 
 class ShapeEllipsoid: Drawable
 {
-    GLUquadricObj* quadric;
     uint displayList;
-
     Vector3f radii;
+
+    this(float rx, float ry, float rz)
+    {
+        this(Vector3f(rx, ry, rz));
+    }
 
     this(Vector3f r)
     {
         radii = r;
 
-        quadric = gluNewQuadric();
+        GLUquadricObj*  quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluQuadricTexture(quadric, GL_TRUE);
 
@@ -235,7 +220,7 @@ class ShapeEllipsoid: Drawable
         gluSphere(quadric, 1.0f, 24, 16);
         glEndList();
 
-        // TODO: delete quadric
+        gluDeleteQuadric(quadric);
     }
 
     override void draw(double dt)
@@ -246,17 +231,13 @@ class ShapeEllipsoid: Drawable
         glPopMatrix();
     }
 
-    void free()
-    {
-        Delete(this);
-    }
-
     ~this()
     {
         glDeleteLists(displayList, 1);
     }
 }
 
+/*
 class ShapeTriangle: Drawable
 {
     Vector3f[3] v;
@@ -299,3 +280,4 @@ class ShapeTriangle: Drawable
         glDeleteLists(displayList, 1);
     }
 }
+*/
