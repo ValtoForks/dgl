@@ -15,13 +15,14 @@ Features:
 * Shader-based materials with normal mapping and parallax mapping
 * Antialiasing
 * Geometric shapes
-* Billboards and 2D sprites, including animated ones
 * Text rendering with TTF fonts and Unicode support
 * VFS
 * Configuration system
 
 TODO:
+* Billboards and 2D sprites
 * Actors, IQM format loading
+* Particle system
 * I8n
 
 Screenshots
