@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 module dgl.graphics.shadow;
 
+import std.math;
 import dlib.core.memory;
 import dlib.math.vector;
 import dlib.math.matrix;
@@ -89,7 +90,7 @@ class ShadowMapPass: Pass3D
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
-        float size = 10; //12
+        float size = 12; //12
         projectionMatrix = orthoMatrix(-size, size, -size, size, -20.0f, 100.0f);
         
         lightRotation = rotationQuaternion(0, degtorad(-90.0f));
@@ -111,10 +112,12 @@ class ShadowMapPass: Pass3D
     }
 
     override void draw(double dt)
-    {
+    {    
         modelViewMatrix = 
             lightRotation.conj.toMatrix4x4 * 
             translationMatrix(-lightPosition);
+        //modelViewMatrix = translationMatrix(lightPosition) * lightRotation.toMatrix4x4();
+        //modelViewMatrix = modelViewMatrix.inverse;
         
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         

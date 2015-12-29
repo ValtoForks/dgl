@@ -217,7 +217,7 @@ private string _uberFragmentShader = q{
         float rim = 0.0;
         
         //vec4 Cr = vec4(0.05, 0.2, 0.25, 1.0);
-        vec4 Cr = vec4(0.1, 0.5, 0.5, 1.0);
+        vec4 Cr = vec4(0.05, 0.25, 0.25, 1.0);
         const vec4 one = vec4(1.0, 1.0, 1.0, 1.0);
 
         for (int i = 0; i < 4; i++)

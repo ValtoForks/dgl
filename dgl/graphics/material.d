@@ -97,6 +97,19 @@ class Material: Modifier
             Delete(uberShader);
     }
     
+    void setShader(Shader sh)
+    {
+        if (!isGLSLSupported())
+            return;
+            
+        if (!isShadersEnabled())
+            return;
+            
+        useGLSL = true;
+        
+        shader = sh;
+    }
+    
     void setShader()
     {
         if (!isGLSLSupported())
