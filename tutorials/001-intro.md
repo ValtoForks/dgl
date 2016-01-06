@@ -109,4 +109,25 @@ void main(string[] args)
 
 `registerObject` can be used if you don't want to delete the object manually: it registers any object under the given name, so that it can be retrieved later and is deleted automatically on application exit. Use only unique names!
 
-`TextLine` object supports non-ASCII characters (if the font contains them). This doesn't requre any additional configuration - just pass your UTF-8 string and enjoy! Text rendering system is lazy: `FreeTypeFont` object loads new Unicode characters on demand, so no wasting memory with unnecessary data.
+`TextLine` object supports non-ASCII characters (if the font contains them). This doesn't require any additional configuration - just pass your UTF-8 string and enjoy! Text rendering system is lazy: `FreeTypeFont` object loads new Unicode characters on demand, so no wasting memory with unnecessary data.
+
+Running
+-------
+To run DGL applications, a number of shared libraries are required. These are OpenGL and GLU (they are usually installed system-wide; if not, update your video card driver), SDL 1.2, Freetype. Latter two are expected to be in `lib` directory with the application. On Linux, if you want to use SDL and Freetype installed on your system, you can set `USE_SYSTEM_LIBS=1` environment variable before running the application. Currently we provide only 32-bit versions of the libraries for Windows and Linux.
+
+Configuration
+-------------
+Video resolution, fullscreen/windowed, VSync, and other options are controlled via configuration file called `game.conf` in application directory. The following is an example of a possible configuration:
+
+    videoWidth = "1280";
+    videoHeight = "720";
+    videoWindowed = "1";
+    videoVSync = "1";
+    videoAntialiasing = "0";
+    windowResizable = "1";
+
+    fxShadersEnabled = "1";
+    fxShadowEnabled = "1";
+    fxShadowMapSize = "1024";
+ 
+Any new game-specific configuration keys can be introduced, you can handle them with corresponding API.
