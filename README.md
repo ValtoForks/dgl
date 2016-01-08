@@ -6,7 +6,7 @@ Features:
 * Fully GC-free
 * Supports Windows, Linux and Mac OS X
 * Event system with user-defined events and Unicode keyboard input
-* Resource manager
+* Resource manager (resources are loading in a separate thread)
 * Own scene file format (DGL2) with Blender exporter
 * Loading textures from PNG
 * Dynamic shadows
