@@ -113,7 +113,7 @@ void main(string[] args)
 
 Running
 -------
-To run DGL applications, a number of shared libraries are required. These are OpenGL and GLU (they are usually installed system-wide; if not, update your video card driver), SDL 1.2, Freetype. Latter two are expected to be in `lib` directory with the application. On Linux, if you want to use SDL and Freetype installed on your system, you can set `USE_SYSTEM_LIBS=1` environment variable before running the application. Currently we provide only 32-bit versions of the libraries for Windows and Linux.
+To run DGL applications, a number of shared libraries are required. These are OpenGL and GLU (they are usually installed system-wide; if not, update your video card driver), SDL 1.2, Freetype. Latter two are expected to be in `lib` directory with the application. On Linux, if you want to use SDL and Freetype installed on your system, you can set `USE_SYSTEM_LIBS=1` environment variable before running the application. Currently we provide only Windows and Linux versions of the libraries.
 
 Configuration
 -------------

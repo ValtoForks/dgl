@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015-2016 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -84,14 +84,13 @@ private string _uberFragmentShader = q{
     uniform bool parallaxEnabled;
     uniform bool glowMapEnabled;
     uniform bool rimLightEnabled;
+    uniform bool fogEnabled;
     uniform float dgl_ShadowMapSize;
     
     const float parallaxScale = 0.06;
     const float parallaxBias = -0.03;
-    const float lightRadiusSqr = 9.0; //8.5;
-    const float wrapFactor = 0.5;
+    const float lightRadiusSqr = 9.0;
     const float shadowBrightness = 0.4;
-    const float shininess = 32.0;
     const float edgeWidth = 0.3;
     
     float texture2DCompare(sampler2D depths, vec2 uv, float compare)
@@ -120,32 +119,7 @@ private string _uberFragmentShader = q{
     {
         return (b > 0.0)? pow(value, log2(b) / log2(0.5)) : 0.0;
     }
-/*
-    const float roughness_val = 0.2; //0.18;
-    float cookTor(vec3 L, vec3 V, vec3 N)
-    {
-        vec3 H = normalize(L + V);
 
-        float NdotL = max(0.0, dot(N, L));
-        float NdotV = max(0.0, dot(N, V));
-        float NdotH = max(1.0e-7, dot(N, H));
-        float VdotH = max(0.0, dot(V, H));
-
-        float geometric = 2.0 * NdotH / VdotH;
-        geometric = min( 1.0, geometric * min(NdotV, NdotL) );
-
-        float r_sq = roughness_val * roughness_val;
-        float NdotH_sq = NdotH * NdotH;
-        float NdotH_sq_r = 1.0 / (NdotH_sq * r_sq);
-        float roughness_exp = (NdotH_sq - 1.0) * ( NdotH_sq_r );
-        float roughness = exp(roughness_exp) * NdotH_sq_r / (4.0 * NdotH_sq );
-
-        float fresnel = 1.0 / (1.0 + NdotV);
-        
-        float Rs = min(shininess, (fresnel * geometric * roughness) / (NdotV * NdotL + 1.0e-7));
-        return Rs;
-    }
-*/
     void main(void) 
     {
         if (shadeless)
@@ -155,12 +129,10 @@ private string _uberFragmentShader = q{
         }
         
         // Fog term
-        /*
-        const vec4 fogColor = vec4(0.1, 0.2, 0.2, 1.0);
-        float fogDistance = gl_FragCoord.w * 20.0; //1.0 - (gl_FragCoord.z / gl_FragCoord.w) / 4000.0;
-        fogDistance = (fogDistance > 10.0)? fogDistance : 1.0;
-        float fog = clamp(fogDistance, 0.0, 1.0);
-        */
+        float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
+        float fogFactor = fogEnabled? 
+            clamp((gl_Fog.end - fogDistance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0) :
+            1.0;
         
         // Shadow term
         float shadow = 1.0;
@@ -170,7 +142,7 @@ private string _uberFragmentShader = q{
             vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
             if (shadowCoord.w > 0.0)
             {
-                shadowCoordinateWdivide.z *= 1.005;
+                shadowCoordinateWdivide.z *= 0.9999;
                 shadow = texture2DShadowLerp(dgl_Texture7, shadowCoordinateWdivide.st, shadowCoordinateWdivide.z);
             }
             shadow += shadowBrightness;
@@ -215,26 +187,32 @@ private string _uberFragmentShader = q{
         
         float edgeScale;
         float rim = 0.0;
-        
-        //vec4 Cr = vec4(0.05, 0.2, 0.25, 1.0);
+
         vec4 Cr = vec4(0.05, 0.25, 0.25, 1.0);
         const vec4 one = vec4(1.0, 1.0, 1.0, 1.0);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)
         {
             if (gl_LightSource[i].position.w < 2.0)
             {
-                //vec4 Ca = gl_LightSource[i].ambient; 
                 vec4 Md = gl_FrontMaterial.diffuse;
                 vec4 Ms = gl_FrontMaterial.specular;
                 vec4 Ld = gl_LightSource[i].diffuse; 
-                vec4 Ls = gl_LightSource[i].specular;  
+                vec4 Ls = gl_LightSource[i].specular;
             
-                vec3 positionToLightSource = vec3(gl_LightSource[i].position.xyz - position);
-                distanceToLight = length(positionToLightSource);
-                directionToLight = normalize(positionToLightSource);
+                if (gl_LightSource[i].position.w > 0.0)
+                {
+                    vec3 positionToLightSource = vec3(gl_LightSource[i].position.xyz - position);
+                    distanceToLight = length(positionToLightSource);
+                    directionToLight = normalize(positionToLightSource);
             
-                attenuation = clamp(1.0 - distanceToLight/lightRadiusSqr, 0.0, 1.0);// * 0.5;
+                    attenuation = clamp(1.0 - distanceToLight/lightRadiusSqr, 0.0, 1.0);
+                }
+                else
+                {
+                    directionToLight = gl_LightSource[i].position.xyz;
+                    attenuation = 1.0;
+                }
                 
                 L = bumpEnabled? 
                     vec3(dot(directionToLight, t),
@@ -242,13 +220,8 @@ private string _uberFragmentShader = q{
                          dot(directionToLight, n)) : 
                     directionToLight;
                 
-                //NV = dot(N, E);
-                
                 // Diffuse term
-                NL = clamp(dot(N, L), 0.0, 1.0);
-                
-                diffuse = NL; // Lambert diffuse term
-                float negDiffuse = clamp(dot(N, -L), 0.0, 1.0) * 0.2;
+                diffuse = clamp(dot(N, L), 0.0, 1.0); // Lambert
                 
                 // Edge term
                 rim = rimLightEnabled? 
@@ -258,16 +231,9 @@ private string _uberFragmentShader = q{
                 // Specular term
                 H = normalize(L + E);
                 NH = dot(N, H);
-                
-                //vec3 R = normalize(-reflect(L, N));  
-                //specular = pow(max(dot(R, E), 0.0), shininess); // Phong
-                
-                specular = pow(max(NH, 0.0), shininess) * 3.0; // Blinn-Phong
-                
-                //specular = diffuse * cookTor(L, E, N); // Cook-Torrance
+                specular = pow(max(NH, 0.0), gl_FrontMaterial.shininess) * 3.0; // Blinn-Phong
 
-                //col += ((Md*Ld*diffuse) + (Ms*Ls*specular) + (Ld*Cr*rim)) * attenuation;
-                col_d += Md*Ld*diffuse*attenuation + Md*(one - Ld)*negDiffuse*attenuation;
+                col_d += Md*Ld*diffuse*attenuation;
                 col_s += Ms*Ls*specular*attenuation;
                 col_r += Cr*rim*attenuation * (1.0 - diffuse);
             }
@@ -277,8 +243,10 @@ private string _uberFragmentShader = q{
         col_d *= 0.95;
         col_r *= 0.95;
         
-        gl_FragColor = emit + tex * (gl_FrontMaterial.ambient + (col_d + col_s + col_r) * shadow); //mix(fogColor, (tex * col * shadow + emit), fog);
-        gl_FragColor.a = 1.0;
+        vec4 finalColor = emit + tex * (gl_FrontMaterial.ambient + (col_d + col_s + col_r) * shadow);
+        gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
+        
+        gl_FragColor.a = tex.a;
     }
 };
 
@@ -290,6 +258,8 @@ class UberShader: Shader
     bool parallaxEnabled = false;
     bool glowMapEnabled = false;
     bool rimLightEnabled = false;
+    bool fogEnabled = false;
+    float shininess = 32.0f;
     
     this()
     {
@@ -305,6 +275,7 @@ class UberShader: Shader
         glUniform1i(glGetUniformLocation(shaderProg, "parallaxEnabled"), parallaxEnabled);
         glUniform1i(glGetUniformLocation(shaderProg, "glowMapEnabled"), glowMapEnabled);
         glUniform1i(glGetUniformLocation(shaderProg, "rimLightEnabled"), rimLightEnabled);
+        glUniform1i(glGetUniformLocation(shaderProg, "fogEnabled"), fogEnabled);
     }
     
     override void unbind()

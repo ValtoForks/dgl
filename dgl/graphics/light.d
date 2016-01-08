@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -111,6 +111,11 @@ class LightManager
     bool useUpdateTreshold = false;
     Vector3f referencePoint = Vector3f(0, 0, 0);
     float updateThreshold = 400.0f;
+    
+    static bool sunEnabled = false;
+    static Vector4f sunDirection = Vector4f(0, -1, 0, 0);
+    static Color4f sunColor = Color4f(1, 1, 1, 1);
+    static Color4f blackColor = Color4f(0, 0, 0, 1);
 
     Light addLight(Light light)
     {
@@ -235,12 +240,26 @@ class LightManager
                 glLightfv(GL_LIGHT0 + i, GL_POSITION, p.arrayof.ptr);
             }
         }
+        
+        if (sunEnabled)
+        {
+            glEnable(GL_LIGHT0 + maxLightsPerObject);
+            glLightfv(GL_LIGHT0 + maxLightsPerObject, GL_POSITION, sunDirection.arrayof.ptr);
+            glLightfv(GL_LIGHT0 + maxLightsPerObject, GL_DIFFUSE, sunColor.arrayof.ptr);
+            glLightfv(GL_LIGHT0 + maxLightsPerObject, GL_SPECULAR, sunColor.arrayof.ptr);
+        }
+        else
+        {
+            glLightfv(GL_LIGHT0 + maxLightsPerObject, GL_DIFFUSE, blackColor.arrayof.ptr);
+            glLightfv(GL_LIGHT0 + maxLightsPerObject, GL_SPECULAR, blackColor.arrayof.ptr);
+        }
     }
 
     static void unbindLighting()
     {
         foreach(i; 0..maxLightsPerObject)
             glDisable(GL_LIGHT0 + i);
+        glEnable(GL_LIGHT0 + maxLightsPerObject);
         glDisable(GL_LIGHTING);
     }
     

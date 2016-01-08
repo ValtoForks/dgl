@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -50,7 +50,7 @@ class ShadowMapPass: Pass3D
     
     Matrix4x4f lightProjectionMatrix;
     Matrix4x4f lightViewMatrix;
-    Vector3f lightPosition = Vector3f(0.0f, 0.0f, 0.0f); //Vector4f(5.0f, 5.0f, 5.0f);
+    Vector3f lightPosition = Vector3f(0.0f, 0.0f, 0.0f);
     Quaternionf lightRotation;
     Material mat;
     
@@ -90,7 +90,7 @@ class ShadowMapPass: Pass3D
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
-        float size = 12; //12
+        float size = 10;
         projectionMatrix = orthoMatrix(-size, size, -size, size, -20.0f, 100.0f);
         
         lightRotation = rotationQuaternion(0, degtorad(-90.0f));
@@ -110,15 +110,16 @@ class ShadowMapPass: Pass3D
         else
             return false;
     }
-
-    override void draw(double dt)
-    {    
+    
+    void update(double dt)
+    {
         modelViewMatrix = 
             lightRotation.conj.toMatrix4x4 * 
             translationMatrix(-lightPosition);
-        //modelViewMatrix = translationMatrix(lightPosition) * lightRotation.toMatrix4x4();
-        //modelViewMatrix = modelViewMatrix.inverse;
-        
+    }
+
+    override void draw(double dt)
+    {        
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         
         glShadeModel(GL_FLAT);

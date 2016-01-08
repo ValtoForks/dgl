@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov
+Copyright (c) 2013-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -48,22 +48,6 @@ class Texture: Modifier
     int height;
     Vector2f scroll;
 
-    // TODO
-    /*
-    this(uint w, uint h)
-    {
-        //free();
-
-        width = w;
-        height = h;
-        ubyte[] data = new ubyte[width * height * 4];
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.ptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-*/
     this()
     {
         scroll = Vector2f(0, 0);

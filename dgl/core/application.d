@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov
+Copyright (c) 2014-2016 Timur Gafarov, Andrew Benton, Tanel Tagavali
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -123,9 +123,8 @@ abstract class Application: EventListener
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_CULL_FACE);
-        //glEnable(GL_SCISSOR_TEST);
+        glEnable(GL_SCISSOR_TEST);
         
-        // TODO: check config
         if (aa)
         {
             glEnable(GL_MULTISAMPLE);

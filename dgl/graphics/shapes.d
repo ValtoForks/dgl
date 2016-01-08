@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov
+Copyright (c) 2014-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -236,48 +236,3 @@ class ShapeEllipsoid: Drawable
         glDeleteLists(displayList, 1);
     }
 }
-
-/*
-class ShapeTriangle: Drawable
-{
-    Vector3f[3] v;
-    uint displayList;
-
-    this(Vector3f a, Vector3f b, Vector3f c)
-    {
-        v[0] = a;
-        v[1] = b;
-        v[2] = c;
-
-        displayList = glGenLists(1);
-        glNewList(displayList, GL_COMPILE);
-        glBegin(GL_TRIANGLES);
-        glVertex3fv(v[0].arrayof.ptr);
-        glVertex3fv(v[1].arrayof.ptr);
-        glVertex3fv(v[2].arrayof.ptr);
-        glEnd();
-        glEndList();
-    }
-
-    override void draw(double dt)
-    {
-        glPushMatrix();
-        glDisable(GL_LIGHTING);
-        glDisable(GL_CULL_FACE);
-        glCallList(displayList);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_LIGHTING);
-        glPopMatrix();
-    }
-
-    void free()
-    {
-        Delete(this);
-    }
-
-    ~this()
-    {
-        glDeleteLists(displayList, 1);
-    }
-}
-*/

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -102,7 +102,7 @@ class Pass: EventListener, Drawable
         Application.passMaterialsActive = !overrideMaterials;
         
         glViewport(viewX, viewY, viewWidth, viewHeight);
-        //glScissor(viewX, viewY, viewWidth, viewHeight);
+        glScissor(viewX, viewY, viewWidth, viewHeight);
         PipelineState.viewportX = viewX;
         PipelineState.viewportY = viewY;
         PipelineState.viewportWidth = viewWidth;

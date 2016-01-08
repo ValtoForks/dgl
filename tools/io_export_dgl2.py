@@ -253,6 +253,11 @@ def writeMaterial(f, matName, matIndex):
                         texIndex = "texture" + str(texSloti)
                         texStr = vecToStr([imgFilename, blend_type])
                         dml[texIndex] = texStr
+                        
+    if len(mat.keys()) > 1:
+        for propName in mat.keys():
+            if propName not in '_RNA_UI' and propName != "type":
+                dml[propName] = str(mat[propName])
 
     dmlStr = encodeDML(dml)
     print(dmlStr)

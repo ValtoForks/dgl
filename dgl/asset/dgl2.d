@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015 Timur Gafarov 
+Copyright (c) 2014-2016 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -358,6 +358,9 @@ void decodeEntity(Entity e, InputStream istrm, DGLResource res)
     
     if ("visible" in dml.root.data)
         e.visible = dml.root.data["visible"].toBool;
+        
+    if ("transparent" in dml.root.data)
+        e.transparent = dml.root.data["transparent"].toBool;
 }
 
 //version = DGLDebug;
@@ -423,6 +426,11 @@ void decodeMaterial(Material m, InputStream istrm, DGLResource res)
                 m.textures[i] = tex;
             }
         }
+    }
+    
+    if ("doubleSided" in dml.root.data)
+    {
+        m.doubleSided = dml.root.data["doubleSided"].toBool;
     }
 
     dml.free();

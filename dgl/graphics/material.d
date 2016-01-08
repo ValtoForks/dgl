@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -70,7 +70,7 @@ class Material: Modifier
     Color4f diffuseColor;
     Color4f specularColor;
     Color4f emissionColor;
-    float shininess = 64.0f;
+    float shininess = 32.0f;
     
     bool shadeless = false;
     bool useTextures = true;
@@ -81,7 +81,8 @@ class Material: Modifier
     bool bump = true;
     bool parallax = true;
     bool glowMap = true;
-    bool rimLight = true;
+    bool rimLight = false;
+    bool useFog = false;
     
     this()
     {
@@ -198,6 +199,7 @@ class Material: Modifier
                 uberShader.parallaxEnabled = false;
                 uberShader.glowMapEnabled = false;
                 uberShader.rimLightEnabled = false;
+                uberShader.fogEnabled = useFog || useFogGlobal;
 
                 if (shadeless)
                     uberShader.shadeless = true;
@@ -244,8 +246,8 @@ class Material: Modifier
             }
         }
         
-        //if (doubleSided)
-        //    glEnable(GL_CULL_FACE);
+        if (doubleSided)
+            glEnable(GL_CULL_FACE);
 
         glActiveTextureARB(GL_TEXTURE0_ARB);
 
@@ -269,6 +271,23 @@ class Material: Modifier
             specularColor,
             emissionColor
         );
+    }
+    
+    static bool useFogGlobal = false;
+    static void setFogEnabled(bool mode)
+    {
+        useFogGlobal = mode;
+    }
+    
+    static void setFogDistance(float minDist, float maxDist)
+    {
+        glFogf(GL_FOG_START, minDist);
+        glFogf(GL_FOG_END, maxDist);
+    }
+    
+    static void setFogColor(Color4f col)
+    {
+        glFogfv(GL_FOG_COLOR, col.arrayof.ptr);
     }
 }
 

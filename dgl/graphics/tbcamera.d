@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Timur Gafarov
+Copyright (c) 2013-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -116,8 +116,6 @@ final class TrackballCamera: Camera
             translateTarget(t);
         }
 
-	    //glPushMatrix();
-
         rotPitch = rotationQuaternion(Vector3f(1.0f,0.0f,0.0f), degtorad(rotPitchTheta));
         rotTurn = rotationQuaternion(Vector3f(0.0f,1.0f,0.0f), degtorad(rotTurnTheta));
         rotRoll = rotationQuaternion(Vector3f(0.0f,0.0f,1.0f), degtorad(rotRollTheta));
@@ -125,7 +123,6 @@ final class TrackballCamera: Camera
         Quaternionf q = rotPitch * rotTurn * rotRoll;
         Matrix4x4f rot = q.toMatrix4x4();
         invTransform = translationMatrix(Vector3f(0.0f, 0.0f, -distance)) * rot * translationMatrix(center);
-        //glLoadMatrixf(transform.arrayof.ptr);
 
         transform = invTransform.inverse;
     }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -53,6 +53,7 @@ class Entity: Drawable
     Material material;
     bool shadeless = false;
     bool visible = true;
+    bool transparent = false;
 
     uint id;
     uint type = 0;
@@ -107,14 +108,8 @@ class Entity: Drawable
         if (visible)
         {
             glPushMatrix();
-            glMultMatrixf(transformation.arrayof.ptr);
-            
-            //LightManager.bindLighting(this);
-                    
-            drawModel(dt);
-            
-            //LightManager.unbindLighting();
-                    
+            glMultMatrixf(transformation.arrayof.ptr);                    
+            drawModel(dt);                   
             glPopMatrix();
         }
     }

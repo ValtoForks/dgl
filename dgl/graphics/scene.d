@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov
+Copyright (c) 2015-2016 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -40,6 +40,7 @@ class Scene
     DynamicArray!Entity entitiesToDelete;
     Material defaultMaterial;
     bool shadeless = false;
+    bool transparentSort = false;
 
     this()
     {
@@ -60,9 +61,38 @@ class Scene
         entities.append(e);
         return e;
     }
+    
+    void sortByTransparency()
+    {
+        size_t j = 0;
+        Entity tmp;
+
+        auto edata = entities.data;
+
+        foreach(i, v; edata)
+        {
+            j = i;
+            size_t k = i;
+
+            while (k < edata.length)
+            {
+                int b1 = edata[j].transparent;
+                int b2 = edata[k].transparent;
+                
+                if (b2 < b1)
+                    j = k;
+                
+                k++;
+            }
+
+            tmp = edata[i];
+            edata[i] = edata[j];
+            edata[j] = tmp;
+        }
+    }
 
     void update(double dt)
-    {
+    {    
         foreach(e; entities)
             e.update(dt);
     }
