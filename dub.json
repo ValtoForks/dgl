@@ -23,7 +23,7 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "minimal.d",
-            "excludedSourceFiles": ["simple3d.d"],
+            "excludedSourceFiles": ["simple3d.d", "loading.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         },
         {
@@ -32,7 +32,16 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "simple3d.d",
-            "excludedSourceFiles": ["minimal.d"],
+            "excludedSourceFiles": ["minimal.d", "loading.d"],
+            "buildOptions": ["noBoundsCheck", "optimize"]
+        },
+        {
+            "name": "loading",
+            "targetName": "loading",
+            "targetType": "executable",
+            "sourcePaths": ["."],
+            "mainSourceFile": "loading.d",
+            "excludedSourceFiles": ["minimal.d", "simple3d.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         }
     ]
