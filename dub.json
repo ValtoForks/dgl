@@ -23,7 +23,16 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "minimal.d",
-            "excludedSourceFiles": [],
+            "excludedSourceFiles": ["simple3d.d"],
+            "buildOptions": ["noBoundsCheck", "optimize"]
+        },
+        {
+            "name": "simple3d",
+            "targetName": "simple3d",
+            "targetType": "executable",
+            "sourcePaths": ["."],
+            "mainSourceFile": "simple3d.d",
+            "excludedSourceFiles": ["minimal.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         }
     ]
