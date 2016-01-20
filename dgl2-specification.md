@@ -10,7 +10,7 @@ Being highly extendable, DGL2 allows the user of the format specify his own mean
 
 * "Game-specific" means that semantics of some data is not defined by the format specification, but rather defined by the game that uses DGL. Such semantics is a convention between game programmers and game asset creators. However, this should not break compatibility with DGL itself.
 * "Engine-specific" has a very close meaning to above. Semantics of some data is not defined by the format specification, but rather by the engine that implements DGL2 support. The main difference from "game-specific" is that such supersets of DGL2 are not necessarily need to be compatible with DGL engine, they are specific to engines that use them.
-* "Editor-specific" means that semantics of some data is not defined by the format specification, but rather defined by the editor that created DGL2 file (this can be DGL2 exporter for a general-purpose 3D editor, or a tool that is specially designed for working with DGL2). It should not break compatibility with DGL, and can be ignored by the game or the engine.
+* "Editor-specific" means that semantics of some data is not defined by the format specification, but rather defined by the editor that created DGL2 file (this can be DGL2 exporter for a general-purpose 3D editor, or a tool that is specially designed for working with DGL2). It should not break compatibility with DGL, and can be ignored by the game or the engine. Main purpose of such data is to serve as metadata for auxiliary production tools (project managers, asset browsers, etc).
 
 Data Types
 ----------
