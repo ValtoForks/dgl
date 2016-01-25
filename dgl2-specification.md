@@ -44,7 +44,7 @@ DML stands for "DGL Markup Language". It is a human-readable text format that is
 
 Parsing DML strings is not strictly mandatory to successfully read DGL2 file, but is highly recommended due to the fact that game-specific and engine-specific properties of the objects are stored as DML. All Material properties are also stored as DML, allowing to define engine-specific materials in the editor.
 
-`propertyValue` can be integer, floating point number, text, or vector. Vector has the following syntax: `[0, 0, 0, 0]`.
+`propertyValue` can be integer, floating point number, text, or vector. Vector has the following syntax: `[x, y]`, `[x, y, z]`, `[x, y, z, w]`. Quaternions and RGBA colors are represented as XYZW vectors.
 
 Chunk
 -----
@@ -67,6 +67,8 @@ Each chunk has the following binary layout:
     4 - ENTITY
     
 Other type values are reserved for future use. HEADER chunk is expected to appear at the beginning of the file, END chunk marks the end of the file.
+
+There is no strict order in which MATERIAL, TRIMESH and ENTITY chunks should appear in the file.
 
 HEADER Chunk
 ------------
@@ -95,8 +97,8 @@ MATERIAL chunk has `type` field equal to `3` and a unique `id`, usually beginnin
     diffuseColor = "[r,g,b,a]"
     specularColor = "[r,g,b,a]"
     shadeless = "0" or "1"
-    texturesNum = from "0" to "8"
-    texture* ("texture0", "texture1"... up to "texture8") = path to the texture
+    texturesNum = from "0" to "7"
+    texture* ("texture0", "texture1"... up to "texture7") = path to the texture
 
 `"[r,g,b,a]"` values are floats in the range `0..1`. 
 
@@ -120,7 +122,7 @@ ENTITY chunk has `type` field equal to `4` and a unique `id`, usually beginning 
 
 `type` field is game-specific. Reserved values are `0` (normal entity) and `1` (point light source). 
 
-`materialID` and `meshID` fields point to corresponding Material and Trimesh defined in the file. There is no strict order in which Materials, Trimeshes and Entities should appear in the file.
+`materialID` and `meshID` fields point to corresponding Material and Trimesh defined in the file. `-1` means no Material/Trimesh.
 
 `position`, `rotation` and `scaling` define affine transformation which should be used to render the Trimesh. The application order of these is the following: translate, rotate, then scale. Rotation is defined as XYZW quaternion.
 
