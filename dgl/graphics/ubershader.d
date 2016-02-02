@@ -239,9 +239,9 @@ private string _uberFragmentShader = q{
             }
         }
 
-        col_s *= 0.95;
-        col_d *= 0.95;
-        col_r *= 0.95;
+        col_s *= 0.7;
+        col_d *= 0.7;
+        col_r *= 0.7;
         
         vec4 finalColor = emit + tex * (gl_FrontMaterial.ambient + (col_d + col_s + col_r) * shadow);
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);

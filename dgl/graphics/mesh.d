@@ -61,7 +61,7 @@ class FaceGroup
 
 bool vectorsAlmostSame(Vector3f v1, Vector3f v2) nothrow
 {
-    return (v1 - v2).length < 0.00001f;
+    return (v1 - v2).length < 0.001f;
 }
 
 int hasVector(ref DynamicArray!Vector3f arr, Vector3f vec)
@@ -74,7 +74,7 @@ int hasVector(ref DynamicArray!Vector3f arr, Vector3f vec)
     return -1;
 }
 
-__gshared bool generateTangentVectors = true;
+//__gshared bool generateTangentVectors = true;
 
 class Mesh: Drawable
 {
@@ -82,16 +82,14 @@ class Mesh: Drawable
     string name;
     Triangle[] tris;
     DynamicArray!FaceGroup fgroups;
+    bool genTangents = true;
 
     this(Triangle[] tris)
     {
         this.tris = tris;
-
-        if (generateTangentVectors)
-            genTangents();
     }
 
-    protected void genTangents()
+    protected void generateTangents()
     {
         DynamicArray!Vector3f vertices;
         DynamicArray!Vector3f normals;
@@ -107,19 +105,19 @@ class Mesh: Drawable
                 Vector3f n = tri.n[i];
                 Vector2f t = tri.t1[i];
 
-                int vi = vertices.hasVector(v);
+                //int vi = vertices.hasVector(v);
 
-                if (vi == -1)
+                //if (vi == -1)
                 {
                     vertices.append(v);
                     normals.append(n);
                     texcoords.append(t);
                     triangle[i] = cast(uint)(vertices.length-1);
                 }
-                else
-                {
-                    triangle[i] = vi;
-                }
+                //else
+                //{
+                //    triangle[i] = vi;
+                //}
             }
             triangles.append(triangle);
         }
@@ -218,6 +216,9 @@ class Mesh: Drawable
 
     void genFaceGroups(MaterialLibrary matlib)
     {
+        if (genTangents)
+            generateTangents();
+    
         // Assign tris to corresponding face groups
         foreach(tri; tris)
         {
@@ -255,7 +256,7 @@ class Mesh: Drawable
 
     void drawTris(Triangle[] triangles)
     {
-        glColor4f(1, 1, 1, 1);
+        //glColor4f(1, 1, 1, 1);
         foreach(tri; triangles)
         {
             glBegin(GL_TRIANGLES);
@@ -264,21 +265,21 @@ class Mesh: Drawable
             //glNormal3fv(tri.normal.arrayof.ptr);
 
             glNormal3fv(tri.n[0].arrayof.ptr);
-            if (generateTangentVectors)
+            if (genTangents)
                 glColor3fv(tri.tg[0].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[0].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[0].arrayof.ptr);
             glVertex3fv(tri.v[0].arrayof.ptr);
 
             glNormal3fv(tri.n[1].arrayof.ptr);
-            if (generateTangentVectors)
+            if (genTangents)
                 glColor3fv(tri.tg[1].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[1].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[1].arrayof.ptr);
             glVertex3fv(tri.v[1].arrayof.ptr);
 
             glNormal3fv(tri.n[2].arrayof.ptr);
-            if (generateTangentVectors)
+            if (genTangents)
                 glColor3fv(tri.tg[2].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE0_ARB, tri.t1[2].arrayof.ptr);
             glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, tri.t2[2].arrayof.ptr);

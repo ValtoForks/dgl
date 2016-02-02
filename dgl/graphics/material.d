@@ -77,11 +77,11 @@ class Material: Modifier
     bool additiveBlending = false;
     bool doubleSided = false;
     bool forceActive = false;
-    bool useGLSL = false;
+    bool useGLSL = true;
     bool bump = true;
     bool parallax = true;
     bool glowMap = true;
-    bool rimLight = false;
+    bool rimLight = true;
     bool useFog = false;
     
     this()
@@ -100,26 +100,32 @@ class Material: Modifier
     
     void setShader(Shader sh)
     {
+        if (!useGLSL)
+            return;
+    
         if (!isGLSLSupported())
             return;
             
         if (!isShadersEnabled())
             return;
             
-        useGLSL = true;
+        //useGLSL = true;
         
         shader = sh;
     }
     
     void setShader()
     {
+        if (!useGLSL)
+            return;
+    
         if (!isGLSLSupported())
             return;
             
         if (!isShadersEnabled())
             return;
             
-        useGLSL = true;
+        //useGLSL = true;
         
         if (uberShader is null)
             uberShader = New!UberShader();
@@ -172,8 +178,8 @@ class Material: Modifier
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         if (shadeless)
         {
-            glDisable(GL_LIGHTING);
             glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+            glDisable(GL_LIGHTING);
         }
         
         if (doubleSided)

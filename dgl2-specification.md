@@ -120,7 +120,7 @@ ENTITY chunk has `type` field equal to `4` and a unique `id`, usually beginning 
     scaling    - vec3
     DMLsize    - uint
 
-`type` field is game-specific. Reserved values are `0` (normal entity) and `1` (point light source). 
+`type` field is game-specific. Reserved values are `0` (normal entity), `1` (point light source) and `4` (mesh metadata).
 
 `materialID` and `meshID` fields point to corresponding Material and Trimesh defined in the file. `-1` means no Material/Trimesh.
 
@@ -135,3 +135,24 @@ If `DMLsize` is larger than `0`, this structure is immediately followed by UTF-8
 
 Any Entity can define any number of additional custom DML properties, which are game-, engine- and editor-specific.
 
+Light Source
+------------
+An Entity with `type` field equal to `1` is interpreted by the engine as a point light source. It should define the following DML properties:
+
+    color = "[r,g,b,a]"
+    
+`"[r,g,b,a]"` values are floats in the range `0..1`. 
+
+Mesh Metadata
+-------------
+An entity with `type` field equal to `4` is interpreted by the engine as a mesh metadata container. It should define the following DML properties:
+
+    mesh = "meshName"
+    
+`meshName` stands for the name of the mesh this objects links to. Other DML properties are given to this mesh. It is recommended to have only one metadata entity for each mesh to avoid ambiguity.
+
+Currently DGL has only one built-in mesh metadata property, `genTangents`:
+
+    genTangents = "0" or "1"
+
+This can be used to turn off tangent vectors for vertices (turned on by default).

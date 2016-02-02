@@ -202,6 +202,24 @@ class DGLResource: Resource
     
     bool loadThreadUnsafePart()
     {
+        foreach(i, e; entitiesById)
+        {
+            if (e.type == 4)
+            {
+                if ("mesh" in e.props)
+                {
+                    string meshName = e.props["mesh"].toString;
+                    if (meshName in meshesByName)
+                    {
+                        Mesh mesh = meshesByName[meshName];
+                        
+                        if ("genTangents" in e.props)
+                            mesh.genTangents = e.props["genTangents"].toBool;
+                    }
+                }
+            }
+        }
+    
         foreach(i, m; meshesById)
         {
             m.genFaceGroups(materialLib);
@@ -300,7 +318,7 @@ void loadDGL2(DGLResource res, InputStream istrm)
             res.addMaterial(mat.id, chunk.name, mat);
         }
         else if (chunk.type == ChunkType.TRIMESH)
-        {
+        {        
             assert(!(chunk.data.length % DGLTriangle.sizeof)); // Check data integrity
             size_t numTris = chunk.data.length / DGLTriangle.sizeof;
             Triangle[] tris = New!(Triangle[])(numTris);
@@ -315,8 +333,7 @@ void loadDGL2(DGLResource res, InputStream istrm)
             }
 
             Mesh mesh = New!Mesh(tris);
-            mesh.id = chunk.id;
-            
+            mesh.id = chunk.id;            
             res.addMesh(mesh.id, chunk.name, mesh);
             
             // TODO: duplicate
@@ -362,8 +379,6 @@ void decodeEntity(Entity e, InputStream istrm, DGLResource res)
     if ("transparent" in dml.root.data)
         e.transparent = dml.root.data["transparent"].toBool;
 }
-
-//version = DGLDebug;
 
 void decodeMaterial(Material m, InputStream istrm, DGLResource res)
 {
@@ -431,6 +446,16 @@ void decodeMaterial(Material m, InputStream istrm, DGLResource res)
     if ("doubleSided" in dml.root.data)
     {
         m.doubleSided = dml.root.data["doubleSided"].toBool;
+    }
+    
+    if ("useGLSL" in dml.root.data)
+    {
+        m.useGLSL = dml.root.data["useGLSL"].toBool;
+    }
+    
+    if ("blendMode" in dml.root.data)
+    {
+        m.additiveBlending = (dml.root.data["blendMode"].toInt == 1);
     }
 
     dml.free();
