@@ -6,7 +6,7 @@ Features:
 * Fully GC-free
 * Supports Windows, Linux and Mac OS X
 * Event system with user-defined events and Unicode keyboard input
-* Resource manager (resources are loading in a separate thread)
+* Resource manager (resources are loaded in a separate thread)
 * Own scene file format (DGL2) with Blender exporter
 * Loading textures from PNG
 * Dynamic shadows
@@ -24,11 +24,17 @@ TODO:
 * Actors, IQM format loading
 * Particle system
 * I8n
+* Terrain rendering
+* Water rendering
 
 Screenshots
 -----------
 [![Screenshot1](/screenshots/003_thumb.jpg)](/screenshots/003.jpg)
 
+Documentation
+-------------
+See [tutorials](/tutorials).
+
 License
 -------
-Copyright (c) 2013-2015 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
+Copyright (c) 2013-2016 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
