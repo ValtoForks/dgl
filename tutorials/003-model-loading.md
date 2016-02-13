@@ -40,4 +40,4 @@ You would also want to add a light source (if you don't have one in your model):
 addPointLight(Vector3f(0, 5, 5));
 ```
 
-Viola, you now have your Blender scene in DGL. Have Fun!
+Viola, you now have your Blender scene in DGL. Have fun!
