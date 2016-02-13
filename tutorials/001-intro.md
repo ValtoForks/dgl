@@ -4,7 +4,7 @@ DGL is an Open Source graphics engine for D language. It is built on top of Open
 
 Features
 --------
-DGL provides an easy to use APIs for graphics I/O (window creation and input handling), adding geometry, creating materials, shaders and textures, loading models and scenes from files, and manipulating everything in real-time.
+DGL provides an easy to use APIs for graphics I/O (window creation and input handling), adding geometry, creating materials, shaders and textures, loading models and scenes from files, and manipulating everything in real time.
 
 Recommended system requirements
 -------------------------------
