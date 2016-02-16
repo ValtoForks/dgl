@@ -81,7 +81,7 @@ class Material: Modifier
     bool bump = true;
     bool parallax = true;
     bool glowMap = true;
-    bool rimLight = true;
+    bool rimLight = false;
     bool useFog = false;
     
     this()
