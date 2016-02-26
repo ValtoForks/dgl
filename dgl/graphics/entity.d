@@ -75,6 +75,26 @@ class Entity: Drawable
         model = d;
     }
     
+    Vector3f getPosition()
+    {
+        return position;
+    }
+    
+    Quaternionf getRotation()
+    {
+        return rotation;
+    }
+    
+    Vector3f getScaling()
+    {
+        return position;
+    }
+    
+    Matrix4x4f getTransformation()
+    {
+        return transformation;
+    }
+    
     ~this()
     {
         props.free();

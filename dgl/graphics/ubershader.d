@@ -91,7 +91,7 @@ private string _uberFragmentShader = q{
     const float parallaxBias = -0.03;
     const float lightRadiusSqr = 9.0;
     const float shadowBrightness = 0.4;
-    const float edgeWidth = 0.3;
+    const float edgeWidth = 0.2;
     
     float texture2DCompare(sampler2D depths, vec2 uv, float compare)
     {
@@ -122,9 +122,11 @@ private string _uberFragmentShader = q{
 
     void main(void) 
     {
+        vec2 texCoords = gl_TexCoord[0].st;
+        
         if (shadeless)
         {
-            gl_FragColor = gl_FrontMaterial.diffuse;
+            gl_FragColor = textureEnabled? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
             return;
         }
         
@@ -142,14 +144,13 @@ private string _uberFragmentShader = q{
             vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
             if (shadowCoord.w > 0.0)
             {
-                shadowCoordinateWdivide.z *= 0.9999;
+                shadowCoordinateWdivide.z -= 0.0002; //*=0.9999;
                 shadow = texture2DShadowLerp(dgl_Texture7, shadowCoordinateWdivide.st, shadowCoordinateWdivide.z);
             }
             shadow += shadowBrightness;
         }
         
         // Parallax mapping
-        vec2 texCoords = gl_TexCoord[0].st;
         if (parallaxEnabled)
         {
             vec2 eye2 = vec2(E.x, -E.y);
@@ -158,8 +159,12 @@ private string _uberFragmentShader = q{
             texCoords = texCoords + (height * eye2);
         }
         
+        vec3 nn = normalize(n);
+        vec3 tn = normalize(t);
+        vec3 bn = normalize(b);
+        
         // Normal mapping
-        vec3 N = bumpEnabled? normalize(2.0 * texture2D(dgl_Texture1, texCoords).rgb - 1.0) : n;
+        vec3 N = bumpEnabled? normalize(2.0 * texture2D(dgl_Texture1, texCoords).rgb - 1.0) : nn;
     
         // Texture
         vec4 tex = textureEnabled? texture2D(dgl_Texture0, texCoords) : vec4(1.0, 1.0, 1.0, 1.0);
@@ -188,10 +193,10 @@ private string _uberFragmentShader = q{
         float edgeScale;
         float rim = 0.0;
 
-        vec4 Cr = vec4(0.05, 0.25, 0.25, 1.0);
+        vec4 Cr = vec4(0.01, 0.1, 0.1, 1.0);
         const vec4 one = vec4(1.0, 1.0, 1.0, 1.0);
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 4; i++)
         {
             if (gl_LightSource[i].position.w < 2.0)
             {
@@ -215,9 +220,9 @@ private string _uberFragmentShader = q{
                 }
                 
                 L = bumpEnabled? 
-                    vec3(dot(directionToLight, t),
-                         dot(directionToLight, b),
-                         dot(directionToLight, n)) : 
+                    vec3(dot(directionToLight, tn),
+                         dot(directionToLight, bn),
+                         dot(directionToLight, nn)) : 
                     directionToLight;
                 
                 // Diffuse term
@@ -231,19 +236,19 @@ private string _uberFragmentShader = q{
                 // Specular term
                 H = normalize(L + E);
                 NH = dot(N, H);
-                specular = pow(max(NH, 0.0), gl_FrontMaterial.shininess) * 3.0; // Blinn-Phong
+                specular = pow(max(NH, 0.0), 3.0 * gl_FrontMaterial.shininess); // Blinn-Phong
 
                 col_d += Md*Ld*diffuse*attenuation;
                 col_s += Ms*Ls*specular*attenuation;
                 col_r += Cr*rim*attenuation * (1.0 - diffuse);
             }
         }
-
-        col_s *= 0.7;
-        col_d *= 0.7;
-        col_r *= 0.7;
-        
-        vec4 finalColor = emit + tex * (gl_FrontMaterial.ambient + (col_d + col_s + col_r) * shadow);
+/*
+        col_s *= 0.9;
+        col_d *= 0.9;
+        col_r *= 0.9;
+*/
+        vec4 finalColor = emit + (tex * gl_FrontMaterial.ambient + tex * col_d + col_s + col_r) * shadow;
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
         
         gl_FragColor.a = tex.a;

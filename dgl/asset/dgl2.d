@@ -457,6 +457,16 @@ void decodeMaterial(Material m, InputStream istrm, DGLResource res)
     {
         m.additiveBlending = (dml.root.data["blendMode"].toInt == 1);
     }
+    
+    if ("shininess" in dml.root.data)
+    {
+        m.shininess = dml.root.data["shininess"].toFloat;
+    }
+    
+    if ("rimLight" in dml.root.data)
+    {
+        m.rimLight = dml.root.data["rimLight"].toBool;
+    }
 
     dml.free();
 }

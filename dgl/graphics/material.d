@@ -70,7 +70,7 @@ class Material: Modifier
     Color4f diffuseColor;
     Color4f specularColor;
     Color4f emissionColor;
-    float shininess = 32.0f;
+    float shininess = 64.0f;
     
     bool shadeless = false;
     bool useTextures = true;

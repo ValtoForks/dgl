@@ -142,7 +142,7 @@ class LightManager
 
     void calcLighting(Entity e)
     {
-        Vector3f ePos = e.position;
+        Vector3f ePos = e.getPosition();
         if (useUpdateTreshold)
         {
             if ((ePos - referencePoint).lengthsqr < updateThreshold)
