@@ -30,6 +30,7 @@ TODO:
 Screenshots
 -----------
 [![Screenshot1](/screenshots/003_thumb.jpg)](/screenshots/003.jpg)
+[![Screenshot2](/screenshots/004_thumb.jpg)](/screenshots/004.jpg)
 
 Documentation
 -------------
