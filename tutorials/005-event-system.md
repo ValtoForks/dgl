@@ -46,20 +46,20 @@ onUpdate(); // call other event listeners' event handlers
 onRedraw(); // render graphics
 ```
 
-The following events are available: 
-* onKeyDown - generated when user presses a key (keyboard events are generated only once - continuous check can be done via `EventManager`)
-* onKeyUp - generated when user releases a key
-* onTextInput - generated when user types a text character or control symbol on a keyboard. In contrast to `onKeyDown`, this event retrieves international characters based on current keyboard layout. The characters are 32-bit Unicode code points (`dchar`)
-* onMouseButtonDown - generated when user presses a mouse button (mouse events are generated only once - continuous check can be done via `EventManager`)
-* onMouseButtonUp - generated when user releases a mouse button
-* onJoystickButtonDown - generated when user presses a joystick button (joystick events are generated only once - continuous check is currently not supported, but you can implement it yourself)
-* onJoystickButtonUp - generated when user releases a joystick button
-* onJoystickAxisMotion - generated when user moves joystick axis (analog controller)
-* onResize - generated when user changes the size of the application window. If the window is made non-resizable (via `windowResizable` option in `game.conf`), this event is never generated
-* onFocusLoss - generated when user minimizes application window to tray or changes focus to another window (currently there are no way to distinguish between these two)
-* onFocusGain - generated when user restores application window from tray or changes focus to it (currently there are no way to distinguish between these two)
-* onQuit - generated when user closes application window
-* onUserEvent - generated when user event is spawned (see below)
+The following event handlers can be defined: 
+* `onKeyDown` - generated when user presses a key (keyboard events are generated only once - continuous check can be done via `EventManager`)
+* `onKeyUp` - generated when user releases a key
+* `onTextInput` - generated when user types a text character or control symbol on a keyboard. In contrast to `onKeyDown`, this event retrieves international characters based on current keyboard layout. The characters are 32-bit Unicode code points (`dchar`)
+* `onMouseButtonDown` - generated when user presses a mouse button (mouse events are generated only once - continuous check can be done via `EventManager`)
+* `onMouseButtonUp` - generated when user releases a mouse button
+* `onJoystickButtonDown` - generated when user presses a joystick button (joystick events are generated only once - continuous check is currently not supported, but you can implement it yourself)
+* `onJoystickButtonUp` - generated when user releases a joystick button
+* `onJoystickAxisMotion` - generated when user moves joystick axis (analog controller)
+* `onResize` - generated when user changes the size of the application window. If the window is made non-resizable (via `windowResizable` option in `game.conf`), this event is never generated
+* `onFocusLoss` - generated when user minimizes application window to tray or changes focus to another window (currently there are no way to distinguish between these two)
+* `onFocusGain` - generated when user restores application window from tray or changes focus to it (currently there are no way to distinguish between these two)
+* `onQuit` - generated when user closes application window
+* `onUserEvent` - generated when user event is spawned (see below)
 
 User events are a powerful method for communication between game objects without using an explicit global state. Any `EventListener` can spawn a user event with `generateUserEvent` method. User events are distinguished by numeric codes.
 
