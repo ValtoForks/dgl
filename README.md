@@ -32,6 +32,10 @@ Screenshots
 [![Screenshot1](/screenshots/003_thumb.jpg)](/screenshots/003.jpg)
 [![Screenshot2](/screenshots/004_thumb.jpg)](/screenshots/004.jpg)
 
+Give it a shot!
+---------------
+To see what DGL is capable to, check out [Atrium](https://github.com/gecko0307/atrium), a work-in-progress sci-fi first person puzzle based on physics simulation.
+
 Documentation
 -------------
 See [tutorials](/tutorials).
