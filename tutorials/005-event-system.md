@@ -61,7 +61,7 @@ The following event handlers can be defined:
 * `onQuit` - generated when user closes application window
 * `onUserEvent` - generated when user event is spawned (see below)
 
-User events are a powerful method for communication between game objects without using an explicit global state. Any `EventListener` can spawn a user event with `generateUserEvent` method. User events are distinguished by numeric codes.
+User events are a powerful way of communication between game objects without using an explicit global state. Any `EventListener` can spawn a user event with `generateUserEvent` method. User events are distinguished by numeric codes.
 
 Example:
 
