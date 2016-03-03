@@ -22,7 +22,7 @@ class MyObject: EventListener
 }
 ```
 
-Because `EventManager` doesn't have direct control over its listeners, event reaction procedure (`processEvents`) must be explicitly called by the programmer for each listener. For example, you can store an array of `EventListener`s in your application class and call `processEvents` for them in a loop on every update:
+Because `EventManager` doesn't have direct control over its listeners, event reaction procedure (`processEvents`) must be explicitly called by the programmer for each listener. For example, you can store an array of `EventListeners` in your application class and call `processEvents` for them in a loop on every update:
 
 ```d
 override void onUpdate(double dt)
@@ -42,14 +42,14 @@ Note: `onUpdate` and `onRedraw` are not really event handlers. They are just con
 ```d
 eventManager.update(); // generate events
 processEvents(); // call Application's own event handlers
-onUpdate(); // call other `EventListener`s event handlers
+onUpdate(); // call other event listeners' event handlers
 onRedraw(); // render graphics
 ```
 
 The following events are available: 
 * onKeyDown - generated when user presses a key (keyboard events are generated only once - continuous check can be done via `EventManager`)
 * onKeyUp - generated when user releases a key
-* onTextInput - generated when user types a text character or control symbol on a keyboard. In contrast to `onKeyDown`, this event retrieves international characters based on current keyboard layout. The characters are 32-bit Unicode code points (`dchar`s)
+* onTextInput - generated when user types a text character or control symbol on a keyboard. In contrast to `onKeyDown`, this event retrieves international characters based on current keyboard layout. The characters are 32-bit Unicode code points (`dchar`)
 * onMouseButtonDown - generated when user presses a mouse button (mouse events are generated only once - continuous check can be done via `EventManager`)
 * onMouseButtonUp - generated when user releases a mouse button
 * onJoystickButtonDown - generated when user presses a joystick button (joystick events are generated only once - continuous check is currently not supported, but you can implement it yourself)
