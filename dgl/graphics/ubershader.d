@@ -48,7 +48,7 @@ private string _uberVertexShader = q{
 
         n = normalize(gl_NormalMatrix * gl_Normal);
         t = normalize(gl_NormalMatrix * gl_Color.xyz);
-        b = cross(n, t);
+        b = cross(n, t); // * gl_Color.w; //??
         position = (gl_ModelViewMatrix * gl_Vertex).xyz;
         
         E = position;
@@ -173,6 +173,8 @@ private string _uberFragmentShader = q{
         vec4 emit = glowMapEnabled?
             texture2D(dgl_Texture2, texCoords) * gl_FrontMaterial.emission.w :
             vec4(0.0, 0.0, 0.0, 1.0);
+            
+        //float alpha = textureEnabled? tex.a : gl_FrontMaterial.diffuse.a;
         
         vec3 directionToLight;
         float distanceToLight;
@@ -243,15 +245,10 @@ private string _uberFragmentShader = q{
                 col_r += Cr*rim*attenuation * (1.0 - diffuse);
             }
         }
-/*
-        col_s *= 0.9;
-        col_d *= 0.9;
-        col_r *= 0.9;
-*/
+
         vec4 finalColor = emit + (tex * gl_FrontMaterial.ambient + tex * col_d + col_s + col_r) * shadow;
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
-        
-        gl_FragColor.a = tex.a;
+        gl_FragColor.a = textureEnabled? tex.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
     }
 };
 

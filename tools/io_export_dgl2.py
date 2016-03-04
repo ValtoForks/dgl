@@ -209,9 +209,13 @@ def writeMaterial(f, matName, matIndex):
     specular = mat.specular_color
     shadeless = mat.use_shadeless
     emission = mat.emit
+    
+    diffuseAlpha = 1.0
+    
+    diffuseAlpha = mat.alpha
 
     dml = {
-        "diffuseColor": vecToStr([diffuse.r, diffuse.g, diffuse.b, 1.0]),
+        "diffuseColor": vecToStr([diffuse.r, diffuse.g, diffuse.b, diffuseAlpha]),
         "specularColor": vecToStr([specular.r, specular.g, specular.b, 1.0]),
         "shadeless": str(int(shadeless)),
         "emission": str(emission)
