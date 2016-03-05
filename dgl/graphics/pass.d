@@ -53,6 +53,7 @@ class Pass: EventListener, Drawable
     Scene scene;
     Material defaultMaterial;
     uint groupID = 0;
+    int depth = 0;
     uint viewX;
     uint viewY;
     uint viewWidth;
@@ -119,7 +120,6 @@ class Pass: EventListener, Drawable
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(modelViewMatrix.arrayof.ptr);
 
-        glDisable(GL_LIGHTING);
         if (defaultMaterial)
         {
             if (overrideMaterials)
@@ -128,6 +128,8 @@ class Pass: EventListener, Drawable
                 defaultMaterial.forceActive = true;
             }
         }
+        
+        glDisable(GL_LIGHTING);
         
         bool useLighting;
         if (scene)
@@ -196,6 +198,7 @@ class Pass2D: Pass
         super(0, 0, emngr.windowWidth, emngr.windowHeight, s, emngr);
         projectionMatrix = orthoMatrix(0.0f, emngr.windowWidth, 0.0f, emngr.windowHeight, 0.0f, 1.0f);
         alignToWindow = true;
+        shadeless = true;
     }
 
     this(uint x, uint y, uint w, uint h, Scene s, EventManager emngr)
@@ -216,8 +219,10 @@ class Pass2D: Pass
 
 class PassApplication: Application
 {
-    DynamicArray!Pass passes3d;
-    DynamicArray!Pass passes2d;
+    DynamicArray!Pass passes;
+    int maxDepth3D = 0;
+    int maxDepth2D = -100;
+    bool depthsChanged = true;
 
     this()
     {
@@ -226,62 +231,95 @@ class PassApplication: Application
 
     Pass addPass3D(Pass p)
     {
-        passes3d.append(p);
+        passes.append(p);
         return p;
     }
 
     Pass addPass2D(Pass p)
     {
-        passes2d.append(p);
+        passes.append(p);
         return p;
     }
 
     Pass3D addPass3D(uint x, uint y, uint w, uint h, Scene s)
     {
         Pass3D p = New!Pass3D(x, y, w, h, s, eventManager);
-        passes3d.append(p);
+        passes.append(p);
+        p.depth = maxDepth3D;
+        maxDepth3D++;
         return p;
     }
 
     Pass3D addPass3D(Scene s)
     {
         Pass3D p = New!Pass3D(s, eventManager);
-        passes3d.append(p);
+        passes.append(p);
+        p.depth = maxDepth3D;
+        maxDepth3D++;
         return p;
     }
 
     Pass2D addPass2D(Scene s)
     {
         Pass2D p = New!Pass2D(s, eventManager);
-        passes2d.append(p);
+        passes.append(p);
+        p.depth = maxDepth2D;
+        maxDepth2D--;
         return p;
+    }
+    
+    void sortPassesByDepth()
+    {    
+        size_t j = 0;
+        Pass tmp;
+
+        auto pdata = passes.data;
+
+        foreach(i, v; pdata)
+        {
+            j = i;
+            size_t k = i;
+
+            while (k < pdata.length)
+            {
+                float b1 = pdata[j].depth;
+                float b2 = pdata[k].depth;
+                
+                if (b2 < b1)
+                    j = k;
+                
+                k++;
+            }
+
+            tmp = pdata[i];
+            pdata[i] = pdata[j];
+            pdata[j] = tmp;
+        }
     }
 
     override void onUpdate(double dt)
     {
-        foreach_reverse(p; passes3d.data)
-            p.processEvents();
-        foreach_reverse(p; passes2d.data)
+        if (depthsChanged)
+        {
+            sortPassesByDepth();
+            depthsChanged = false;
+        }
+
+        foreach_reverse(p; passes.data)
             p.processEvents();
     }
 
     override void onRedraw(double dt)
     {
-        foreach_reverse(p; passes3d.data)
-            p.draw(dt);
-        foreach_reverse(p; passes2d.data)
+        foreach_reverse(p; passes.data)
             p.draw(dt);
     }
 
     ~this()
     {
-        foreach(p; passes3d)
+        foreach(p; passes)
             Delete(p);
-        passes3d.free();
-
-        foreach(p; passes2d)
-            Delete(p);
-        passes2d.free();
+        passes.free();
     }
 }
 

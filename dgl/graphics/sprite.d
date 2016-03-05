@@ -55,13 +55,12 @@ class ScreenSprite: EventListener, Drawable
     {
         material.bind(dt);
         glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2f(0, eventManager.windowHeight);
-        glTexCoord2f(0, 1); glVertex2f(0, 0);
-        glTexCoord2f(1, 1); glVertex2f(eventManager.windowWidth, 0);
-        glTexCoord2f(1, 0); glVertex2f(eventManager.windowWidth, eventManager.windowHeight);
+        glTexCoord2f(0, 0); glVertex2f(0, 0);
+        glTexCoord2f(1, 0); glVertex2f(eventManager.windowWidth, 0);
+        glTexCoord2f(1, 1); glVertex2f(eventManager.windowWidth, eventManager.windowHeight);
+        glTexCoord2f(0, 1); glVertex2f(0, eventManager.windowHeight);
         glEnd();
         material.unbind();
-        glDisable(GL_LIGHTING);
     }
 
     ~this()

@@ -12,15 +12,19 @@ Features:
 * Dynamic shadows
 * Unlimited number of dynamic light sources
 * GLSL shaders
-* Shader-based materials with normal mapping and parallax mapping
+* Built-in uber shader with normal mapping and parallax mapping
+* Unlimited number of render passes, 2D or 3D
+* Render to texture
 * Antialiasing
-* Geometric shapes
-* Text rendering with TTF fonts and Unicode support
+* Built-in trackball camera
+* 3D geometric shapes
+* 2D sprites, including animated ones
+* 2D text rendering with TTF fonts and Unicode support
 * VFS
 * Configuration system
 
 TODO:
-* Billboards and 2D sprites
+* Billboards
 * Actors, IQM format loading
 * Particle system
 * I8n

@@ -252,6 +252,8 @@ class Material: Modifier
             }
         }
         
+        glDisable(GL_LIGHTING);
+        
         if (doubleSided)
             glEnable(GL_CULL_FACE);
 
