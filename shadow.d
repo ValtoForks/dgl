@@ -9,6 +9,7 @@ import dgl.core.event;
 import dgl.core.application;
 import dgl.templates.app3d;
 import dgl.templates.freeview;
+import dgl.graphics.material;
 import dgl.graphics.shapes;
 import dgl.graphics.shadow;
 import dgl.graphics.state;
@@ -34,6 +35,8 @@ class ShadowApp: Application3D
         string model = "simple.dgl2";
         addModelResource(model);
         loadResources();
+        
+        Material.uberShader.shadowEnabled = true;
         
         foreach(name, entity; getModel(model).entitiesByName)
         {            
