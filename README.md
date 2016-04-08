@@ -40,7 +40,11 @@ To see what DGL is capable to, check out [Atrium](https://github.com/gecko0307/a
 
 Documentation
 -------------
-See [tutorials](/tutorials).
+* [Introduction to DGL](/tutorials/001-intro.md)
+* [Basic 3D Graphics](/tutorials/002-3d-graphics.md)
+* [Model Loading](/tutorials/003-model-loading.md)
+* [Extending DGL](/tutorials/004-extending-dgl.md)
+* [Event System](/tutorials/005-event-system.md)
 
 License
 -------
