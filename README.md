@@ -9,7 +9,7 @@ Features:
 * Resource manager (resources are loaded in a separate thread)
 * Own scene file format (DGL2) with Blender exporter
 * Loading textures from PNG
-* Dynamic shadows
+* Dynamic soft shadows
 * Unlimited number of dynamic light sources
 * GLSL shaders
 * Built-in uber shader with normal mapping and parallax mapping
@@ -33,7 +33,7 @@ TODO:
 
 Screenshots
 -----------
-[![Screenshot1](/screenshots/003_thumb.jpg)](/screenshots/003.jpg)
+[![Screenshot1](/screenshots/005_thumb.jpg)](/screenshots/005.jpg)
 [![Screenshot2](/screenshots/004_thumb.jpg)](/screenshots/004.jpg)
 
 Give it a shot!
