@@ -41,7 +41,7 @@ TODO:
 
 Demos
 -----
-DGL comes with a number of usage examples. To build one, run `dub build --config=demoname`, where `demoname` can be `minimal`, `simple3d`, `loading`, 'materials', `shadow`, `extending`, `textio`.
+DGL comes with a number of usage examples. To build one, run `dub build --config=demoname`, where `demoname` can be `minimal`, `simple3d`, `loading`, `materials`, `shadow`, `extending`, `textio`.
 * minimal.d - 'Hello, World' application, demonstrates how to create a window and print text with TrueType font
 * simple3d.d - basic 3D graphics examplem, rendering a cube
 * loading.d - loading an asset from DGL2 file
