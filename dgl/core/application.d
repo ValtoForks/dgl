@@ -234,6 +234,11 @@ void initDGL()
             }
         }
     }
+    version(FreeBSD)
+    {
+        DerelictSDL.load();
+        DerelictFT.load();
+    }
     version(OSX)
     {
         DerelictSDL.load();
