@@ -10,18 +10,25 @@ import dgl.ui.textline;
 
 class SimpleApp: Application3D
 {
+    FreeTypeFont font;
+    TextLine text;
+
     this()
     {
         super();
         
-        auto font = New!FreeTypeFont("media/DroidSans.ttf", 20);
-        registerObject("font", font);
+        font = New!FreeTypeFont("data/DroidSans.ttf", 20);
         
-        auto text = New!TextLine(font, "Hello, World!");
-        registerObject("text", text);
+        text = New!TextLine(font, "Hello, World!");
         auto entityText = createEntity2D(text);
         entityText.position.x = 10;
         entityText.position.y = 10;
+    }
+
+    ~this()
+    {
+        Delete(text);
+        Delete(font);
     }
 
     override void onKeyDown(int key)

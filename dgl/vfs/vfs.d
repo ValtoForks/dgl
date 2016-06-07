@@ -29,9 +29,11 @@ DEALINGS IN THE SOFTWARE.
 module dgl.vfs.vfs;
 
 import std.string;
+import std.path;
 import dlib.core.memory;
 import dlib.core.stream;
-import dlib.container.array;
+//import dlib.container.array;
+import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
 
@@ -72,41 +74,79 @@ class StdDirFileSystem: ReadOnlyFileSystem
 
 class VirtualFileSystem: ReadOnlyFileSystem
 {
-    DynamicArray!StdDirFileSystem mounted;
+    Dict!(StdDirFileSystem, string) mounted;
+
+    this()
+    {
+        mounted = New!(Dict!(StdDirFileSystem, string));
+    }
 
     void mount(string dir)
     {
         StdDirFileSystem fs = New!StdDirFileSystem(dir);
-        mounted.append(fs);
+        mounted[dir] = fs;
+    }
+
+    void umount(string dir)
+    {
+        StdDirFileSystem fs = mounted[dir];
+        Delete(fs);
+        mounted.remove(dir);
+    }
+
+    bool isMounted(string dir)
+    {
+        return (dir in mounted) !is null;
+    }
+
+    string containingDir(string filename)
+    {
+        string res;
+        foreach(i, fs; mounted)
+        {
+            FileStat s;
+            if (fs.stat(filename, s))
+            {
+                res = fs.rootDir;
+                break;
+            }
+        }
+        return res;
     }
 
     bool stat(string filename, out FileStat stat)
     {
         //filename = normalizePath(filename);
-        foreach(i, fs; mounted.data)
+        bool res = false;
+        foreach(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
             {
                 stat = s;
-                return true;
+                res = true;
+                break;
             }
         }
 
-        return false;
+        return res;
     }
 
     InputStream openForInput(string filename)
     {
         //filename = normalizePath(filename);
-        foreach(i, fs; mounted.data)
+        InputStream res = null;
+        foreach(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
-                return fs.openForInput(filename);
+            {
+                res = fs.openForInput(filename);
+                break;
+            }
         }
 
-        return null;
+        return res;
     }
 
     Directory openDir(string path)
@@ -117,8 +157,8 @@ class VirtualFileSystem: ReadOnlyFileSystem
 
     ~this()
     {
-        foreach(i, fs; mounted.data)
+        foreach(i, fs; mounted)
             Delete(fs);
-        mounted.free();
+        Delete(mounted);
     }
 }

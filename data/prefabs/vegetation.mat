@@ -1,0 +1,11 @@
+name: "vegetation";
+ambientColor: [0.4, 0.4, 0.5, 1.0];
+diffuseColor: [1.0, 1.0, 1.0, 1.0];
+specularColor: [0.1, 0.1, 0.1, 1.0];
+emissionColor: [0.0, 0.0, 0.0, 1.0];
+diffuseTexture: "matcap_vegetation.png";
+roughness: 0.4;
+specularity: 0.5;
+matcap: 1;
+receiveShadows: 1;
+

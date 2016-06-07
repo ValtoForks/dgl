@@ -38,23 +38,44 @@ import dgl.core.api;
 import dgl.core.event;
 import dgl.core.interfaces;
 import dgl.graphics.state;
+import dgl.graphics.material;
 
-class Shader: Modifier
+class Shader
 {
+    protected:
+    bool _supported;
+    
+    private:
     GLenum shaderVert;
     GLenum shaderFrag;
     GLenum shaderProg;
-    bool _supported;
+    
+    GLint loc_dgl_Texture0;
+    GLint loc_dgl_Texture1;
+    GLint loc_dgl_Texture2;
+    GLint loc_dgl_Texture3;
+    GLint loc_dgl_Texture4;
+    GLint loc_dgl_Texture5;
+    GLint loc_dgl_Texture6;
+    GLint loc_dgl_Texture7;
+    
+    GLint loc_dgl_WindowSize;
+    GLint loc_dgl_ShadowMapSize;
+    GLint loc_dgl_Shadeless;
+    GLint loc_dgl_Textures;
+    GLint loc_dgl_NormalMapping;
+    GLint loc_dgl_ParallaxMapping;
+    GLint loc_dgl_GlowMap;
+    GLint loc_dgl_Fog;
+    GLint loc_dgl_Shadow;
+    GLint loc_dgl_Matcap;
+    GLint loc_dgl_Specularity;
+    GLint loc_dgl_ShadowType;
 
-	char*[10] texStrings;
-
-    Dict!(bool, string) paramBool;
-
+    public:
     this(string vertexProgram, string fragmentProgram)
     {
         _supported = supported;
-        
-        paramBool = dict!(bool, string);
 
         if (_supported)
         {
@@ -89,17 +110,31 @@ class Shader: Modifier
             glGetInfoLogARB(shaderFrag, 999, &infobufferlen, infobuffer.ptr);
             if (infobuffer[0] != 0)
                 writefln("GLSL: error in fragment shader:\n%s\n", infobuffer.ptr.to!string);
+                
+            loc_dgl_Texture0 = glGetUniformLocationARB(shaderProg, "dgl_Texture0");
+            loc_dgl_Texture1 = glGetUniformLocationARB(shaderProg, "dgl_Texture1");
+            loc_dgl_Texture2 = glGetUniformLocationARB(shaderProg, "dgl_Texture2");
+            loc_dgl_Texture3 = glGetUniformLocationARB(shaderProg, "dgl_Texture3");
+            loc_dgl_Texture4 = glGetUniformLocationARB(shaderProg, "dgl_Texture4");
+            loc_dgl_Texture5 = glGetUniformLocationARB(shaderProg, "dgl_Texture5");
+            loc_dgl_Texture6 = glGetUniformLocationARB(shaderProg, "dgl_Texture6");
+            loc_dgl_Texture7 = glGetUniformLocationARB(shaderProg, "dgl_Texture7");
+            
+            loc_dgl_WindowSize = glGetUniformLocationARB(shaderProg, "dgl_WindowSize");
+            
+            loc_dgl_ShadowMapSize = glGetUniformLocationARB(shaderProg, "dgl_ShadowMapSize");
 
-            texStrings[0] = cast(char*)toStringz("dgl_Texture0");
-			texStrings[1] = cast(char*)toStringz("dgl_Texture1");
-			texStrings[2] = cast(char*)toStringz("dgl_Texture2");
-			texStrings[3] = cast(char*)toStringz("dgl_Texture3");
-			texStrings[4] = cast(char*)toStringz("dgl_Texture4");
-			texStrings[5] = cast(char*)toStringz("dgl_Texture5");
-			texStrings[6] = cast(char*)toStringz("dgl_Texture6");
-			texStrings[7] = cast(char*)toStringz("dgl_Texture7");
-            texStrings[8] = cast(char*)toStringz("dgl_WindowSize");
-            texStrings[9] = cast(char*)toStringz("dgl_ShadowMapSize");
+            loc_dgl_Shadeless = glGetUniformLocation(shaderProg, "dgl_Shadeless");
+            loc_dgl_Textures = glGetUniformLocation(shaderProg, "dgl_Textures");
+            loc_dgl_NormalMapping = glGetUniformLocation(shaderProg, "dgl_NormalMapping");
+            loc_dgl_ParallaxMapping = glGetUniformLocation(shaderProg, "dgl_ParallaxMapping");
+            loc_dgl_GlowMap = glGetUniformLocation(shaderProg, "dgl_GlowMap");
+            loc_dgl_Fog = glGetUniformLocation(shaderProg, "dgl_Fog");
+            loc_dgl_Shadow = glGetUniformLocation(shaderProg, "dgl_Shadow");
+            loc_dgl_Matcap = glGetUniformLocation(shaderProg, "dgl_Matcap");
+            loc_dgl_Specularity = glGetUniformLocation(shaderProg, "dgl_Specularity");
+            
+            loc_dgl_ShadowType = glGetUniformLocation(shaderProg, "dgl_ShadowType");
         }
     }
 
@@ -107,33 +142,58 @@ class Shader: Modifier
     {
         return DerelictGL.isExtensionSupported("GL_ARB_shading_language_100");
     }
-    
-    void setParamBool(string name, bool v)
-    {
-        paramBool[name] = v;
-    }
 
-    void bind(double delta)
+    void bind(Material mat)
     {
         if (_supported)
         {
             glUseProgramObjectARB(shaderProg);
 
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[0]), 0);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[1]), 1);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[2]), 2);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[3]), 3);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[4]), 4);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[5]), 5);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[6]), 6);
-            glUniform1iARB(glGetUniformLocationARB(shaderProg, texStrings[7]), 7);
+            glUniform1iARB(loc_dgl_Texture0, 0);
+            glUniform1iARB(loc_dgl_Texture1, 1);
+            glUniform1iARB(loc_dgl_Texture2, 2);
+            glUniform1iARB(loc_dgl_Texture3, 3);
+            glUniform1iARB(loc_dgl_Texture4, 4);
+            glUniform1iARB(loc_dgl_Texture5, 5);
+            glUniform1iARB(loc_dgl_Texture6, 6);
+            glUniform1iARB(loc_dgl_Texture7, 7);
+            
+            glUniform2fARB(loc_dgl_WindowSize, PipelineState.viewportWidth, PipelineState.viewportHeight);
+            glUniform1fARB(loc_dgl_ShadowMapSize, PipelineState.shadowMapSize);
+            
+            bool textureEnabled = false;
+            bool bumpEnabled = false;
+            bool parallaxEnabled = false;
+            bool glowMapEnabled = false;
+            bool fogEnabled = mat.useFog;
 
-            glUniform2fARB(glGetUniformLocationARB(shaderProg, texStrings[8]), PipelineState.viewportWidth, PipelineState.viewportHeight);
+            if (mat.useTextures && mat.textures[0])
+                textureEnabled = true;
+
+            if (mat.useTextures && mat.textures[1] && mat.bump)
+            {
+                bumpEnabled = true;
+                if (mat.textures[1].format == GL_RGBA || mat.textures[1].format == GL_LUMINANCE_ALPHA)
+                    if (mat.parallax)
+                        parallaxEnabled = true;
+            }
+              
+            if (mat.useTextures && mat.textures[2] && mat.glowMap)
+            {
+                glowMapEnabled = true;
+            }
+
+            glUniform1i(loc_dgl_Shadeless, mat.shadeless);
+            glUniform1i(loc_dgl_Textures, textureEnabled);
+            glUniform1i(loc_dgl_NormalMapping, bumpEnabled);
+            glUniform1i(loc_dgl_ParallaxMapping, parallaxEnabled);
+            glUniform1i(loc_dgl_GlowMap, glowMapEnabled);
+            glUniform1i(loc_dgl_Fog, fogEnabled);
+            glUniform1i(loc_dgl_Shadow, mat.receiveShadows);
+            glUniform1i(loc_dgl_Matcap, mat.matcap);
+            glUniform1f(loc_dgl_Specularity, mat.specularity);
             
-            glUniform1fARB(glGetUniformLocationARB(shaderProg, texStrings[9]), PipelineState.shadowMapSize);
-            
-            foreach(k, v; paramBool)
-                glUniform1i(glGetUniformLocation(shaderProg, k.ptr), v);
+            glUniform1i(loc_dgl_ShadowType, cast(int)mat.shadowType);
         }
     }
 
@@ -148,6 +208,5 @@ class Shader: Modifier
     ~this()
     {
         unbind();
-        Delete(paramBool);
     }
 }

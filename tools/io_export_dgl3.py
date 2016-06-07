@@ -196,7 +196,7 @@ def packEntity(entityId, obj, meshId, materialName):
 
     position = rotX * obj.location
     rot = mat.to_quaternion()
-    rotation = (rot.x, rot.y, rot.z, rot.w)
+    rotation = (rot.x, rot.z, rot.y, rot.w)
     scaling = (obj.scale.x, obj.scale.z, obj.scale.y)
 
     buf = buf + packVector3f(position)

@@ -57,6 +57,7 @@ class TextListener: EventListener
 
 class TextIOApp: Application3D
 {
+    FreeTypeFont font;
     TextLine text;
     TextListener tlistener;
 
@@ -64,19 +65,24 @@ class TextIOApp: Application3D
     {
         super();
         
-        auto font = New!FreeTypeFont("media/DroidSans.ttf", 20);
-        registerObject("font", font);
+        font = New!FreeTypeFont("data/DroidSans.ttf", 20);
         
         text = New!TextLine(font, "Hello, World!");
-        registerObject("text", text);
         text.color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+
         auto entityText = createEntity2D(text);
         entityText.position.x = 10;
         entityText.position.y = 10;
         
         tlistener = New!TextListener(eventManager);
-        registerObject("tlistener", tlistener);
         text.setText(tlistener.str);
+    }
+
+    ~this()
+    {
+        Delete(tlistener);
+        Delete(text);
+        Delete(font);
     }
     
     override void onUpdate(double dt)
@@ -103,3 +109,4 @@ void main()
     Delete(app);
     deinitDGL();
 }
+

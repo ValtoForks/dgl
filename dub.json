@@ -23,43 +23,7 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "minimal.d",
-            "excludedSourceFiles": ["simple3d.d", "loading.d", "shadow.d", "extending.d", "materials.d", "textio.d"],
-            "buildOptions": ["noBoundsCheck", "optimize"]
-        },
-        {
-            "name": "simple3d",
-            "targetName": "simple3d",
-            "targetType": "executable",
-            "sourcePaths": ["."],
-            "mainSourceFile": "simple3d.d",
-            "excludedSourceFiles": ["minimal.d", "loading.d", "shadow.d", "extending.d", "materials.d", "textio.d"],
-            "buildOptions": ["noBoundsCheck", "optimize"]
-        },
-        {
-            "name": "loading",
-            "targetName": "loading",
-            "targetType": "executable",
-            "sourcePaths": ["."],
-            "mainSourceFile": "loading.d",
-            "excludedSourceFiles": ["minimal.d", "simple3d.d", "shadow.d", "extending.d", "materials.d", "textio.d"],
-            "buildOptions": ["noBoundsCheck", "optimize"]
-        },
-        {
-            "name": "shadow",
-            "targetName": "shadow",
-            "targetType": "executable",
-            "sourcePaths": ["."],
-            "mainSourceFile": "shadow.d",
-            "excludedSourceFiles": ["minimal.d", "simple3d.d", "loading.d", "extending.d", "materials.d", "textio.d"],
-            "buildOptions": ["noBoundsCheck", "optimize"]
-        },
-        {
-            "name": "extending",
-            "targetName": "extending",
-            "targetType": "executable",
-            "sourcePaths": ["."],
-            "mainSourceFile": "extending.d",
-            "excludedSourceFiles": ["minimal.d", "simple3d.d", "loading.d", "shadow.d", "materials.d", "textio.d"],
+            "excludedSourceFiles": ["materials.d", "textio.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         },
         {
@@ -68,7 +32,7 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "materials.d",
-            "excludedSourceFiles": ["minimal.d", "simple3d.d", "loading.d", "shadow.d", "extending.d", "textio.d"],
+            "excludedSourceFiles": ["minimal.d", "textio.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         },
         {
@@ -77,7 +41,7 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "textio.d",
-            "excludedSourceFiles": ["minimal.d", "simple3d.d", "loading.d", "shadow.d", "extending.d", "materials.d"],
+            "excludedSourceFiles": ["minimal.d", "materials.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         }
     ]
