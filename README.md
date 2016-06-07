@@ -14,7 +14,7 @@ Features
 * Fully GC-free
 * Supports Windows, Linux, OSX and FreeBSD
 * Event system with user-defined events and Unicode keyboard input
-* Resource manager (resources are loaded in a separate thread)
+* Resource manager with threaded loading 
 * Own scene file format (DGL3) with Blender exporter
 * Loading textures from PNG
 * Loading materials from text files
