@@ -43,7 +43,7 @@ class Simple3DApp: Application3D
         if (useShadows)
         {
             PipelineState.shadowMapSize = 512;
-            shadowPass = New!ShadowMapPass(512, 512, scene3d, SHADOW_GROUP, eventManager);
+            shadowPass = New!ShadowMapPass(PipelineState.shadowMapSize, scene3d, SHADOW_GROUP, eventManager);
             addPass3D(shadowPass);
             shadowPass.lightRotation = sunLightRot;
         }
