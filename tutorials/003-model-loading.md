@@ -12,7 +12,7 @@ Select File -> Export -> DGL Scene (.dgl3) and save your asset somewhere - for e
 
 Materials
 ---------
-Material export from Blender is currently WIP status. Nevertheless, you can create materials manually. DGL would search material files (and texture files) in its mounted directories. Material files are plain text files with *.mat extension and their names should be the same as in Blender (excluding the extension). Default material name is `__default__` and its filename is `__default__.mat`. Objects without material will be exported with default material assigned. Also DGL assigns default material to entities if it fails to find their materials in mounted directories.
+Material export from Blender is currently WIP status. Nevertheless, you can create materials manually. DGL would search material files (and texture files) in its mounted directories. Material files are plain text files with *.mat extension and their names should be the same as in Blender (excluding the extension). For example, if material name is `myMaterial` then its filename would be `myMaterial.mat`. Objects without material will be exported with default material assigned. Also DGL assigns default material to entities if it fails to find their materials in mounted directories.
 
 Typical material file looks as follows:
 
@@ -26,7 +26,11 @@ Typical material file looks as follows:
     diffuseTexture: "diffuse.png";
     normalTexture: "normal.png";
     
-Color properties are self-descriptive, `roughness` property defines 'blurriness' of the specular highlight (shiny materials have low roughness), `specularity` defines brightness of the specular highlight.
+Color and texture properties are self-descriptive, `roughness` property defines 'blurriness' of the specular highlight (shiny materials have low roughness), `specularity` defines brightness of the specular highlight.
+
+DGL treats normal texture's alpha channel as heightmap for parallax mapping. If you don't want to use parallax mapping, remove the alpha channel (make RGB file instead of RGBA).
+
+Currently DGL supports only PNG files for textures.
 
 Loading
 -------
