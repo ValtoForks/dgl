@@ -30,6 +30,7 @@ module dgl.asset.resource;
 
 import std.stdio;
 import std.path;
+import std.string;
 
 import dlib.core.memory;
 import dlib.core.stream;
@@ -145,16 +146,17 @@ class ResourceManager
     {
         fs.mount(dir);
     }
-
+/*
     void umountDirectory(string dir)
     {
         fs.umount(dir);
     }
-
+*/
     Texture loadTexture(string filename)
     {
         Texture tex = null;
         auto fstrm = fs.openForInput(filename);
+        assert(fstrm !is null, format("error operning %s", filename));
         auto res = loadPNG(fstrm, imageFactory);
         auto image = res[0];
         if (image !is null)

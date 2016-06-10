@@ -227,6 +227,7 @@ bool parseProperties(string input, Properties props)
 
     bool res = true;
     auto lexer = New!SliceLexer(input, [":", ";", "\"", "[", "]", ","]);
+    
     lexer.ignoreNewlines = true;
     
     Expect expect = Expect.PropName;
@@ -329,6 +330,6 @@ bool parseProperties(string input, Properties props)
     
     propValue.free();
     Delete(lexer);
-    
+
     return res;
 }

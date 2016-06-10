@@ -43,20 +43,27 @@ import dgl.graphics.pass;
 import dgl.graphics.scene;
 import dgl.graphics.material;
 
+/*
+ * Shadow map implementation.
+ * Uses FBO and depth buffer
+ */
+
 class ShadowMapPass: Pass3D
 {
+    protected:
     GLuint depthBuffer;
     GLuint fbo;
-    
-    Matrix4x4f lightProjectionMatrix;
-    Matrix4x4f lightViewMatrix;
-    Vector3f lightPosition = Vector3f(0.0f, 0.0f, 0.0f);
-    Quaternionf lightRotation;
+    float projSize;   
     Material mat;
     
-    this(uint w, uint h, Scene castScene, uint group, EventManager emngr)
+    public:
+    Vector3f lightPosition;
+    Quaternionf lightRotation;
+    
+    public:
+    this(uint res, Scene castScene, uint group, EventManager emngr)
     {
-        super(0, 0, w, h, castScene, emngr);
+        super(0, 0, res, res, castScene, emngr);
         alignToWindow = false;
         shadeless = true;
         groupID = group;
@@ -94,10 +101,25 @@ class ShadowMapPass: Pass3D
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
-        float size = 18;
-        projectionMatrix = orthoMatrix(-size, size, -size, size, -20.0f, 100.0f);
+        projSize = 10;
+        projectionMatrix = orthoMatrix(-projSize, projSize, -projSize, projSize, -20.0f, 100.0f);
         
+        lightPosition = Vector3f(0.0f, 0.0f, 0.0f);
         lightRotation = rotationQuaternion(0, degtorad(-90.0f));
+    }
+    
+    @property
+    {
+        float projectionSize()
+        {
+            return projectionSize;
+        }
+    
+        void projectionSize(float size)
+        {
+            projSize = size;
+            projectionMatrix = orthoMatrix(-projSize, projSize, -projSize, projSize, -20.0f, 100.0f);
+        }
     }
     
     static bool supported()

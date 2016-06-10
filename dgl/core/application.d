@@ -271,7 +271,7 @@ void initDGL()
             writeln("Failed to read config \"game.conf\"");
     }
     else
-        writeln("Failed to read config \"game.conf\"");
+        writeln("Failed to read config \"game.conf\"");
 }
 
 void deinitDGL() 

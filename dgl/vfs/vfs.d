@@ -32,7 +32,7 @@ import std.string;
 import std.path;
 import dlib.core.memory;
 import dlib.core.stream;
-//import dlib.container.array;
+import dlib.container.array;
 import dlib.container.dict;
 import dlib.filesystem.filesystem;
 import dlib.filesystem.stdfs;
@@ -74,31 +74,34 @@ class StdDirFileSystem: ReadOnlyFileSystem
 
 class VirtualFileSystem: ReadOnlyFileSystem
 {
-    Dict!(StdDirFileSystem, string) mounted;
+    //Dict!(StdDirFileSystem, string) mounted;
+    DynamicArray!StdDirFileSystem mounted;
 
     this()
     {
-        mounted = New!(Dict!(StdDirFileSystem, string));
+        //mounted = New!(Dict!(StdDirFileSystem, string));
     }
 
     void mount(string dir)
     {
         StdDirFileSystem fs = New!StdDirFileSystem(dir);
-        mounted[dir] = fs;
+        //mounted[dir] = fs;
+        mounted.append(fs);
     }
-
+/*
     void umount(string dir)
     {
         StdDirFileSystem fs = mounted[dir];
         Delete(fs);
         mounted.remove(dir);
     }
-
+*/
+/*
     bool isMounted(string dir)
     {
         return (dir in mounted) !is null;
     }
-
+*/
     string containingDir(string filename)
     {
         string res;
@@ -135,18 +138,18 @@ class VirtualFileSystem: ReadOnlyFileSystem
     InputStream openForInput(string filename)
     {
         //filename = normalizePath(filename);
-        InputStream res = null;
+        //InputStream res = null;
         foreach(i, fs; mounted)
         {
             FileStat s;
             if (fs.stat(filename, s))
             {
-                res = fs.openForInput(filename);
-                break;
+                return fs.openForInput(filename);
+                //return res;
             }
         }
 
-        return res;
+        return null;
     }
 
     Directory openDir(string path)
@@ -159,6 +162,6 @@ class VirtualFileSystem: ReadOnlyFileSystem
     {
         foreach(i, fs; mounted)
             Delete(fs);
-        Delete(mounted);
+        mounted.free();
     }
 }
