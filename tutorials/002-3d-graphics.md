@@ -17,19 +17,24 @@ import dgl.graphics.shapes;
 class Simple3DApp: Application3D
 {
     Freeview freeview;
+    ShapeBox box;
     
     this()
     {
         super();
         
         freeview = New!Freeview(eventManager);
-        registerObject("freeview", freeview);
         
-        auto box = New!ShapeBox(Vector3f(1, 1, 1));
-        registerObject("box", box);
+        box = New!ShapeBox(Vector3f(1, 1, 1));
         createEntity3D(box);
         
         addPointLight(Vector3f(3, 3, 3));
+    }
+    
+    ~this()
+    {
+        Delete(freeview);
+        Delete(box);
     }
     
     override void onUpdate(double dt)

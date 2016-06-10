@@ -74,18 +74,25 @@ import dgl.ui.textline;
 
 class SimpleApp: Application3D
 {
+    FreeTypeFont font;
+    TextLine text;
+    
     this()
     {
         super();
         
-        auto font = New!FreeTypeFont("DroidSans.ttf", 20);
-        registerObject("font", font);
+        font = New!FreeTypeFont("DroidSans.ttf", 20);
         
-        auto text = New!TextLine(font, "Hello, World!");
-        registerObject("text", text);
+        text = New!TextLine(font, "Hello, World!");
         auto entityText = createEntity2D(text);
         entityText.position.x = 10;
         entityText.position.y = 10;
+    }
+    
+    ~this()
+    {
+        Delete(text);
+        Delete(font);
     }
 
     override void onKeyDown(int key)
@@ -107,8 +114,6 @@ void main(string[] args)
 }
 ```
 
-`registerObject` can be used if you don't want to delete the object manually: it registers any object under the given name, so that it can be retrieved later and is deleted automatically on application exit. Use only unique names!
-
 `TextLine` object supports non-ASCII characters (if the font contains them). This doesn't require any additional configuration - just pass your UTF-8 string and enjoy! Text rendering system is lazy: `FreeTypeFont` object loads new Unicode characters on demand, so no wasting memory with unnecessary data.
 
 Running
@@ -119,15 +124,15 @@ Configuration
 -------------
 Video resolution, fullscreen/windowed, VSync, and other options are controlled via configuration file called `game.conf` in application directory. The following is an example of a possible configuration:
 
-    videoWidth = "1280";
-    videoHeight = "720";
-    videoWindowed = "1";
-    videoVSync = "1";
-    videoAntialiasing = "0";
-    windowResizable = "1";
+    videoWidth: 1280;
+    videoHeight: 720;
+    videoWindowed: 1;
+    videoVSync: 1;
+    videoAntialiasing: 0;
+    windowResizable: 1;
 
-    fxShadersEnabled = "1";
-    fxShadowEnabled = "1";
-    fxShadowMapSize = "1024";
+    fxShadersEnabled: 1;
+    fxShadowEnabled: 1;
+    fxShadowMapSize: 1024;
  
 Any new game-specific configuration keys can be introduced, you can handle them with corresponding API.
