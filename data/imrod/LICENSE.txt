@@ -1,5 +1,5 @@
 Imrod model and textures
-Copyright (C) 2998 Dmitry Parkin
+Copyright (C) 2008 Dmitry Parkin
 This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License. 
 
 Zion Sunsetpeek environment map
