@@ -43,7 +43,6 @@ import dlib.image.unmanaged;
 import dlib.image.io.png;
 
 import dgl.vfs.vfs;
-//import dgl.graphics.scene;
 import dgl.graphics.material;
 import dgl.graphics.texture;
 import dgl.asset.dgl3;
@@ -127,8 +126,8 @@ class ResourceManager
     Dict!(Resource, string) resources;
     Thread loadingThread;
     Material defaultMaterial;
-
-    // TODO: loading percentage
+    
+    float loadingPercentage;
     
     this(Material defaultMat)
     {
@@ -140,6 +139,8 @@ class ResourceManager
         loadingThread = New!Thread(&threadFunc);
 
         defaultMaterial = defaultMat;
+        
+        loadingPercentage = 0.0f;
     }
 
     void mountDirectory(string dir)
@@ -155,6 +156,7 @@ class ResourceManager
     Texture loadTexture(string filename)
     {
         Texture tex = null;
+
         auto fstrm = fs.openForInput(filename);
         assert(fstrm !is null, format("error operning %s", filename));
         auto res = loadPNG(fstrm, imageFactory);
@@ -165,6 +167,7 @@ class ResourceManager
             Delete(image);
         }
         Delete(fstrm);
+
         return tex;
     }
     
@@ -218,6 +221,7 @@ class ResourceManager
     
     void loadThreadSafePart()
     {
+        loadingPercentage = 0.0f;
         loadingThread.start();
     }
     
@@ -244,9 +248,11 @@ class ResourceManager
 
     void threadFunc()
     {
+        float part = 1.0f / resources.length;
         foreach(filename, resource; resources)
         {
             loadResourceThreadSafePart(resource, filename);
+            loadingPercentage += part;
         }
     }
     

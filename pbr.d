@@ -1,4 +1,4 @@
-module materials;
+module pbr;
 
 import std.stdio;
 import dlib.core.memory;
@@ -24,6 +24,7 @@ import dgl.graphics.shader;
 import dgl.graphics.shadow;
 import dgl.graphics.state;
 import dgl.graphics.light;
+import dgl.graphics.pbrshader;
 import dgl.asset.dgl3;
 
 enum SHADOW_GROUP = 100;
@@ -33,32 +34,42 @@ class Simple3DApp: Application3D
     Freeview freeview;
     DGL3Resource model;
     
-    ShadowMapPass shadowPass;
+    ShadowMapPass shadow; 
+    
+    PBRShader pbrShader;
     
     this()
     {
         super();
-        
-        Quaternionf sunLightRot = rotationQuaternion(0, degtorad(-45.0f));
+
+        Quaternionf sunLightRot = 
+            rotationQuaternion(1, degtorad(45.0f)) *
+            rotationQuaternion(0, degtorad(-45.0f));
+
         if (useShadows)
         {
-            PipelineState.shadowMapSize = 512;
-            shadowPass = New!ShadowMapPass(PipelineState.shadowMapSize, scene3d, SHADOW_GROUP, eventManager);
-            addPass3D(shadowPass);
-            shadowPass.lightRotation = sunLightRot;
+            PipelineState.shadowMapSize = 2048;
+            shadow = New!ShadowMapPass(PipelineState.shadowMapSize, scene3d, SHADOW_GROUP, eventManager);
+            addPass3D(shadow);
+            shadow.lightRotation = sunLightRot;
+            shadow.projectionSize = 20;
         }
-        
+
         LightManager.sunEnabled = true;
         LightManager.sunPosition = Vector4f(sunLightRot.rotate(Vector3f(0, 0, 1)));
         LightManager.sunPosition.w = 0.0f;
         LightManager.sunColor = Color4f(0.9, 0.8, 0.7, 1);
         
-        mountDirectory("data");
-        mountDirectory("data/prefabs");
         setDefaultLoadingImage("data/loading.png");
+        
+        mountDirectory("data");
+        mountDirectory("data/imrod");
+        mountDirectory("data/prefabs");
 
-        model = addModelResource("materials_test.dgl3");
+        model = addModelResource("imrod.dgl3");
         loadResources();
+        
+        pbrShader = New!PBRShader;
         addEntitiesFromModel(model);
 
         freeview = New!Freeview(eventManager);
@@ -66,27 +77,33 @@ class Simple3DApp: Application3D
 
     ~this()
     {
+        Delete(pbrShader);
         Delete(freeview);
     }
     
     override void onUpdate(double dt)
     {
         super.onUpdate(dt);
-        
+
         freeview.update();
         setCameraMatrix(freeview.getCameraMatrix());
         
-        if (shadowPass)
-            shadowPass.update(dt);
+        if (Material.uberShader)
+            Material.uberShader.setViewMatrix(freeview.camera);
+        if (pbrShader)
+            pbrShader.setViewMatrix(freeview.camera);
+        
+        if (shadow)
+            shadow.update(dt);
     }
     
     override void onRedraw(double dt)
     {
-        if (shadowPass)
-            shadowPass.bind(freeview.camera.getTransformation());       
+        if (shadow)
+            shadow.bind(freeview.camera.getTransformation());       
         super.onRedraw(dt);
-        if (shadowPass)
-            shadowPass.unbind();
+        if (shadow)
+            shadow.unbind();
     }
 
     void addEntitiesFromModel(DGL3Resource model)
@@ -101,7 +118,7 @@ class Simple3DApp: Application3D
             if (e.material)
             {
                 if (useShaders)
-                    e.material.setShader(); 
+                    e.material.setShader(pbrShader); 
                 else
                 {
                     e.material.textures[1] = null;
@@ -130,4 +147,3 @@ void main()
     deinitDGL();
     writefln("Allocated memory: %s byte(s)", allocatedMemory);
 }
-

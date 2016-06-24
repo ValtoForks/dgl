@@ -1,0 +1,12 @@
+name: "test";
+ambientColor: [0.8, 0.8, 0.8, 1.0];
+diffuseColor: [0.2, 0.2, 0.2, 1.0];
+specularColor: [1.0, 1.0, 1.0, 1.0];
+emissionColor: [0.0, 0.0, 0.0, 1.0];
+roughness: 0.2;
+specularity: 0.99;
+fresnel: 0.03;
+metallic: 0.1;
+ambientTexture: "env001.png";
+specAmbientTexture: "env002.png";
+

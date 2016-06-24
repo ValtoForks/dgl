@@ -53,11 +53,13 @@ import dgl.asset.entity;
 
 class LoadingScreen: EventListener, Drawable
 {
+    ResourceManager resourceManager;
     Texture loadingTexture;
     
-    this(EventManager emngr)
+    this(EventManager emngr, ResourceManager resman)
     {
         super(emngr);
+        resourceManager = resman;
     }
     
     this(EventManager emngr, Texture loadingtex)
@@ -86,6 +88,18 @@ class LoadingScreen: EventListener, Drawable
 
         if (loadingTexture)
             loadingTexture.unbind();
+            
+        glColor4f(1, 1, 1, 1);
+        float margin = 2.0f;
+        float w = resourceManager.loadingPercentage * eventManager.windowWidth;
+        
+        glBegin(GL_QUADS);
+        glVertex2f(margin, 16);
+        glVertex2f(margin, margin);
+        glVertex2f(w - margin, margin);
+        glVertex2f(w - margin, 16);
+        glEnd();
+        glPopAttrib();
     }
 }
 
@@ -117,7 +131,7 @@ class Application3D: PassApplication
         
         lightManager = New!LightManager();
         
-        defaultLoadingScreen = New!LoadingScreen(eventManager);
+        defaultLoadingScreen = New!LoadingScreen(eventManager, resourceManager);
         loadingScreen = defaultLoadingScreen;
         
         if (useShaders)

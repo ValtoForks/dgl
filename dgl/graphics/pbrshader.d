@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015-2016 Timur Gafarov 
+Copyright (c) 2016 Timur Gafarov 
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -26,7 +26,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module dgl.graphics.ubershader;
+module dgl.graphics.pbrshader;
 
 import dlib.core.memory;
 import dgl.core.api;
@@ -35,23 +35,24 @@ import dgl.graphics.material;
 import dgl.graphics.shader;
 
 /*
- * Uber-shader can handle any type of material that can be
- * defined by Material object.
- * It supports up to 6 light sources, 
- * including directional and point lights.
- * It also supports normal mapping, parallax mapping,
- * normalized Blinn-Phong specular term,
- * soft shadows, self-illumination and fog.
- *
- * Uber-shader requires GLSL version 1.2.
+ * PBRShader is similar to UberShader, but it is more physically-based.
+ * Uses normalized Cook-Torrance specular model, Fresnel reflections and
+ * equirectangular environment maps for both diffuse and specular environment lighting.
+ * Note that the resulting picture can differ from UberShader, some material
+ * parameters may require fine tuning to be PBR-copliant. More compatibility 
+ * between PBR/non-PBR probably will be added in future.
+ * Note that this shader is in experimental state.
  */
 
-private string _uberVertexShader = q{
+private string _pbrVertexShader = q{
     varying vec4 shadowCoord;
     varying vec3 position;
     varying vec3 n, t, b;
     varying vec3 E;
     varying vec2 spheremapTexcoord;
+    
+    varying vec3 worldView;
+    uniform mat4 dgl_InvViewMatrix;
     
     uniform bool dgl_NormalMapping;
         
@@ -63,7 +64,12 @@ private string _uberVertexShader = q{
         n = normalize(gl_NormalMatrix * gl_Normal);
         t = normalize(gl_NormalMatrix * gl_MultiTexCoord2.xyz);
         b = cross(n, t);
-        position = (gl_ModelViewMatrix * gl_Vertex).xyz;
+        vec4 eyeVertex = gl_ModelViewMatrix * gl_Vertex;
+        position = eyeVertex.xyz;
+    
+        vec3 worldPos = (dgl_InvViewMatrix * eyeVertex).xyz;
+        vec3 worldCamPos = (dgl_InvViewMatrix[3]).xyz;
+        worldView = normalize(worldPos - worldCamPos);
         
         E = position;
         if (dgl_NormalMapping)
@@ -88,9 +94,9 @@ private string _uberVertexShader = q{
     }
 };
 
-private string _uberFragmentShader = q{
+private string _pbrFragmentShader = q{
     #version 120
-    #define PI 3.141592
+    #define PI 3.14159265
     #define ST_BOXBLUR 0
     #define ST_POISSONDISK 1
     #define ST_HARDEDGES 2
@@ -100,11 +106,15 @@ private string _uberFragmentShader = q{
     varying vec3 n, t, b;
     varying vec3 E;
     varying vec2 spheremapTexcoord;
+    
+    varying vec3 worldView;
+    uniform mat4 dgl_ViewMatrix;
         
     uniform sampler2D dgl_Texture0;
     uniform sampler2D dgl_Texture1;
     uniform sampler2D dgl_Texture2;
-    //uniform sampler2D dgl_Texture3;
+    uniform sampler2D dgl_Texture3;
+    uniform sampler2D dgl_Texture4;
     uniform sampler2DShadow dgl_Texture7;
     
     uniform bool dgl_Shadeless;
@@ -115,8 +125,13 @@ private string _uberFragmentShader = q{
     uniform bool dgl_GlowMap;
     uniform bool dgl_Fog;
     uniform bool dgl_Matcap;
+    uniform bool dgl_EnvMapping;
     uniform int dgl_ShadowType;
+    
     uniform float dgl_Specularity;
+    uniform float dgl_Roughness;
+    uniform float dgl_Fresnel;
+    uniform float dgl_Metallic;
     
     uniform float dgl_ShadowMapSize;
     
@@ -125,6 +140,7 @@ private string _uberFragmentShader = q{
     const float lightRadiusSqr = 16.0; //11.0
     
     const float oneOverPI8 = 1.0 / (8.0 * PI);
+    const float PI2 = PI * 2.0;
     
     vec2 poissonDisk[8] = vec2[](
         vec2(-0.4913322, 0.5801218),
@@ -171,10 +187,68 @@ private string _uberFragmentShader = q{
         }
         return shadow / 8.0;
     }
+    
+    float beckmann(float NH, float roughness)
+	{
+        float NH_sq = NH * NH;
+        float NH_sq_r = 1.0 / (NH_sq * roughness * roughness);
+        float roughness_exp = (NH_sq - 1.0) * NH_sq_r;
+        return exp(roughness_exp)*NH_sq_r/(4.0*NH_sq);
+    }
+    
+    float cookTorrance(
+        vec3 lightDirection,
+        vec3 viewDirection,
+        vec3 surfaceNormal,
+        float roughness,
+        float fresnel)
+    {
+        float VdotN = max(dot(viewDirection, surfaceNormal), 0.0);
+        float LdotN = max(dot(lightDirection, surfaceNormal), 0.0);
+        vec3 H = normalize(lightDirection + viewDirection);
+        float NdotH = max(dot(surfaceNormal, H), 0.0);
+        float VdotH = max(dot(viewDirection, H), 0.000001);
+        float LdotH = max(dot(lightDirection, H), 0.000001);
+        float G = 2.0 * NdotH / max(VdotH, 0.000001);
+        G = min(1.0, G * min(VdotN, LdotN));
+        float D = beckmann(NdotH, roughness);
+        float F = fresnel + pow(1.0 - VdotH, 5.0) * (1.0 - fresnel);
+        return  G * F * D / max(PI * VdotN, 0.000001);
+    }
+    
+    vec2 envMapEquirect(vec3 dir)
+    {
+        float phi = acos(dir.y);
+        float theta = atan(-dir.x, dir.z) + PI;
+        return vec2(theta / PI2, phi / PI);
+    }
 
     void main(void) 
     {
-        vec2 texCoords = dgl_Matcap? -spheremapTexcoord : gl_TexCoord[0].st;
+        vec3 nn = normalize(n);
+        vec3 tn = normalize(t);
+        vec3 bn = normalize(b);
+        
+        vec2 normTexCoords = gl_TexCoord[0].st;
+        if (dgl_ParallaxMapping)
+        {
+            vec2 eye2 = vec2(E.x, -E.y);
+            float height = texture2D(dgl_Texture1, normTexCoords).a; 
+            height = height * parallaxScale + parallaxBias;
+            normTexCoords = normTexCoords + (height * eye2);
+        }
+        
+        // Normal mapping
+        vec3 N = dgl_NormalMapping? normalize(2.0 * texture2D(dgl_Texture1, normTexCoords).rgb - 1.0) : nn;
+        
+        vec3 eyeNormal = dgl_NormalMapping? mat3(tn, bn, nn) * N : N;
+        
+        vec3 worldNormal = eyeNormal * mat3(dgl_ViewMatrix);
+        vec3 Rw = reflect(normalize(worldView), worldNormal);
+    
+        vec2 texCoords = dgl_Matcap? -spheremapTexcoord : normTexCoords;
+        vec2 ambTexCoords = dgl_EnvMapping? envMapEquirect(worldNormal) : gl_TexCoord[0].st;
+        vec2 ambSpecTexCoords = dgl_EnvMapping? envMapEquirect(Rw) : gl_TexCoord[0].st;
         
         // Fog term
         float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
@@ -211,23 +285,10 @@ private string _uberFragmentShader = q{
             return;
         }
 
-        if (dgl_ParallaxMapping)
-        {
-            vec2 eye2 = vec2(E.x, -E.y);
-            float height = texture2D(dgl_Texture1, texCoords).a; 
-            height = height * parallaxScale + parallaxBias;
-            texCoords = texCoords + (height * eye2);
-        }
-        
-        vec3 nn = normalize(n);
-        vec3 tn = normalize(t);
-        vec3 bn = normalize(b);
-        
-        // Normal mapping
-        vec3 N = dgl_NormalMapping? normalize(2.0 * texture2D(dgl_Texture1, texCoords).rgb - 1.0) : nn;
-    
         // Texture
-        vec4 tex = dgl_Textures? texture2D(dgl_Texture0, texCoords) : vec4(1.0, 1.0, 1.0, 1.0);
+        vec4 tex = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
+        vec4 ambTex = dgl_EnvMapping? texture2D(dgl_Texture3, ambTexCoords) * gl_FrontMaterial.ambient : gl_FrontMaterial.ambient;
+        vec4 ambTexSpec = dgl_EnvMapping? texture2D(dgl_Texture4, ambSpecTexCoords) * gl_FrontMaterial.ambient : gl_FrontMaterial.ambient;
         
         // Emission term
         vec4 emit = dgl_GlowMap?
@@ -247,15 +308,13 @@ private string _uberFragmentShader = q{
         float specular;
         
         vec3 positionToLightSource;
-        vec3 H;
-        float NL;
-        float NH;
+
+        float NE = max(0.0, dot(N, E));
 
         for (int i = 0; i < 6; i++)
         {
             if (gl_LightSource[i].position.w < 2.0)
             {
-                vec4 Md = gl_FrontMaterial.diffuse;
                 vec4 Ms = gl_FrontMaterial.specular;
                 vec4 Ld = gl_LightSource[i].diffuse; 
                 vec4 Ls = gl_LightSource[i].specular;
@@ -281,30 +340,33 @@ private string _uberFragmentShader = q{
                     directionToLight;
                 
                 // Diffuse term
-                diffuse = clamp(dot(N, L), 0.0, 1.0); // Lambert
+                diffuse = clamp(dot(N, L), 0.0, 1.0);
                                
-                // Specular term
-                H = normalize(L + E);
-                NH = dot(N, H);
-                specular = pow(max(NH, 0.0), 3.0 * gl_FrontMaterial.shininess); // Blinn-Phong
-                specular *= (gl_FrontMaterial.shininess + 2.0) * oneOverPI8; // Normalization
+                // Specular term                
+                specular = dgl_Specularity * clamp(cookTorrance(L, E, N, dgl_Roughness, 0.3), 0.0, 1.0);
 
-                col_d += Md*Ld*diffuse*attenuation;
-                col_s += Ms*Ls*specular*attenuation*dgl_Specularity;
+                col_d += Ld*diffuse*attenuation;
+                col_s += Ms*Ls*specular*attenuation;
             }
         }
 
-        vec4 finalColor = emit + tex * gl_FrontMaterial.ambient + (tex * col_d + col_s) * shadow;
+        float ambSpecF0 = mix(0.001, 1.0, dgl_Metallic);
+        float ambSpecFresnel = ambSpecF0 + pow(1.0 - NE, 5.0) * (1.0 - ambSpecF0);
+        float diffIntensity = mix(1.0, 0.0, dgl_Metallic);
+        
+        vec4 diffuseLight = tex * (ambTex + col_d * shadow);
+        vec4 reflectedLight = ambTexSpec * ambSpecFresnel * dgl_Specularity + col_s * shadow;
+        vec4 finalColor = emit + diffuseLight * diffIntensity + reflectedLight;
         
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
         gl_FragColor.a = dgl_Textures? tex.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
     }
 };
 
-class UberShader: Shader
+class PBRShader: Shader
 {       
     this()
     {
-        super(_uberVertexShader, _uberFragmentShader);
+        super(_pbrVertexShader, _pbrFragmentShader);
     }
 }

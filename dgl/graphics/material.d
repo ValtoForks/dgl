@@ -78,8 +78,10 @@ class Material: Modifier
     Color4f diffuseColor;
     Color4f specularColor;
     Color4f emissionColor;
-    float specularity = 1.0;
-    float roughness = 0.5f;
+    float specularity = 0.9f;
+    float roughness = 0.4f;
+    float fresnel = 0.3f;
+    float metallic = 0.01f;
     
     bool shadeless = false;
     bool useTextures = true;

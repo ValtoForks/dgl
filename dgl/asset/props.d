@@ -120,7 +120,7 @@ class Properties
         else
             return DProperty(DPropType.Undefined, "");
     }
-
+/*
     DProperty opIndexAssign(DProperty v, string name)
     {
         if (name in props)
@@ -135,7 +135,29 @@ class Properties
         }
         return v;
     }
-    
+*/
+
+    void set(DPropType type, string name, string value)
+    {
+        auto p = name in props;
+        if (p)
+        {
+            Delete(p.name);
+            Delete(p.data);
+            auto nameCopy = copyStr(name);
+            auto valueCopy = copyStr(value);
+            props[nameCopy] = DProperty(type, nameCopy, valueCopy);
+            //props[name] = v;
+        }
+        else
+        {
+            //props[name] = v;
+            auto nameCopy = copyStr(name);
+            auto valueCopy = copyStr(value);
+            props[nameCopy] = DProperty(type, nameCopy, valueCopy);
+        }
+    }
+
     DProperty opDispatch(string s)()
     {
         if (s in props)
@@ -233,7 +255,7 @@ bool parseProperties(string input, Properties props)
     Expect expect = Expect.PropName;
     string propName;
     DynamicArray!char propValue;
-    DPropType DPropType;
+    DPropType propType;
     
     while(true)
     {
@@ -283,10 +305,11 @@ bool parseProperties(string input, Properties props)
                 break;
             }
             
-            auto nameCopy = copyStr(propName);
-            auto valueCopy = copyStr(propValue.data);
+            //auto nameCopy = copyStr(propName);
+            //auto valueCopy = copyStr(propValue.data);
 
-            props[nameCopy] = DProperty(DPropType, nameCopy, valueCopy);
+            //props[nameCopy] = DProperty(propType, nameCopy, valueCopy);
+            props.set(propType, propName, cast(string)propValue.data);
             
             expect = Expect.PropName;
             propName = "";
@@ -296,18 +319,18 @@ bool parseProperties(string input, Properties props)
         {
             if (lexeme == "\"")
             {
-                DPropType = DPropType.String;
+                propType = DPropType.String;
                 expect = Expect.String;
             }
             else if (lexeme == "[")
             {
-                DPropType = DPropType.Vector;
+                propType = DPropType.Vector;
                 expect = Expect.Vector;
                 propValue.append(lexeme);
             }
             else
             {
-                DPropType = DPropType.Number;
+                propType = DPropType.Number;
                 propValue.append(lexeme);
                 expect = Expect.Semicolon;
             }

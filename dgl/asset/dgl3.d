@@ -90,6 +90,12 @@ class DGL3MaterialResource: Resource
             string texName = props["ambientTexture"].toString;
             material.textures[3] = loadTexture(texName);
         }
+        if ("specAmbientTexture" in props)
+        {
+            string texName = props["specAmbientTexture"].toString;
+            material.textures[4] = loadTexture(texName);
+        }
+        
         if ("shadeless" in props)
             material.shadeless = props["shadeless"].toBool;
         if ("matcap" in props)
@@ -102,6 +108,11 @@ class DGL3MaterialResource: Resource
             material.specularity = props["specularity"].toFloat;  
         if ("roughness" in props)
             material.roughness = props["roughness"].toFloat;  
+        if ("fresnel" in props)
+            material.fresnel = props["fresnel"].toFloat;  
+        if ("metallic" in props)
+            material.metallic = props["metallic"].toFloat;  
+            
         if ("useTextures" in props)
             material.useTextures = props["useTextures"].toBool;
         if ("additiveBlending" in props)

@@ -34,11 +34,13 @@ import std.conv;
 import dlib.core.memory;
 import dlib.container.dict;
 import dlib.math.vector;
+import dlib.math.matrix;
 import dgl.core.api;
 import dgl.core.event;
 import dgl.core.interfaces;
 import dgl.graphics.state;
 import dgl.graphics.material;
+import dgl.graphics.camera;
 
 class Shader
 {
@@ -69,8 +71,18 @@ class Shader
     GLint loc_dgl_Fog;
     GLint loc_dgl_Shadow;
     GLint loc_dgl_Matcap;
+    GLint loc_dgl_EnvMapping;
     GLint loc_dgl_Specularity;
+    GLint loc_dgl_Roughness;
     GLint loc_dgl_ShadowType;
+    GLint loc_dgl_Fresnel;
+    GLint loc_dgl_Metallic;
+    
+    GLint loc_dgl_ViewMatrix;
+    GLint loc_dgl_InvViewMatrix;
+    
+    Matrix4x4f viewMatrix;
+    Matrix4x4f invViewMatrix;
 
     public:
     this(string vertexProgram, string fragmentProgram)
@@ -132,15 +144,31 @@ class Shader
             loc_dgl_Fog = glGetUniformLocation(shaderProg, "dgl_Fog");
             loc_dgl_Shadow = glGetUniformLocation(shaderProg, "dgl_Shadow");
             loc_dgl_Matcap = glGetUniformLocation(shaderProg, "dgl_Matcap");
+            loc_dgl_EnvMapping = glGetUniformLocation(shaderProg, "dgl_EnvMapping");
             loc_dgl_Specularity = glGetUniformLocation(shaderProg, "dgl_Specularity");
+            loc_dgl_Roughness = glGetUniformLocation(shaderProg, "dgl_Roughness");
+            loc_dgl_Fresnel = glGetUniformLocation(shaderProg, "dgl_Fresnel");
+            loc_dgl_Metallic = glGetUniformLocation(shaderProg, "dgl_Metallic");
             
             loc_dgl_ShadowType = glGetUniformLocation(shaderProg, "dgl_ShadowType");
+            
+            loc_dgl_ViewMatrix = glGetUniformLocation(shaderProg, "dgl_ViewMatrix");
+            loc_dgl_InvViewMatrix = glGetUniformLocation(shaderProg, "dgl_InvViewMatrix");
         }
+        
+        viewMatrix = Matrix4x4f.identity;
+        invViewMatrix = Matrix4x4f.identity;
     }
 
     static bool supported()
     {
         return DerelictGL.isExtensionSupported("GL_ARB_shading_language_100");
+    }
+    
+    void setViewMatrix(Camera cam)
+    {
+        viewMatrix = cam.getInvTransformation();
+        invViewMatrix = cam.getTransformation();
     }
 
     void bind(Material mat)
@@ -166,6 +194,7 @@ class Shader
             bool parallaxEnabled = false;
             bool glowMapEnabled = false;
             bool fogEnabled = mat.useFog;
+            bool envMapping = false;
 
             if (mat.useTextures && mat.textures[0])
                 textureEnabled = true;
@@ -179,9 +208,10 @@ class Shader
             }
               
             if (mat.useTextures && mat.textures[2] && mat.glowMap)
-            {
                 glowMapEnabled = true;
-            }
+            
+            if (mat.useTextures && mat.textures[3])
+                envMapping = true;
 
             glUniform1i(loc_dgl_Shadeless, mat.shadeless);
             glUniform1i(loc_dgl_Textures, textureEnabled);
@@ -191,9 +221,16 @@ class Shader
             glUniform1i(loc_dgl_Fog, fogEnabled);
             glUniform1i(loc_dgl_Shadow, mat.receiveShadows);
             glUniform1i(loc_dgl_Matcap, mat.matcap);
+            glUniform1i(loc_dgl_EnvMapping, envMapping);
             glUniform1f(loc_dgl_Specularity, mat.specularity);
+            glUniform1f(loc_dgl_Roughness, mat.roughness);
+            glUniform1f(loc_dgl_Fresnel, mat.fresnel);
+            glUniform1f(loc_dgl_Metallic, mat.metallic);
             
             glUniform1i(loc_dgl_ShadowType, cast(int)mat.shadowType);
+            
+            glUniformMatrix4fv(loc_dgl_ViewMatrix, 1, 0, viewMatrix.arrayof.ptr);
+            glUniformMatrix4fv(loc_dgl_InvViewMatrix, 1, 0, invViewMatrix.arrayof.ptr);
         }
     }
 
