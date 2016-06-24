@@ -23,15 +23,15 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "minimal.d",
-            "excludedSourceFiles": ["materials.d", "textio.d"],
+            "excludedSourceFiles": ["pbr.d", "textio.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         },
         {
-            "name": "materials",
-            "targetName": "materials",
+            "name": "pbr",
+            "targetName": "pbr",
             "targetType": "executable",
             "sourcePaths": ["."],
-            "mainSourceFile": "materials.d",
+            "mainSourceFile": "pbr.d",
             "excludedSourceFiles": ["minimal.d", "textio.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         },
@@ -41,7 +41,7 @@
             "targetType": "executable",
             "sourcePaths": ["."],
             "mainSourceFile": "textio.d",
-            "excludedSourceFiles": ["minimal.d", "materials.d"],
+            "excludedSourceFiles": ["minimal.d", "pbr.d"],
             "buildOptions": ["noBoundsCheck", "optimize"]
         }
     ]
