@@ -5,7 +5,7 @@ DGL is a minimalistic 3D and 2D real-time graphics engine written in D language 
 Screenshots
 -----------
 [![Screenshot1](/screenshots/005_thumb.jpg)](/screenshots/005.jpg)
-[![Screenshot2](/screenshots/006_thumb.jpg)](/screenshots/006.jpg)
+[![Screenshot2](/screenshots/007_thumb.jpg)](/screenshots/007.jpg)
 
 To see what DGL is capable to, check out [Atrium](https://github.com/gecko0307/atrium), a work-in-progress sci-fi first person puzzle based on physics simulation.
 
@@ -22,6 +22,7 @@ Features
 * Unlimited number of dynamic light sources
 * GLSL shaders
 * Built-in uber shader with normal mapping, parallax mapping and energy-conserving Blinn-Phong specular model
+* Built-in PBR shader with normalized Cook-Torrance specular model, Fresnel and environment lighting
 * Unlimited number of render passes, 2D or 3D
 * Render to texture
 * Antialiasing
@@ -59,4 +60,3 @@ Warning: documentation can be outdated!
 License
 -------
 Copyright (c) 2013-2016 Timur Gafarov. Distributed under the Boost Software License, Version 1.0 (see accompanying file COPYING or at http://www.boost.org/LICENSE_1_0.txt).
-
