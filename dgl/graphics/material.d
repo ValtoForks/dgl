@@ -104,11 +104,6 @@ class Material: Modifier
         diffuseColor = Color4f(0.8f, 0.8f, 0.8f, 1.0f);
         specularColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         emissionColor = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
-        
-        glFogf(GL_FOG_START, 10);
-        glFogf(GL_FOG_END, 100);
-        auto fogColor = Color4f(0.5, 0.5, 0.5, 1.0);
-        glFogfv(GL_FOG_COLOR, fogColor.arrayof.ptr);
     }
     
     static void deleteUberShader()

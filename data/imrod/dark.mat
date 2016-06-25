@@ -1,9 +1,10 @@
-name: "test2";
+name: "dark";
 ambientColor: [0.1, 0.1, 0.1, 1.0];
-diffuseColor: [0.7, 0.7, 0.7, 1.0];
+diffuseColor: [0.05, 0.05, 0.05, 1.0];
 specularColor: [1.0, 1.0, 1.0, 1.0];
 emissionColor: [0.0, 0.0, 0.0, 1.0];
-roughness: 0.4;
+roughness: 0.2;
 specularity: 0.8;
-metallic: 0.8;
+metallic: 0.01;
+
 

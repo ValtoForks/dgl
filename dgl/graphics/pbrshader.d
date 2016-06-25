@@ -128,9 +128,9 @@ private string _pbrFragmentShader = q{
     uniform bool dgl_EnvMapping;
     uniform int dgl_ShadowType;
     
+    // TODO: read these from texture
     uniform float dgl_Specularity;
     uniform float dgl_Roughness;
-    uniform float dgl_Fresnel;
     uniform float dgl_Metallic;
     
     uniform float dgl_ShadowMapSize;
@@ -219,7 +219,7 @@ private string _pbrFragmentShader = q{
     vec2 envMapEquirect(vec3 dir)
     {
         float phi = acos(dir.y);
-        float theta = atan(-dir.x, dir.z) + PI;
+        float theta = atan(dir.x, dir.z) + PI;
         return vec2(theta / PI2, phi / PI);
     }
 
@@ -287,8 +287,8 @@ private string _pbrFragmentShader = q{
 
         // Texture
         vec4 tex = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
-        vec4 ambTex = dgl_EnvMapping? texture2D(dgl_Texture3, ambTexCoords) * gl_FrontMaterial.ambient : gl_FrontMaterial.ambient;
-        vec4 ambTexSpec = dgl_EnvMapping? texture2D(dgl_Texture4, ambSpecTexCoords) * gl_FrontMaterial.ambient : gl_FrontMaterial.ambient;
+        vec4 ambTex = dgl_EnvMapping? texture2D(dgl_Texture3, ambTexCoords) : gl_FrontMaterial.ambient;
+        vec4 ambTexSpec = dgl_EnvMapping? texture2D(dgl_Texture4, ambSpecTexCoords) : gl_FrontMaterial.ambient;
         
         // Emission term
         vec4 emit = dgl_GlowMap?
@@ -342,7 +342,8 @@ private string _pbrFragmentShader = q{
                 // Diffuse term
                 diffuse = clamp(dot(N, L), 0.0, 1.0);
                                
-                // Specular term                
+                // Specular term
+                // TODO: f0 parameter
                 specular = dgl_Specularity * clamp(cookTorrance(L, E, N, dgl_Roughness, 0.3), 0.0, 1.0);
 
                 col_d += Ld*diffuse*attenuation;

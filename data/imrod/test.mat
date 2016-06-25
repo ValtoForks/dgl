@@ -1,12 +1,10 @@
 name: "test";
-ambientColor: [0.5, 0.5, 0.5, 1.0];
-diffuseColor: [0.9, 0.9, 0.9, 1.0];
+ambientColor: [0.1, 0.1, 0.1, 1.0];
+diffuseColor: [0.7, 0.7, 0.7, 1.0];
 specularColor: [1.0, 1.0, 1.0, 1.0];
 emissionColor: [0.0, 0.0, 0.0, 1.0];
 roughness: 0.1;
-specularity: 0.9;
-fresnel: 0.03;
-metallic: 0.1;
-ambientTexture: "env001.png";
-specAmbientTexture: "env002.png";
+specularity: 0.8;
+metallic: 0.8;
+
 

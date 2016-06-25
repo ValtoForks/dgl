@@ -1,13 +1,13 @@
 name: "imrod";
-ambientColor: [0.9, 0.9, 0.9, 1.0];
-diffuseColor: [0.3, 0.3, 0.3, 1.0];
+ambientColor: [0.1, 0.1, 0.1, 1.0];
+diffuseColor: [0.8, 0.8, 0.8, 1.0];
 specularColor: [1.0, 1.0, 1.0, 1.0];
 emissionColor: [0.0, 0.0, 0.0, 1.0];
-roughness: 0.3;
+roughness: 0.7;
 specularity: 0.8;
-fresnel: 0.03;
+metallic: 0.01;
 diffuseTexture: "imrod-diffuse.png";
 normalTexture: "imrod-normal.png";
-ambientTexture: "env001.png";
-specAmbientTexture: "env002.png";
+emissionTexture: "imrod-emit.png";
+
 
