@@ -24,7 +24,7 @@ Features
 * Unlimited number of dynamic light sources
 * GLSL shaders
 * Built-in uber shader with normal mapping, parallax mapping and energy-conserving Blinn-Phong specular model
-* Built-in PBR shader with normalized Cook-Torrance specular model, Fresnel and environment lighting
+* Built-in PBR shader with normalized Cook-Torrance specular model, Fresnel and image-based lighting
 * Unlimited number of render passes, 2D or 3D
 * Render to texture
 * Antialiasing
