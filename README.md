@@ -45,8 +45,8 @@ Demos
 -----
 DGL comes with a number of usage examples. To build one, run `dub build --config=demoname`, where `demoname` can be `minimal`, `materials`, `textio`.
 * minimal.d - 'Hello, World' application, demonstrates how to create a window and print text with TrueType font
-* materials.d - loading a scene from DGL3 file with different materials. Also demonstrates how to use shadows
-* textio.d - text input demo (with support for international keyboard layouts)
+* pbr.d - physically-based rendering demo (also demonstrates how to use shadows)
+* textio.d - text input demo, with support for international keyboard layouts.
 
 Documentation
 -------------
