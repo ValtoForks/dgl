@@ -6,6 +6,8 @@ Screenshots
 -----------
 [![Screenshot1](/screenshots/005_thumb.jpg)](/screenshots/005.jpg)
 [![Screenshot2](/screenshots/007_thumb.jpg)](/screenshots/007.jpg)
+[![Screenshot2](/screenshots/008_thumb.jpg)](/screenshots/008.jpg)
+[![Screenshot2](/screenshots/009_thumb.jpg)](/screenshots/009.jpg)
 
 To see what DGL is capable to, check out [Atrium](https://github.com/gecko0307/atrium), a work-in-progress sci-fi first person puzzle based on physics simulation.
 
@@ -43,7 +45,7 @@ TODO:
 
 Demos
 -----
-DGL comes with a number of usage examples. To build one, run `dub build --config=demoname`, where `demoname` can be `minimal`, `materials`, `textio`.
+DGL comes with a number of usage examples. To build one, run `dub build --config=demoname`, where `demoname` can be `minimal`, `pbr`, `textio`.
 * minimal.d - 'Hello, World' application, demonstrates how to create a window and print text with TrueType font
 * pbr.d - physically-based rendering demo (also demonstrates how to use shadows)
 * textio.d - text input demo, with support for international keyboard layouts.
