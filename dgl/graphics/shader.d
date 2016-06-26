@@ -76,6 +76,7 @@ class Shader
     GLint loc_dgl_Specularity;
     GLint loc_dgl_Roughness;
     GLint loc_dgl_Metallic;
+    GLint loc_dgl_PBRMapping;
     
     GLint loc_dgl_ShadowType;
     
@@ -149,6 +150,7 @@ class Shader
             loc_dgl_Specularity = glGetUniformLocation(shaderProg, "dgl_Specularity");
             loc_dgl_Roughness = glGetUniformLocation(shaderProg, "dgl_Roughness");
             loc_dgl_Metallic = glGetUniformLocation(shaderProg, "dgl_Metallic");
+            loc_dgl_PBRMapping = glGetUniformLocation(shaderProg, "dgl_PBRMapping");
             
             loc_dgl_ShadowType = glGetUniformLocation(shaderProg, "dgl_ShadowType");
             
@@ -195,6 +197,7 @@ class Shader
             bool glowMapEnabled = false;
             bool fogEnabled = mat.useFog;
             bool envMapping = false;
+            bool pbrMapping = false;
 
             if (mat.useTextures && mat.textures[0])
                 textureEnabled = true;
@@ -210,8 +213,11 @@ class Shader
             if (mat.useTextures && mat.textures[2] && mat.glowMap)
                 glowMapEnabled = true;
             
-            if (mat.useTextures && mat.textures[3])
+            if (mat.useTextures && mat.textures[3] && mat.textures[4])
                 envMapping = true;
+                
+            if (mat.useTextures && mat.textures[5])
+                pbrMapping = true;
 
             glUniform1i(loc_dgl_Shadeless, mat.shadeless);
             glUniform1i(loc_dgl_Textures, textureEnabled);
@@ -225,6 +231,7 @@ class Shader
             glUniform1f(loc_dgl_Specularity, mat.specularity);
             glUniform1f(loc_dgl_Roughness, mat.roughness);
             glUniform1f(loc_dgl_Metallic, mat.metallic);
+            glUniform1f(loc_dgl_PBRMapping, pbrMapping);
             
             glUniform1i(loc_dgl_ShadowType, cast(int)mat.shadowType);
             

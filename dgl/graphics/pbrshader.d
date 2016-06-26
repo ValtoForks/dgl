@@ -35,13 +35,12 @@ import dgl.graphics.material;
 import dgl.graphics.shader;
 
 /*
- * PBRShader is similar to UberShader, but it is more physically-based.
+ * PBRShader is similar to UberShader, but it is physically-based.
  * Uses normalized Cook-Torrance specular model, Fresnel reflections and
- * equirectangular environment maps for both diffuse and specular environment lighting.
+ * equirectangular environment maps for both diffuse and specular indirect lighting.
  * Note that the resulting picture can differ from UberShader, some material
- * parameters may require fine tuning to be PBR-copliant. More compatibility 
- * between PBR/non-PBR probably will be added in future.
- * Note that this shader is in experimental state.
+ * parameters may require fine tuning to be PBR-copliant. 
+ * This shader is in experimental state.
  */
 
 private string _pbrVertexShader = q{
@@ -110,12 +109,13 @@ private string _pbrFragmentShader = q{
     varying vec3 worldView;
     uniform mat4 dgl_ViewMatrix;
         
-    uniform sampler2D dgl_Texture0;
-    uniform sampler2D dgl_Texture1;
-    uniform sampler2D dgl_Texture2;
-    uniform sampler2D dgl_Texture3;
-    uniform sampler2D dgl_Texture4;
-    uniform sampler2DShadow dgl_Texture7;
+    uniform sampler2D dgl_Texture0; // Diffuse/Albedo map
+    uniform sampler2D dgl_Texture1; // Normal map
+    uniform sampler2D dgl_Texture2; // Emission map
+    uniform sampler2D dgl_Texture3; // Ambient diffuse map
+    uniform sampler2D dgl_Texture4; // Ambient specular/reflection map
+    uniform sampler2D dgl_Texture5; // PBR map (R = Specularity, G = Rougness, B = Metallic)
+    uniform sampler2DShadow dgl_Texture7; // Shadow map
     
     uniform bool dgl_Shadeless;
     uniform bool dgl_Shadow;
@@ -128,10 +128,10 @@ private string _pbrFragmentShader = q{
     uniform bool dgl_EnvMapping;
     uniform int dgl_ShadowType;
     
-    // TODO: read these from texture
     uniform float dgl_Specularity;
     uniform float dgl_Roughness;
     uniform float dgl_Metallic;
+    uniform bool dgl_PBRMapping;
     
     uniform float dgl_ShadowMapSize;
     
@@ -294,6 +294,11 @@ private string _pbrFragmentShader = q{
         vec4 emit = dgl_GlowMap?
             texture2D(dgl_Texture2, texCoords) * gl_FrontMaterial.emission.w :
             vec4(0.0, 0.0, 0.0, 1.0);
+            
+        float roughness = dgl_Roughness; //dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).g :
+        roughness = mix(0.001, 1.0, roughness);
+        float metallic = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).b : dgl_Metallic;
+        metallic = mix(0.001, 1.0, metallic);
         
         vec3 directionToLight;
         float distanceToLight;
@@ -344,21 +349,25 @@ private string _pbrFragmentShader = q{
                                
                 // Specular term
                 // TODO: f0 parameter
-                specular = dgl_Specularity * clamp(cookTorrance(L, E, N, dgl_Roughness, 0.3), 0.0, 1.0);
+                specular = dgl_Specularity * clamp(cookTorrance(L, E, N, roughness, 0.3), 0.0, 1.0);
 
                 col_d += Ld*diffuse*attenuation;
                 col_s += Ms*Ls*specular*attenuation;
             }
         }
 
-        float ambSpecF0 = mix(0.001, 1.0, dgl_Metallic);
-        float ambSpecFresnel = ambSpecF0 + pow(1.0 - NE, 5.0) * (1.0 - ambSpecF0);
-        float diffIntensity = mix(1.0, 0.0, dgl_Metallic);
+        //float ambSpecF0 = mix(0.001, 1.0, metallic);
+        //float ambSpecFresnel = ambSpecF0 + pow(1.0 - NE, 5.0) * (1.0 - ambSpecF0);
+        float diffIntensity = 1.0 - metallic; //mix(1.0, 0.0, metallic);
+        
+        vec4 normalReflection = metallic * tex * ambTexSpec + col_s * shadow;
+        vec4 grazingReflection = ambTexSpec * dgl_Specularity;
+        vec4 reflectedLight = normalReflection + grazingReflection * pow(1.0 - NE, 5.0); //normalReflection * ambSpecFresnel;
         
         vec4 diffuseLight = tex * (ambTex + col_d * shadow);
-        vec4 reflectedLight = ambTexSpec * ambSpecFresnel * dgl_Specularity + col_s * shadow;
+        //vec4 reflectedLight = ((tex * metallic) * ambTexSpec * ambSpecFresnel) * dgl_Specularity + col_s * shadow;
         vec4 finalColor = emit + diffuseLight * diffIntensity + reflectedLight;
-        
+
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
         gl_FragColor.a = dgl_Textures? tex.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
     }

@@ -140,7 +140,6 @@ class Simple3DApp: Application3D
         
         mountDirectory("data");
         mountDirectory("data/imrod");
-        mountDirectory("data/envmaps");
 
         ambTexRes = addEnvironmentTexureResource("zion-sunsetpeek.png");
         model = addModelResource("imrod.dgl3");

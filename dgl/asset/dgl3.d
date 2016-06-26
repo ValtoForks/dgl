@@ -100,7 +100,12 @@ class DGL3MaterialResource: Resource
         if ("roughness" in props)
             material.roughness = props["roughness"].toFloat;  
         if ("metallic" in props)
-            material.metallic = props["metallic"].toFloat;  
+            material.metallic = props["metallic"].toFloat; 
+        if ("pbrTexture" in props)
+        {
+            string texName = props["pbrTexture"].toString;
+            material.textures[5] = loadTexture(texName);
+        }
             
         if ("useTextures" in props)
             material.useTextures = props["useTextures"].toBool;
