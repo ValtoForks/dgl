@@ -8,5 +8,5 @@ specularity: 0.9;
 metallic: 0.1;
 diffuseTexture: "planks.png";
 normalTexture: "planks-normal.png";
-pbrTexture: "ground-pbr.png";
+
 

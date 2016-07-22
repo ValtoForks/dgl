@@ -117,7 +117,7 @@ class Simple3DApp: Application3D
 
         Quaternionf sunLightRot = 
             rotationQuaternion(1, degtorad(0.0f)) *
-            rotationQuaternion(0, degtorad(-20.0f));
+            rotationQuaternion(0, degtorad(-30.0f));
 
         if (useShadows)
         {
