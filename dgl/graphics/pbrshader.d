@@ -157,7 +157,7 @@ private string _pbrFragmentShader = q{
 	{
         vec2 texelSize = vec2(1.0) / dgl_ShadowMapSize;
         vec2 v = offset * texelSize * coord.w;
-        vec4 res = shadow2DProj(depths, coord + vec4(v.x, v.y, 0.001, 0.0));
+        vec4 res = shadow2DProj(depths, coord + vec4(v.x, v.y, 0.0, 0.0)); //0.001
         return res.z;
 	}
     
@@ -284,21 +284,24 @@ private string _pbrFragmentShader = q{
             gl_FragColor.a = dgl_Textures? tex.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
             return;
         }
+        
+        float specularity = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).r : dgl_Specularity;
+        float roughness = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).g : dgl_Roughness;
+        roughness = mix(0.001, 0.9, roughness);
+        float metallic = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).b : dgl_Metallic;
+        metallic = mix(0.001, 1.0, metallic);
 
         // Texture
-        vec4 tex = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
-        vec4 ambTex = dgl_EnvMapping? texture2D(dgl_Texture3, ambTexCoords) : gl_FrontMaterial.ambient;
-        vec4 ambTexSpec = dgl_EnvMapping? texture2D(dgl_Texture4, ambSpecTexCoords) : gl_FrontMaterial.ambient;
+        int lod = int(11.0 * roughness);
+        int diffLod = int(11.0 * 0.8);
+        vec4 albedo = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
+        vec4 ambTex = dgl_EnvMapping? texture2DLod(dgl_Texture3, ambTexCoords, diffLod) : gl_FrontMaterial.ambient;
+        vec4 ambTexSpec = dgl_EnvMapping? texture2DLod(dgl_Texture4, ambSpecTexCoords, lod) : gl_FrontMaterial.ambient;
         
         // Emission term
         vec4 emit = dgl_GlowMap?
             texture2D(dgl_Texture2, texCoords) * gl_FrontMaterial.emission.w :
             vec4(0.0, 0.0, 0.0, 1.0);
-            
-        float roughness = dgl_Roughness; //dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).g :
-        roughness = mix(0.001, 1.0, roughness);
-        float metallic = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).b : dgl_Metallic;
-        metallic = mix(0.001, 1.0, metallic);
         
         vec3 directionToLight;
         float distanceToLight;
@@ -348,28 +351,20 @@ private string _pbrFragmentShader = q{
                 diffuse = clamp(dot(N, L), 0.0, 1.0);
                                
                 // Specular term
-                // TODO: f0 parameter
-                specular = dgl_Specularity * clamp(cookTorrance(L, E, N, roughness, 0.3), 0.0, 1.0);
+                specular = clamp(cookTorrance(L, E, N, roughness, 0.3), 0.0, 1.0);
 
                 col_d += Ld*diffuse*attenuation;
                 col_s += Ms*Ls*specular*attenuation;
             }
         }
 
-        //float ambSpecF0 = mix(0.001, 1.0, metallic);
-        //float ambSpecFresnel = ambSpecF0 + pow(1.0 - NE, 5.0) * (1.0 - ambSpecF0);
-        float diffIntensity = 1.0 - metallic; //mix(1.0, 0.0, metallic);
-        
-        vec4 normalReflection = metallic * tex * ambTexSpec + col_s * shadow;
-        vec4 grazingReflection = ambTexSpec * dgl_Specularity;
-        vec4 reflectedLight = normalReflection + grazingReflection * pow(1.0 - NE, 5.0); //normalReflection * ambSpecFresnel;
-        
-        vec4 diffuseLight = tex * (ambTex + col_d * shadow);
-        //vec4 reflectedLight = ((tex * metallic) * ambTexSpec * ambSpecFresnel) * dgl_Specularity + col_s * shadow;
-        vec4 finalColor = emit + diffuseLight * diffIntensity + reflectedLight;
+        float fresnel = pow(1.0 - NE, 5.0);
+        vec4 c1 = (albedo * (ambTex + col_d * shadow) + col_s * specularity * shadow) * (1.0 - metallic) + (albedo * (ambTexSpec + col_s)) * metallic;
+        vec4 c2 = c1 * (1.0 - fresnel) + ambTexSpec * fresnel;
+        vec4 finalColor = emit + c2;
 
         gl_FragColor = mix(gl_Fog.color, finalColor, fogFactor);
-        gl_FragColor.a = dgl_Textures? tex.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
+        gl_FragColor.a = dgl_Textures? albedo.a : mix(1.0, gl_FrontMaterial.diffuse.a, fogFactor);
     }
 };
 

@@ -120,9 +120,9 @@ def packMesh(meshId, mesh):
         vdata2 = [v2[0], v2[1], v2[2], n2[0], n2[1], n2[2], uv1_1[0], uv1_1[1]]
         vdata3 = [v3[0], v3[1], v3[2], n3[0], n3[1], n3[2], uv1_2[0], uv1_2[1]]
 
-        key1 = rvec3d(v1), rvec2d(uv1_0)
-        key2 = rvec3d(v2), rvec2d(uv1_1)
-        key3 = rvec3d(v3), rvec2d(uv1_2)
+        key1 = rvec3d(v1), rvec3d(n1), rvec2d(uv1_0)
+        key2 = rvec3d(v2), rvec3d(n2), rvec2d(uv1_1)
+        key3 = rvec3d(v3), rvec3d(n3), rvec2d(uv1_2)
 
         if not key1 in vertexDict:
             vertexData.append(vdata1);

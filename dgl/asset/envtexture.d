@@ -54,8 +54,9 @@ class EnvTextureResource: Resource
     this(UnmanagedImageFactory imgfac)
     {
         imageFactory = imgfac;
-        foreach(i; 0..numRougnessLevels)
-            textures[i] = New!Texture();
+        //foreach(i; 0..numRougnessLevels)
+        //    textures[i] = New!Texture();
+        textures[0] = New!Texture();
     }
 
     bool loadThreadSafePart(InputStream istrm)
@@ -67,6 +68,7 @@ class EnvTextureResource: Resource
         image = res[0];
         if (image !is null)
         {
+        /*
             blurred[0] = image;
             uint w = image.width;
             uint h = image.height;
@@ -79,6 +81,7 @@ class EnvTextureResource: Resource
                 boxBlur(resampled, blurred[i], i); // TODO: use special seamless blur
                 Delete(resampled);
             }
+        */
             return true;
         }
         else
@@ -90,12 +93,13 @@ class EnvTextureResource: Resource
     
     bool loadThreadUnsafePart()
     {
+    /*
         foreach(i; 0..numRougnessLevels)
         {
             if (blurred[i] !is null)
             {
                 textures[i].createFromImage(blurred[i]);
-                textures[i].filtering = false;
+                //textures[i].filtering = false;
                 Delete(blurred[i]);
                 blurred[i] = null;
                 if (!textures[i].valid)
@@ -104,12 +108,15 @@ class EnvTextureResource: Resource
             else
                 return false;
         }
-        
+    */
+        textures[0].createFromImage(image);
+        Delete(image);
         return true;
     }
     
     void applyToMaterial(Material m)
     {
+    /*
         float r = m.roughness * 10.0f;
         if (r < 0) r = 0;
         if (r > 9) r = 9;
@@ -118,15 +125,21 @@ class EnvTextureResource: Resource
         uint i = cast(uint)r;
         m.textures[3] = textures[numRougnessLevels-1];
         m.textures[4] = textures[i];
+    */
+        m.textures[3] = textures[0];
+        m.textures[4] = textures[0];
     }
     
     ~this()
     {
+    /*
         foreach(i; 0..numRougnessLevels)
         {
             if (blurred[i] !is null)
                 Delete(blurred[i]);
             Delete(textures[i]);
         }
+    */
+        Delete(textures[0]);
     }
 }

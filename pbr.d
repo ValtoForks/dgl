@@ -117,7 +117,7 @@ class Simple3DApp: Application3D
 
         Quaternionf sunLightRot = 
             rotationQuaternion(1, degtorad(0.0f)) *
-            rotationQuaternion(0, degtorad(-30.0f));
+            rotationQuaternion(0, degtorad(-20.0f));
 
         if (useShadows)
         {
@@ -139,10 +139,10 @@ class Simple3DApp: Application3D
         setDefaultLoadingImage("data/loading.png");
         
         mountDirectory("data");
-        mountDirectory("data/imrod");
+        mountDirectory("data/cerberus");
 
         ambTexRes = addEnvironmentTexureResource("zion-sunsetpeek.png");
-        model = addModelResource("imrod.dgl3");
+        model = addModelResource("cerberus.dgl3");
         
         loadResources();
         
