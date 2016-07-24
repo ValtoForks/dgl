@@ -112,9 +112,8 @@ private string _pbrFragmentShader = q{
     uniform sampler2D dgl_Texture0; // Diffuse/Albedo map
     uniform sampler2D dgl_Texture1; // Normal map
     uniform sampler2D dgl_Texture2; // Emission map
-    uniform sampler2D dgl_Texture3; // Ambient diffuse map
-    uniform sampler2D dgl_Texture4; // Ambient specular/reflection map
-    uniform sampler2D dgl_Texture5; // PBR map (R = Specularity, G = Rougness, B = Metallic)
+    uniform sampler2D dgl_Texture3; // PBR map (R = Specularity, G = Rougness, B = Metallic)
+    uniform sampler2D dgl_Texture4; // Environment map (equirectangular)
     uniform sampler2DShadow dgl_Texture7; // Shadow map
     
     uniform bool dgl_Shadeless;
@@ -153,19 +152,14 @@ private string _pbrFragmentShader = q{
         vec2(-0.6561151, -0.6154207)
     );
         
-    float lookup(sampler2DShadow depths, vec4 coord, vec2 offset)
+    float shadowMapLookup(vec4 coord, vec2 offset)
 	{
         vec2 texelSize = vec2(1.0) / dgl_ShadowMapSize;
         vec2 v = offset * texelSize * coord.w;
-        vec4 res = shadow2DProj(depths, coord + vec4(v.x, v.y, 0.0, 0.0)); //0.001
+        vec4 res = shadow2DProj(dgl_Texture7, coord + vec4(v.x, v.y, 0.0, 0.0)); //0.001
         return res.z;
 	}
-    
-    float edgeBias(float value, float b)
-    {
-        return (b > 0.0)? pow(value, log2(b) / log2(0.5)) : 0.0;
-    }
-    
+
     float shadowBoxBlur(vec4 coord)
     {
         float shadow = 0.0;
@@ -173,7 +167,7 @@ private string _pbrFragmentShader = q{
         const float size = 2.0;
         for (y = -size; y < size; y += 1.0)
         for (x = -size; x < size; x += 1.0)
-            shadow += lookup(dgl_Texture7, coord, vec2(x, y));
+            shadow += shadowMapLookup(coord, vec2(x, y));
         return shadow / (size * size * 4.0);
     }
     
@@ -183,7 +177,7 @@ private string _pbrFragmentShader = q{
         int i;
         for (i = 0; i < 8; i++)
         {
-            shadow += lookup(dgl_Texture7, coord, poissonDisk[i] * 5.0);
+            shadow += shadowMapLookup(coord, poissonDisk[i] * 5.0);
         }
         return shadow / 8.0;
     }
@@ -229,36 +223,31 @@ private string _pbrFragmentShader = q{
         vec3 tn = normalize(t);
         vec3 bn = normalize(b);
         
-        vec2 normTexCoords = gl_TexCoord[0].st;
+        // Parallax mapping
+        vec2 offsTexCoords = gl_TexCoord[0].st;
         if (dgl_ParallaxMapping)
         {
             vec2 eye2 = vec2(E.x, -E.y);
-            float height = texture2D(dgl_Texture1, normTexCoords).a; 
+            float height = texture2D(dgl_Texture1, offsTexCoords).a; 
             height = height * parallaxScale + parallaxBias;
-            normTexCoords = normTexCoords + (height * eye2);
+            offsTexCoords = offsTexCoords + (height * eye2);
         }
         
-        // Normal mapping
-        vec3 N = dgl_NormalMapping? normalize(2.0 * texture2D(dgl_Texture1, normTexCoords).rgb - 1.0) : nn;
+        // Normal, reflect and texcoords
+        vec3 N = dgl_NormalMapping? normalize(2.0 * texture2D(dgl_Texture1, offsTexCoords).rgb - 1.0) : nn;
+        vec3 eyeN = dgl_NormalMapping? mat3(tn, bn, nn) * N : N;
+        vec3 worldN = eyeN * mat3(dgl_ViewMatrix);
+        vec3 worldR = reflect(normalize(worldView), worldN);
+        vec2 texCoords = offsTexCoords;
         
-        vec3 eyeNormal = dgl_NormalMapping? mat3(tn, bn, nn) * N : N;
-        
-        vec3 worldNormal = eyeNormal * mat3(dgl_ViewMatrix);
-        vec3 Rw = reflect(normalize(worldView), worldNormal);
-    
-        vec2 texCoords = dgl_Matcap? -spheremapTexcoord : normTexCoords;
-        vec2 ambTexCoords = dgl_EnvMapping? envMapEquirect(worldNormal) : gl_TexCoord[0].st;
-        vec2 ambSpecTexCoords = dgl_EnvMapping? envMapEquirect(Rw) : gl_TexCoord[0].st;
-        
-        // Fog term
+        // Fog
         float fogDistance = gl_FragCoord.z / gl_FragCoord.w;
         float fogFactor = dgl_Fog? 
             clamp((gl_Fog.end - fogDistance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0) :
             1.0;
         
-        // Shadow term
+        // Shadow
         float shadow = 1.0;
-
         if (dgl_Shadow)
         {
             if (shadowCoord.w > 0.0)
@@ -269,12 +258,13 @@ private string _pbrFragmentShader = q{
                 else if (dgl_ShadowType == ST_POISSONDISK)
                     shadow = shadowPoissonDisk(shadowCoord);
                 else if (dgl_ShadowType == ST_HARDEDGES)
-                    shadow = lookup(dgl_Texture7, shadowCoord, vec2(0, 0));
+                    shadow = shadowMapLookup(shadowCoord, vec2(0, 0));
                 else
                     shadow = 1.0; // Unknown shadow type
             }
         }
         
+        // Shadeless material
         if (dgl_Shadeless)
         {
             vec4 tex = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
@@ -285,20 +275,21 @@ private string _pbrFragmentShader = q{
             return;
         }
         
-        float specularity = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).r : dgl_Specularity;
-        float roughness = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).g : dgl_Roughness;
-        roughness = mix(0.001, 0.9, roughness);
-        float metallic = dgl_PBRMapping? texture2D(dgl_Texture5, texCoords).b : dgl_Metallic;
+        // PBR textures
+        vec4 albedo = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
+        float specularity = dgl_PBRMapping? texture2D(dgl_Texture3, texCoords).r : dgl_Specularity;
+        float roughness = dgl_PBRMapping? texture2D(dgl_Texture3, texCoords).g : dgl_Roughness;
+        roughness = mix(0.0, 1.0, roughness);
+        float metallic = dgl_PBRMapping? texture2D(dgl_Texture3, texCoords).b : dgl_Metallic;
         metallic = mix(0.001, 1.0, metallic);
 
-        // Texture
-        int lod = int(11.0 * roughness);
+        // IBL
+        int lod = int(10.0 * roughness);
         int diffLod = int(11.0 * 0.8);
-        vec4 albedo = dgl_Textures? texture2D(dgl_Texture0, texCoords) : gl_FrontMaterial.diffuse;
-        vec4 ambTex = dgl_EnvMapping? texture2DLod(dgl_Texture3, ambTexCoords, diffLod) : gl_FrontMaterial.ambient;
-        vec4 ambTexSpec = dgl_EnvMapping? texture2DLod(dgl_Texture4, ambSpecTexCoords, lod) : gl_FrontMaterial.ambient;
+        vec4 ambTex = dgl_EnvMapping? texture2DLod(dgl_Texture4, envMapEquirect(worldN), diffLod) : gl_FrontMaterial.ambient;
+        vec4 ambTexSpec = dgl_EnvMapping? texture2DLod(dgl_Texture4, envMapEquirect(worldR), lod) : gl_FrontMaterial.ambient;
         
-        // Emission term
+        // Emission
         vec4 emit = dgl_GlowMap?
             texture2D(dgl_Texture2, texCoords) * gl_FrontMaterial.emission.w :
             vec4(0.0, 0.0, 0.0, 1.0);
@@ -323,7 +314,7 @@ private string _pbrFragmentShader = q{
         {
             if (gl_LightSource[i].position.w < 2.0)
             {
-                vec4 Ms = gl_FrontMaterial.specular;
+                //vec4 Ms = gl_FrontMaterial.specular;
                 vec4 Ld = gl_LightSource[i].diffuse; 
                 vec4 Ls = gl_LightSource[i].specular;
             
@@ -354,12 +345,12 @@ private string _pbrFragmentShader = q{
                 specular = clamp(cookTorrance(L, E, N, roughness, 0.3), 0.0, 1.0);
 
                 col_d += Ld*diffuse*attenuation;
-                col_s += Ms*Ls*specular*attenuation;
+                col_s += Ls*specular*attenuation;
             }
         }
 
-        float fresnel = pow(1.0 - NE, 5.0);
-        vec4 c1 = (albedo * (ambTex + col_d * shadow) + col_s * specularity * shadow) * (1.0 - metallic) + (albedo * (ambTexSpec + col_s)) * metallic;
+        float fresnel = (1.0 - roughness) * pow(1.0 - NE, 5.0);
+        vec4 c1 = (albedo * (ambTex + col_d * shadow) + col_s * specularity * shadow) * (1.0 - metallic) + ((albedo * ambTexSpec + col_s) * specularity) * metallic;
         vec4 c2 = c1 * (1.0 - fresnel) + ambTexSpec * fresnel;
         vec4 finalColor = emit + c2;
 
@@ -373,5 +364,12 @@ class PBRShader: Shader
     this()
     {
         super(_pbrVertexShader, _pbrFragmentShader);
+    }
+    
+    override bool supported()
+    {
+        return 
+            DerelictGL.isExtensionSupported("GL_ARB_shading_language_100") &&
+            DerelictGL.isExtensionSupported("GL_EXT_gpu_shader4");
     }
 }

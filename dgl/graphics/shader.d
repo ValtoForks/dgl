@@ -162,7 +162,7 @@ class Shader
         invViewMatrix = Matrix4x4f.identity;
     }
 
-    static bool supported()
+    bool supported()
     {
         return DerelictGL.isExtensionSupported("GL_ARB_shading_language_100");
     }
@@ -213,11 +213,11 @@ class Shader
             if (mat.useTextures && mat.textures[2] && mat.glowMap)
                 glowMapEnabled = true;
             
-            if (mat.useTextures && mat.textures[3] && mat.textures[4])
-                envMapping = true;
-                
-            if (mat.useTextures && mat.textures[5])
+            if (mat.useTextures && mat.textures[3])
                 pbrMapping = true;
+                
+            if (mat.useTextures && mat.textures[4])
+                envMapping = true;
 
             glUniform1i(loc_dgl_Shadeless, mat.shadeless);
             glUniform1i(loc_dgl_Textures, textureEnabled);

@@ -151,7 +151,7 @@ class Simple3DApp: Application3D
         envSphere = New!EnvironmentSphere(freeview.camera);
         auto envSphereEntity = createEntity3D(envSphere);
         envMat = New!Material();
-        envMat.textures[0] = ambTexRes.textures[0];
+        envMat.textures[0] = ambTexRes.texture;
         envSphereEntity.material = envMat;
         
         pbrShader = New!PBRShader;
@@ -219,6 +219,8 @@ class Simple3DApp: Application3D
                 {
                     e.material.textures[1] = null;
                     e.material.textures[2] = null;
+                    e.material.textures[3] = null;
+                    e.material.textures[4] = null;
                 }
             }
         }

@@ -45,18 +45,14 @@ import dgl.graphics.material;
 
 class EnvTextureResource: Resource
 {
-    enum numRougnessLevels = 7;
     SuperImage image;
-    SuperImage[numRougnessLevels] blurred;
     UnmanagedImageFactory imageFactory;
-    Texture[numRougnessLevels] textures;
+    Texture texture;
     
     this(UnmanagedImageFactory imgfac)
     {
         imageFactory = imgfac;
-        //foreach(i; 0..numRougnessLevels)
-        //    textures[i] = New!Texture();
-        textures[0] = New!Texture();
+        texture = New!Texture();
     }
 
     bool loadThreadSafePart(InputStream istrm)
@@ -68,20 +64,6 @@ class EnvTextureResource: Resource
         image = res[0];
         if (image !is null)
         {
-        /*
-            blurred[0] = image;
-            uint w = image.width;
-            uint h = image.height;
-            foreach(i; 1..numRougnessLevels)
-            {
-                w = image.width / (i + 4);
-                h = image.height / (i + 4);
-                auto resampled = resampleBilinear(image, w, h);
-                blurred[i] = resampled.createSameFormat(w, h);
-                boxBlur(resampled, blurred[i], i); // TODO: use special seamless blur
-                Delete(resampled);
-            }
-        */
             return true;
         }
         else
@@ -93,53 +75,20 @@ class EnvTextureResource: Resource
     
     bool loadThreadUnsafePart()
     {
-    /*
-        foreach(i; 0..numRougnessLevels)
-        {
-            if (blurred[i] !is null)
-            {
-                textures[i].createFromImage(blurred[i]);
-                //textures[i].filtering = false;
-                Delete(blurred[i]);
-                blurred[i] = null;
-                if (!textures[i].valid)
-                    return false;
-            }
-            else
-                return false;
-        }
-    */
-        textures[0].createFromImage(image);
-        Delete(image);
+        texture.createFromImage(image);
+        if (image !is null)
+            Delete(image);
         return true;
     }
     
     void applyToMaterial(Material m)
     {
-    /*
-        float r = m.roughness * 10.0f;
-        if (r < 0) r = 0;
-        if (r > 9) r = 9;
-        float v = cast(float)numRougnessLevels / 10.0f;
-        r *= v;
-        uint i = cast(uint)r;
-        m.textures[3] = textures[numRougnessLevels-1];
-        m.textures[4] = textures[i];
-    */
-        m.textures[3] = textures[0];
-        m.textures[4] = textures[0];
+        m.textures[4] = texture;
     }
     
     ~this()
     {
-    /*
-        foreach(i; 0..numRougnessLevels)
-        {
-            if (blurred[i] !is null)
-                Delete(blurred[i]);
-            Delete(textures[i]);
-        }
-    */
-        Delete(textures[0]);
+        if (texture !is null)
+            Delete(texture);
     }
 }

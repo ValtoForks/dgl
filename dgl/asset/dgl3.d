@@ -29,12 +29,15 @@ DEALINGS IN THE SOFTWARE.
 module dgl.asset.dgl3;
 
 import std.stdio;
+import std.string;
 import dlib.core.memory;
 import dlib.core.stream;
 import dlib.filesystem.stdfs;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.container.dict;
+import dlib.image.image;
+import dlib.image.color;
 import dgl.graphics.material;
 import dgl.graphics.texture;
 import dgl.asset.resource;
@@ -101,11 +104,26 @@ class DGL3MaterialResource: Resource
             material.roughness = props["roughness"].toFloat;  
         if ("metallic" in props)
             material.metallic = props["metallic"].toFloat; 
-        if ("pbrTexture" in props)
+
+        SuperImage speculatiryImg;
+        SuperImage roughnessImg;
+        SuperImage metallicImg;
+        if ("speculatiryTexture" in props)
         {
-            string texName = props["pbrTexture"].toString;
-            material.textures[5] = loadTexture(texName);
+            string texName = props["speculatiryTexture"].toString;
+            speculatiryImg = loadImage(texName);
         }
+        if ("roughnessTexture" in props)
+        {
+            string texName = props["roughnessTexture"].toString;
+            roughnessImg = loadImage(texName);
+        }
+        if ("metallicTexture" in props)
+        {
+            string texName = props["metallicTexture"].toString;
+            metallicImg = loadImage(texName);
+        }
+        material.textures[3] = makePBRTexture(speculatiryImg, roughnessImg, metallicImg);
             
         if ("useTextures" in props)
             material.useTextures = props["useTextures"].toBool;
@@ -126,6 +144,25 @@ class DGL3MaterialResource: Resource
         return true;
     }
     
+    SuperImage loadImage(string filename)
+    {
+        SuperImage img = null;
+        
+        if (filename in resourceManager.resources)
+        {
+            img = (cast(ImageResource)resourceManager.resources[filename]).image;
+        }
+        else
+        {
+            ImageResource imgres = New!ImageResource(resourceManager.imageFactory);
+            resourceManager.loadResourceThreadSafePart(imgres, filename);
+            img = imgres.image;
+            resourceManager.addResource(filename, imgres);
+        }
+        
+        return img;
+    }
+    
     Texture loadTexture(string filename)
     {
         Texture tex = null;
@@ -143,6 +180,45 @@ class DGL3MaterialResource: Resource
         }
         
         return tex;
+    }
+    
+    Texture makePBRTexture(SuperImage spec, SuperImage rough, SuperImage met)
+    {
+        size_t width, height;
+        if (spec)
+        {
+            width = spec.width;
+            height = spec.height;
+        }
+        else if (rough)
+        {
+            width = rough.width;
+            height = rough.height;
+        }
+        else if (met)
+        {
+            width = met.width;
+            height = met.height;
+        }
+        else
+            return null;
+            
+        TextureResource texres = New!TextureResource(resourceManager.imageFactory);
+        SuperImage pbrimg = resourceManager.imageFactory.createImage(width, height, 3, 8);
+        foreach(ref p, x, y; pbrimg)
+        {
+            Color4f col = Color4f(material.specularity, material.roughness, material.metallic, 1);
+            if (spec) col.r = spec[x, y].r;
+            if (rough) col.g = rough[x, y].r;
+            if (met) col.b = met[x, y].r;
+            p = col;
+        }
+        texres.image = pbrimg;
+        static int pbrId;
+        string pbrName = format("__pbrTexture%s", pbrId);
+        pbrId++;
+        resourceManager.addResource(pbrName, texres);
+        return texres.texture;
     }
     
     ~this()

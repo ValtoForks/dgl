@@ -55,6 +55,46 @@ interface Resource
 
 import core.memory;
 
+class ImageResource: Resource
+{
+    SuperImage image;
+    UnmanagedImageFactory imageFactory;
+    
+    this(UnmanagedImageFactory imgfac)
+    {
+        imageFactory = imgfac;
+    }
+    
+    bool loadThreadSafePart(InputStream istrm)
+    {
+        if (image !is null)
+            return true;
+        
+        auto res = loadPNG(istrm, imageFactory);
+        image = res[0];
+        if (image !is null)
+        {
+            return true;
+        }
+        else
+        {
+            writeln(res[1]);
+            return false;
+        }
+    }
+    
+    bool loadThreadUnsafePart()
+    {
+        return true;
+    }
+    
+    ~this()
+    {
+        if (image !is null)
+            Delete(image);
+    }
+}
+
 class TextureResource: Resource
 {
     SuperImage image;
