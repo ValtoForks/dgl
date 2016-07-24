@@ -19,12 +19,13 @@ Features
 * Resource manager with threaded loading 
 * Own scene file format (DGL3) with Blender exporter
 * Loading textures from PNG
-* Loading materials from text files
+* Loading materials from text files with simple human-editable markup
 * Dynamic soft shadows
 * Unlimited number of dynamic light sources
 * GLSL shaders
-* Built-in uber shader with normal mapping, parallax mapping and energy-conserving Blinn-Phong specular model
-* Built-in PBR shader with normalized Cook-Torrance specular model, Fresnel and image-based lighting
+* Normal mapping and parallax mapping
+* Image-based lighting
+* Physically based rendering (PBR)
 * Unlimited number of render passes, 2D or 3D
 * Render to texture
 * Antialiasing
