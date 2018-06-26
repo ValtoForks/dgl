@@ -2,7 +2,7 @@ DGL
 ===
 DGL is a minimalistic 3D and 2D real-time graphics engine written in D language and built on top of OpenGL and SDL.
 
-Important: DGL is not maintained anymore and won't get any updates. Please, consider using [Dagon](https://github.com/gecko0307/dagon) - a fork of DGL which is based on modern technologies, has more features, and is much easier to use.
+**Important:** DGL is not maintained anymore and won't get any updates. Please, consider using [Dagon](https://github.com/gecko0307/dagon) - a fork of DGL which is based on modern technologies, has more features, and is much easier to use.
 
 Screenshots
 -----------
